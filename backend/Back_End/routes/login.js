@@ -20,6 +20,7 @@ router.post("/", async (req, res) => {
         res.status(200).json({ token, user: { id: user._id, fullName: user.fullName, email: user.email, username: user.username, mobileNumber: user.mobileNumber } });
 
     } catch (error) {
+        console.log("Login Error: ", error)
         res.status(500).json({ message: "Server error", error });
     }
 });

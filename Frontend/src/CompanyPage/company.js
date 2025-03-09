@@ -80,7 +80,7 @@ const Company = () => {
     <View key={job.id} style={styles.job}>
       <View style={styles.jobDetails}>
       <Icon
-        name={job.title.includes('UI/UX') ? 'logo-windows' : 'brush'}
+        name={job.icon}
         size={30}
         color="#357EC7"
       />
@@ -179,7 +179,7 @@ const Company = () => {
 </View>
 
 <View style={styles.details}>
-  <TouchableOpacity onPress={() => openLink('https://www.linkedin.com/company/swiftjobs')}>
+  <TouchableOpacity onPress={() => openLink('https://www.linkedin.com/swiftjobs')}>
   <Icon name="logo-linkedin" size={35} color="#0077B5" style={{ marginTop: 10,marginLeft:30 }}/>
   </TouchableOpacity>
   
@@ -187,7 +187,7 @@ const Company = () => {
   <Icon name="logo-twitter" size={35} color="#1DA1F2" style={{ marginTop: 10,marginLeft:30}}/>
   </TouchableOpacity>
   
-  <TouchableOpacity onPress={() => openLink('https://wa.me/94763459855')}>
+  <TouchableOpacity onPress={() => openLink('https://wa.me/94751239976')}>
   <Icon name="logo-whatsapp" size={35} color="#128C7E" style={{ marginTop: 10,marginLeft:30}}/>
   </TouchableOpacity>
   
@@ -210,110 +210,56 @@ const Company = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: '#f5f5f5',
+  container: {flexGrow: 1,backgroundColor: '#f5f5f5',
   },
-  headerImage: {
-    width: '100%',
-    height: 200,
+  headerImage: {width: '100%',height: 200,
   },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#fff', 
-    padding: 16,
-    borderRadius: 15, 
-    elevation: 5, 
-    width: 320,
-    position: 'absolute',
-    marginTop: 170,
-    marginLeft: 33,
+  card: {flexDirection: 'row',backgroundColor: '#fff', padding: 16,borderRadius: 15, elevation: 5,  width: 320,position: 'absolute',marginTop: 170,marginLeft: 33,
   },
-  logo: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    marginRight: 10,
+  logo: {width: 40,height: 40,borderRadius: 10,marginRight: 10,
   },
-  companyName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  companyName: {fontSize: 16,fontWeight: 'bold',color: '#333',
   },
   overview: {
-    fontSize: 20,
-    marginTop: 20,
-    fontWeight: 'bold',
-    color: 'black',
-    marginBottom: 10
+    fontSize: 20,marginTop: 20,fontWeight: 'bold',color: 'black',marginBottom: 10
   },
   details: {
-    backgroundColor: 'white',
-    width: 350,
-    flexDirection: 'row',
-    marginTop: 5,
+    backgroundColor: 'white',width: 350,flexDirection: 'row',marginTop: 5,
   },
   over: {
-    width: 30,
-    height: 30,
-    margin: 10,
+    width: 30,height: 30,margin: 10,
   },
   overTopic: {
-    marginTop: 10,
-    marginLeft: 7,
-    fontWeight: "bold",
-    color: "black"
+    marginTop: 10,marginLeft: 7,fontWeight: "bold",color: "black"
   },
-  overFeature: {
-    margin: 4,
-    marginLeft: 7
+  overFeature: {margin: 4,marginLeft: 7
   },
   social: {
-    width: 30,
-    height: 30,
-    margin: 10,
-    marginLeft: 25
+    width: 30,height: 30,margin: 10,marginLeft: 25
   },
   location: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 14,color: '#666',
   },
   job: {
-    backgroundColor: 'white',
-    width: '90%',
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 10,
+    backgroundColor: 'white', width: '90%',borderRadius: 10,padding: 15,marginVertical: 10,
     elevation: 3,
   },
   jobDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+    flexDirection: 'row',alignItems: 'center',marginBottom: 10,
   },
   jobDescription: {
     marginVertical: 10,
   },
   salary: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
-    marginBottom: 10,
+    fontSize: 16, fontWeight: 'bold',color: 'black',marginBottom: 10,
   },
   
 
 over:{
-width:30,
-height:30,
-margin:10,
-marginLeft:40
+width:30,height:30,margin:10,marginLeft:40
 },
 
-overTopic:{
-marginTop:10,
-marginLeft:7,
-fontWeight:"bold",
-color:"black"
+overTopic:{marginTop:10,marginLeft:7,fontWeight:"bold",color:"black"
 }
 ,
 overFeature:{
@@ -322,69 +268,40 @@ overFeature:{
   },
 
     des:{
-      marginLeft:25,
-      marginTop:10,
-      marginBottom:20
+      marginLeft:25,marginTop:10, marginBottom:20
     },
     container: {
-      flexGrow: 1,
-      backgroundColor: '#f5f5f5',
+      flexGrow: 1,backgroundColor: '#f5f5f5',
     },
     headerImage: {
-      width: '100%',
-      height: 200,
+      width: '100%',height: 200,
     },
     card: {
-      flexDirection: 'row',
-      backgroundColor: '#fff', 
-      padding: 16,
-      borderRadius: 15, 
-      shadowColor: '#000',
-      elevation: 5, 
-      width: 320,
-      position: 'absolute',
-      marginTop: 170,
-      marginLeft: 33,
+      flexDirection: 'row',backgroundColor: '#fff', padding: 16,
+    borderRadius: 15, shadowColor: '#000',
+      elevation: 5, width: 320, position: 'absolute',marginTop: 170,marginLeft: 33,
     },
     logo: {
-      width: 40,
-      height: 40,
-      borderRadius: 10,
-      marginRight: 10,
+      width: 40,height: 40,borderRadius: 10,marginRight: 10,
     },
     companyName: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#333',
+      fontSize: 16,fontWeight: 'bold',color: '#333',
     },
     location: {
-      fontSize: 14,
-      color: '#666',
+      fontSize: 14,color: '#666',
     },
     section: {
       marginVertical: 15,
      
     },
     sectionTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: 'black',
-      marginBottom: 10,
-      marginLeft:20
+      fontSize: 20,fontWeight: 'bold',color: 'black',marginBottom: 10,marginLeft:20
     },
     sectionAbout: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: 'black',
-      marginBottom: 10,
-      marginTop:50,
-      marginLeft:20
+      fontSize: 20,fontWeight: 'bold',color: 'black',marginBottom: 10,marginTop:50,marginLeft:20
     },
     sectionContent: {
-      backgroundColor: 'white',
-      borderRadius: 12,
-      padding: 15,
-      marginLeft:10
+      backgroundColor: 'white',borderRadius: 12,padding: 15,marginLeft:10
     },
     description: {
       fontSize: 16,
@@ -392,32 +309,16 @@ overFeature:{
     },
     
     job: {
-      backgroundColor: 'white',
-      width: '90%',
-      alignSelf: 'center',
-      borderRadius: 10,
-      padding: 15,
-      marginVertical: 10,
-      shadowColor: '#000',
-      elevation: 3,
+      backgroundColor: 'white',width: '90%',alignSelf: 'center',borderRadius: 10,padding: 15,marginVertical: 10,shadowColor: '#000',elevation: 3,
     },
-    jobDetails: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 10,
+    jobDetails: {flexDirection: 'row',alignItems: 'center',marginBottom: 10,
     },
    
     
-    
-    jobDescription: {
-      marginVertical: 10,
+    jobDescription: {marginVertical: 10,
     },
     
-    salary: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: 'black',
-      marginBottom: 10,
+    salary: {fontSize: 16,fontWeight: 'bold',color: 'black',marginBottom: 10,
     }
 });
 

@@ -59,7 +59,7 @@ const JobSingle = () => {
     salary: "$75,000 - $90,000 a year",
     jobType: "Part Time",
     companyName: "Swift Jobs",
-    companyLogo: require('./assets/company.jpg'),
+    companyLogo: require('../assets/company.jpg'),
     daysLeft: "10 Days Left",
     location: "Sri Lanka",
     qualifications: [

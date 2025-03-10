@@ -20,12 +20,31 @@ const openLink = (url) => {
 const Company = () => {
   const defaultCompanyInfo = {
     name: 'Swift Jobs',
+    services:'Designing/Developing',
     location: 'Sri Lanka',
     description: 'At Swift Jobs, we specialize in designing and developing high-quality mobile apps and websites that help businesses grow.',
     contactEmail: 'swiftjobcompanypvtltd@gmail.com',
-    contactPhone: '+94 763459855',
+    contactPhone: '+94 756349987',
     website: 'www.swiftjobsservices.com'
   };
+  const [companyInfo, setCompanyInfo] = useState(defaultCompanyInfo);
+
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      try {
+        const companyResponse = await axios.get('http://192.168.43.152:5000/api/company');
+        setCompanyInfo(companyResponse.data || defaultCompanyInfo);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'Unable to fetch company information');
+        setCompanyInfo(defaultCompanyInfo);
+      }
+    };
+
+    fetchCompanyData();
+  }, []);
+
+  const { name,services, location, description, contactEmail, contactPhone, website } = companyInfo;
 
   const defaultJobVacancies = [
     {
@@ -46,7 +65,6 @@ const Company = () => {
     }
   ];
 
-  const [companyInfo, setCompanyInfo] = useState(defaultCompanyInfo);
   const [jobVacancies, setJobVacancies] = useState(defaultJobVacancies);
 
   useEffect(() => {
@@ -87,7 +105,9 @@ const Company = () => {
         color="#357EC7"
       />
         <View>
+        <TouchableOpacity onPress={() => navigation.navigate('JobSingle', { jobId: job.id })}>
           <Text style={styles.overTopic}>{job.title}</Text>
+          </TouchableOpacity>
           <Text style={styles.overFeature}>{job.company}</Text>
         </View>
       </View>
@@ -133,7 +153,7 @@ const Company = () => {
             <Icon name="storefront" size={30} color="#601cd6" style={{ marginTop: 10 }} />
               <View>
                 <Text style={styles.overTopic}>Services</Text>
-                <Text style={styles.overFeature}>Designing / Developing</Text>
+                <Text style={styles.overFeature}>{companyInfo.services}</Text>
               </View>
             </View>
             
@@ -142,7 +162,7 @@ const Company = () => {
             <Icon name="location" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Location</Text>
-                <Text style={styles.overFeature}>Colombo,Sri Lanka</Text>
+                <Text style={styles.overFeature}>{companyInfo.location}</Text>
               </View>
             </View>
             
@@ -151,7 +171,7 @@ const Company = () => {
             <Icon name="call" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Phone Number</Text>
-                <Text style={styles.overFeature}>+94 763459855</Text>
+                <Text style={styles.overFeature}>{companyInfo.contactPhone}</Text>
               </View>
             </View>
             
@@ -159,7 +179,7 @@ const Company = () => {
             <Icon name="mail" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Email Address</Text>
-                <Text style={styles.overFeature}>swiftjobcompanypvtltd@gmail.com</Text>
+                <Text style={styles.overFeature}>{companyInfo.contactEmail}</Text>
               </View>
             </View>
             
@@ -168,7 +188,7 @@ const Company = () => {
             <Icon name="logo-chrome" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Website</Text>
-                <Text style={styles.overFeature}>www.swiftjobsservices.com</Text>
+                <Text style={styles.overFeature}>{companyInfo.website}</Text>
               </View>
             </View>
             

@@ -14,6 +14,7 @@ import CompanyScreen from './src/Screens/CompanyScreen/CompanyScreen.js';
 import EditProfile from './src/Screens/EditProfileScreen/EditProfile.js';
 import InviteFriend from './src/Screens/InviteFriend/InviteFriend.js';
 import Company from './src/CompanyPage/company.js';
+import JobSingle from './src/JobSinglePage/job.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,6 +40,7 @@ export default App = () => {
         <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
         <Stack.Screen name='Company' component={Company} />
         <Stack.Screen name="CompanyScreen" component={CompanyScreen} />
+        <Stack.Screen name='JobSingle' component={JobSingle} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="InviteFriend" component={InviteFriend} />
        

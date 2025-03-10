@@ -33,14 +33,16 @@ const Company = () => {
       title: 'UI/UX Designing and Developing',
       company: 'SwiftJobs (pvt) Ltd, Sri Lanka',
       description: 'UI/UX designers create intuitive and visually appealing digital experiences by combining design aesthetics with user-centered principles.',
-      salaryRange: 'LKR50,000 - LKR100,000'
+      salaryRange: 'LKR50,000 - LKR100,000',
+      icon:"logo-windows"
     },
     {
       id: '2',
       title: 'Graphic Designing',
       company: 'SwiftJobs (pvt) Ltd, Sri Lanka',
       description: 'Swift Jobs is looking to hire talented designers to join our creative team! We seek passionate graphic designers who can craft visually stunning and user-friendly experiences.',
-      salaryRange: 'LKR100,000 - LKR200,000'
+      salaryRange: 'LKR100,000 - LKR200,000',
+      icon:"tv"
     }
   ];
 

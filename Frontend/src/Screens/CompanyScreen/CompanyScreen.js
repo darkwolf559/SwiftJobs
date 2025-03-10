@@ -64,7 +64,7 @@ const CompanyScreen = ({ navigation }) => {
 
   const handleCompanyPress = (company) => {
     // Navigate to Company Details screen or show company's jobs
-    navigation.navigate('CompanyJobsScreen', { company });
+    navigation.navigate('Company', { company });
   };
 
   return (

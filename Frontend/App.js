@@ -28,7 +28,7 @@ export default App = () => {
          
 
       <Stack.Navigator 
-        initialRouteName="Home"
+        initialRouteName="Onboarding"
         screenOptions={{headerShown: false}}
       >
         <Stack.Screen name="Home" component={HomeScreen} />

@@ -105,12 +105,12 @@ const Company = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image 
-        source={require('./assets/building.jpg')} 
+        source={require('../assets/building.jpg')} 
         style={styles.headerImage} 
       />
       <View style={styles.card}>
         <Image 
-          source={require('./assets/company.jpg')} 
+          source={require('../assets/company.jpg')} 
           style={styles.logo} 
         />
         <View>

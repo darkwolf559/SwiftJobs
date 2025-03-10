@@ -1,7 +1,9 @@
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Button } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Button,TextInput, Alert} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Company from './CompanyPage/company';
+import Company from '../CompanyPage/company';
+import axios from 'axios';
+
 
 
 const JobSingle = () => {
@@ -9,6 +11,8 @@ const JobSingle = () => {
   const [jobData, setJobData] = useState(null);
   const [userRating, setUserRating] = useState(0);
   const [userComment, setUserComment] = useState('');
+  const [reviews, setReviews] = useState([]);
+
   const [ratingStats, setRatingStats] = useState({
     5: 150,
     4: 63,

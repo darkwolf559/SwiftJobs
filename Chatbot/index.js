@@ -1,3 +1,8 @@
+require('dotenv').config();
+
+// Now can access the environment variables
+const apiKey = process.env.API_KEY;
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';

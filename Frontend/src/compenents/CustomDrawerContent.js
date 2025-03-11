@@ -50,6 +50,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
       case 'Log Out':
         // Handle logout logic
         console.log('Logging out...');
+        navigation?.navigate('Login');
         break;
       default:
         navigation?.navigate(title);

@@ -43,7 +43,8 @@ export default App = () => {
         <Stack.Screen name='JobSingle' component={JobSingle} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="InviteFriend" component={InviteFriend} />
-       
+    
+      
        
       </Stack.Navigator>
     </NavigationContainer>

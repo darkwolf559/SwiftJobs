@@ -16,8 +16,7 @@ const HomeScreen = () => {
   
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
-    // You can add navigation here like:
-    // navigation.navigate(tabName);
+    
   };
 
   const toggleDrawer = () => {

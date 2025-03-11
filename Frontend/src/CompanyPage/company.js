@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 
 import { 
   View, 
@@ -17,7 +18,7 @@ import axios from 'axios';
 const openLink = (url) => {
   Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
 };
-const Company = () => {
+const Company = ({navigation}) => {
   const defaultCompanyInfo = {
     name: 'Swift Jobs',
     services:'Designing/Developing',
@@ -124,6 +125,24 @@ const Company = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+            {/* Header */}
+            <LinearGradient 
+              colors={["#623AA2", "#F97794"]} 
+              style={styles.header}
+            >
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Icon name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>COMPANIES</Text>
+              <TouchableOpacity style={styles.searchButton}>
+                <Icon name="search" size={24} color="white" />
+              </TouchableOpacity>
+            </LinearGradient>
+            </View>
       <Image 
         source={require('../assets/building.jpg')} 
         style={styles.headerImage} 
@@ -232,7 +251,19 @@ const Company = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flexGrow: 1,backgroundColor: '#f5f5f5',
+  header: {
+    height: 60,
+    flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',paddingHorizontal: 15,
+  },
+  backButton: {
+    padding: 10,
+  },
+  searchButton: {
+    padding: 10,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,fontWeight: 'bold',},container: {flexGrow: 1,backgroundColor: '#f5f5f5',
   },
   headerImage: {width: '100%',height: 200,
   },

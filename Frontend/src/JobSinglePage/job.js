@@ -1,12 +1,57 @@
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Button } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Button,TextInput, Alert} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Company from './CompanyPage/company';
+import Company from '../CompanyPage/company';
+import axios from 'axios';
+
 
 
 const JobSingle = () => {
   const [activeTab, setActiveTab] = useState('Description');
   const [jobData, setJobData] = useState(null);
+  const [userRating, setUserRating] = useState(0);
+  const [userComment, setUserComment] = useState('');
+  const [reviews, setReviews] = useState([]);
+
+  const [ratingStats, setRatingStats] = useState({
+    5: 150,
+    4: 63,
+    3: 15,
+    2: 6,
+    1: 20
+  });
+
+
+  const submitReview = () => {
+    if (userRating === 0) {
+      Alert.alert('Error', 'Please select a rating');
+      return;
+    }
+
+    const newReview = {
+      id: Date.now().toString(),
+      name: 'User',
+      rating: userRating,
+      comment: userComment,
+      date: new Date().toLocaleDateString(),
+      avatar: null
+    };
+
+    setReviews([newReview, ...reviews]);
+    
+ 
+    setRatingStats(prevStats => ({
+      ...prevStats,
+      [userRating]: (prevStats[userRating] || 0) + 1
+    }));
+    
+    
+   
+    setUserRating(0);
+    setUserComment('');
+    
+    Alert.alert('Success', 'Your review has been submitted!');
+  };
 
  
   const initial = {
@@ -14,7 +59,7 @@ const JobSingle = () => {
     salary: "$75,000 - $90,000 a year",
     jobType: "Part Time",
     companyName: "Swift Jobs",
-    companyLogo: require('./assets/company.jpg'),
+    companyLogo: require('../assets/company.jpg'),
     daysLeft: "10 Days Left",
     location: "Sri Lanka",
     qualifications: [
@@ -62,9 +107,106 @@ const JobSingle = () => {
             </View>
           </>
         );
-      case 'Company':
-        return <Company></Company>;
-      default:
+        case 'Company':
+          return (
+           <Company/>
+          );
+          case 'Review':
+            return (
+              <View style={styles.reviewContainer}>
+                
+                <View style={styles.ratingStatsContainer}>
+                  {[5, 4, 3, 2, 1].map(rating => (
+                    <View key={rating} style={styles.ratingRow}>
+                      <View style={styles.stars}>
+                        {[...Array(5)].map((_, i) => (
+                          <Text key={i} style={styles.starIcon}>
+                            {i < rating ? '★' : '☆'}
+                          </Text>
+                        ))}
+                      </View>
+                      <View style={styles.progressBarContainer}>
+                        <View 
+                          style={[
+                            styles.progressBar, 
+                            { 
+                              width: `${(ratingStats[rating] / Object.values(ratingStats).reduce((a, b) => a + b, 0)) * 100}%`,
+                              backgroundColor: '#9370DB' 
+                            }
+                          ]} 
+                        />
+                      </View>
+                      <Text style={styles.ratingCount}>{ratingStats[rating]}</Text>
+                    </View>
+                  ))}
+                </View>
+    
+              
+                <Text style={styles.yourRatingText}>YOUR RATING</Text>
+                <View style={styles.userRatingContainer}>
+                  <View style={styles.starRatingContainer}>
+                    {[1, 2, 3, 4, 5].map(rating => (
+                      <TouchableOpacity
+                        key={rating}
+                        onPress={() => setUserRating(rating)}
+                        style={styles.ratingButton}
+                      >
+                        <Text style={styles.starIcon}>
+                          {userRating >= rating ? '★' : '☆'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  
+                  <TextInput
+                    style={styles.commentInput}
+                    placeholder="Enter your comment"
+                    value={userComment}
+                    onChangeText={setUserComment}
+                    multiline
+                  />
+                  
+                  <TouchableOpacity 
+                    style={styles.submitButton}
+                    onPress={submitReview}
+                  >
+                    <Text style={styles.submitButtonText}>SUBMIT</Text>
+                  </TouchableOpacity>
+                </View>
+    
+      
+                <View style={styles.reviewsList}>
+                  {reviews.length > 0 ? (
+                    reviews.map(review => (
+                      <View key={review.id} style={styles.reviewItem}>
+                        <View style={styles.reviewHeader}>
+                          <View style={styles.reviewerInfo}>
+                            <View style={styles.avatarContainer}>
+                            <Icon name="person-circle" size={30} color="#fff" />
+                            </View>
+                            <View>
+                              <Text style={styles.reviewerName}>{review.name}</Text>
+                              <Text style={styles.reviewDate}>{review.date}</Text>
+                            </View>
+                          </View>
+                          <View style={styles.reviewRating}>
+                            {[...Array(5)].map((_, i) => (
+                              <Text key={i} style={styles.starIcon}>
+                                {i < review.rating ? '★' : '☆'}
+                              </Text>
+                            ))}
+                          </View>
+                        </View>
+                        <Text style={styles.reviewComment}>{review.comment}</Text>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={styles.noReviewsText}>No reviews available for this job posting yet. Be the first to review!</Text>
+                  )}
+                </View>
+              </View>
+            );
+            default:
         return null;
     }
   };
@@ -94,7 +236,7 @@ const JobSingle = () => {
         </View>
 
         <View style={styles.tabContainer}>
-          {['Description', 'Company'].map((tab) => (
+          {['Description', 'Company','Review'].map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -164,20 +306,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#f8f8f8', borderRadius: 8, padding: 5, marginBottom: 3, marginTop: 10
   },
   tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
+    flex: 1,paddingVertical: 10,alignItems: 'center',
   },
   activeTab: {
     backgroundColor: '#7b5cff',borderRadius: 8,
   },
   tabText: {
-    fontSize: 14,
-    color: '#000',
+    fontSize: 14,color: '#000',
   },
   activeTabText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#fff',fontWeight: 'bold',
   },
   points: {
     margin: 5
@@ -188,6 +326,94 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 19,marginLeft: 100,width: 200,color:"black"
   },
+   reviewContainer: {
+    marginTop: 15,
+  },
+  ratingStatsContainer: {
+    backgroundColor: '#fff',padding: 15,borderRadius: 10,marginBottom: 20,shadowColor: '#000',shadowOpacity: 0.1,shadowRadius: 4,elevation: 3,
+  },
+  ratingRow: {
+    flexDirection: 'row',alignItems: 'center',marginBottom: 8,
+  },
+  stars: {
+    flexDirection: 'row',
+    width: 90,
+  },
+  starIcon: {
+    fontSize: 18,
+    color: '#FFD700',
+  },
+  progressBarContainer: {
+    flex: 1,height: 10,backgroundColor: '#f0f0f0',borderRadius: 5,marginHorizontal: 10,
+  },
+  progressBar: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  ratingCount: {
+    width: 30,textAlign: 'right',color: '#666',
+  },
+  yourRatingText: {
+    fontSize: 18,fontWeight: 'bold',marginBottom: 10,marginTop: 10,
+  },
+  userRatingContainer: {
+    backgroundColor: '#fff',padding: 15,borderRadius: 10,marginBottom: 20,shadowColor: '#000',shadowOpacity: 0.1,shadowRadius: 4,elevation: 3,
+  },
+  starRatingContainer: {
+    flexDirection: 'row',justifyContent: 'center',marginBottom: 15,
+  },
+  ratingButton: {
+    padding: 10,
+  },
+  commentInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',borderRadius: 5,padding: 10,minHeight: 80,textAlignVertical: 'top',marginBottom: 15,
+  },
+  submitButton: {
+    backgroundColor: '#9370DB',
+    borderRadius: 5,
+    padding: 15,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  reviewsList: {
+    marginTop: 20,
+  },
+  reviewItem: {
+    backgroundColor: '#fff',padding: 15,borderRadius: 10,marginBottom: 15,shadowColor: '#000',shadowOpacity: 0.1,shadowRadius: 2,elevation: 2,
+  },
+  reviewHeader: {
+    flexDirection: 'row',justifyContent: 'space-between',marginBottom: 10,
+  },
+  reviewerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    width: 40,height: 40,borderRadius: 20,backgroundColor: '#9370DB',justifyContent: 'center',alignItems: 'center', marginRight: 10,
+  },
+  avatarText: {
+    color: '#fff',fontWeight: 'bold',fontSize: 18,
+  },
+  reviewerName: {
+    fontWeight: 'bold',fontSize: 16,
+  },
+  reviewDate: {
+    color: '#888',fontSize: 12,
+  },
+  reviewRating: {
+    flexDirection: 'row',
+  },
+  reviewComment: {
+    fontSize: 14,lineHeight: 20,color: '#333',
+  },
+  noReviewsText: {
+    textAlign: 'center',color: '#666',fontSize: 16,padding: 20,
+  }
 });
 
 export default JobSingle;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 
 import { 
   View, 
@@ -17,15 +18,34 @@ import axios from 'axios';
 const openLink = (url) => {
   Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
 };
-const Company = () => {
+const Company = ({navigation}) => {
   const defaultCompanyInfo = {
     name: 'Swift Jobs',
+    services:'Designing/Developing',
     location: 'Sri Lanka',
     description: 'At Swift Jobs, we specialize in designing and developing high-quality mobile apps and websites that help businesses grow.',
     contactEmail: 'swiftjobcompanypvtltd@gmail.com',
-    contactPhone: '+94 763459855',
+    contactPhone: '+94 756349987',
     website: 'www.swiftjobsservices.com'
   };
+  const [companyInfo, setCompanyInfo] = useState(defaultCompanyInfo);
+
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      try {
+        const companyResponse = await axios.get('http://192.168.43.152:5000/api/company');
+        setCompanyInfo(companyResponse.data || defaultCompanyInfo);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'Unable to fetch company information');
+        setCompanyInfo(defaultCompanyInfo);
+      }
+    };
+
+    fetchCompanyData();
+  }, []);
+
+  const { name,services, location, description, contactEmail, contactPhone, website } = companyInfo;
 
   const defaultJobVacancies = [
     {
@@ -33,18 +53,19 @@ const Company = () => {
       title: 'UI/UX Designing and Developing',
       company: 'SwiftJobs (pvt) Ltd, Sri Lanka',
       description: 'UI/UX designers create intuitive and visually appealing digital experiences by combining design aesthetics with user-centered principles.',
-      salaryRange: 'LKR50,000 - LKR100,000'
+      salaryRange: 'LKR50,000 - LKR100,000',
+      icon:"logo-windows"
     },
     {
       id: '2',
       title: 'Graphic Designing',
       company: 'SwiftJobs (pvt) Ltd, Sri Lanka',
       description: 'Swift Jobs is looking to hire talented designers to join our creative team! We seek passionate graphic designers who can craft visually stunning and user-friendly experiences.',
-      salaryRange: 'LKR100,000 - LKR200,000'
+      salaryRange: 'LKR100,000 - LKR200,000',
+      icon:"tv"
     }
   ];
 
-  const [companyInfo, setCompanyInfo] = useState(defaultCompanyInfo);
   const [jobVacancies, setJobVacancies] = useState(defaultJobVacancies);
 
   useEffect(() => {
@@ -85,7 +106,9 @@ const Company = () => {
         color="#357EC7"
       />
         <View>
+        <TouchableOpacity onPress={() => navigation.navigate('JobSingle', { jobId: job.id })}>
           <Text style={styles.overTopic}>{job.title}</Text>
+          </TouchableOpacity>
           <Text style={styles.overFeature}>{job.company}</Text>
         </View>
       </View>
@@ -102,13 +125,31 @@ const Company = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+            {/* Header */}
+            <LinearGradient 
+              colors={["#623AA2", "#F97794"]} 
+              style={styles.header}
+            >
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Icon name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>COMPANIES</Text>
+              <TouchableOpacity style={styles.searchButton}>
+                <Icon name="search" size={24} color="white" />
+              </TouchableOpacity>
+            </LinearGradient>
+            </View>
       <Image 
-        source={require('./assets/building.jpg')} 
+        source={require('../assets/building.jpg')} 
         style={styles.headerImage} 
       />
       <View style={styles.card}>
         <Image 
-          source={require('./assets/company.jpg')} 
+          source={require('../assets/company.jpg')} 
           style={styles.logo} 
         />
         <View>
@@ -131,7 +172,7 @@ const Company = () => {
             <Icon name="storefront" size={30} color="#601cd6" style={{ marginTop: 10 }} />
               <View>
                 <Text style={styles.overTopic}>Services</Text>
-                <Text style={styles.overFeature}>Designing / Developing</Text>
+                <Text style={styles.overFeature}>{companyInfo.services}</Text>
               </View>
             </View>
             
@@ -140,7 +181,7 @@ const Company = () => {
             <Icon name="location" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Location</Text>
-                <Text style={styles.overFeature}>Colombo,Sri Lanka</Text>
+                <Text style={styles.overFeature}>{companyInfo.location}</Text>
               </View>
             </View>
             
@@ -149,7 +190,7 @@ const Company = () => {
             <Icon name="call" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Phone Number</Text>
-                <Text style={styles.overFeature}>+94 763459855</Text>
+                <Text style={styles.overFeature}>{companyInfo.contactPhone}</Text>
               </View>
             </View>
             
@@ -157,7 +198,7 @@ const Company = () => {
             <Icon name="mail" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Email Address</Text>
-                <Text style={styles.overFeature}>swiftjobcompanypvtltd@gmail.com</Text>
+                <Text style={styles.overFeature}>{companyInfo.contactEmail}</Text>
               </View>
             </View>
             
@@ -166,7 +207,7 @@ const Company = () => {
             <Icon name="logo-chrome" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
               <View>
                 <Text style={styles.overTopic}>Website</Text>
-                <Text style={styles.overFeature}>www.swiftjobsservices.com</Text>
+                <Text style={styles.overFeature}>{companyInfo.website}</Text>
               </View>
             </View>
             
@@ -210,7 +251,19 @@ const Company = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flexGrow: 1,backgroundColor: '#f5f5f5',
+  header: {
+    height: 60,
+    flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',paddingHorizontal: 15,
+  },
+  backButton: {
+    padding: 10,
+  },
+  searchButton: {
+    padding: 10,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,fontWeight: 'bold',},container: {flexGrow: 1,backgroundColor: '#f5f5f5',
   },
   headerImage: {width: '100%',height: 200,
   },

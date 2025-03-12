@@ -23,7 +23,7 @@ router.put("/", authMiddleware, async (req, res) => {
             fullName, dateOfBirth, gender, homeAddress, country, zipCode, 
             college, degree, higherSecondaryEducation, mobileNumber
         } = req.body;
-        console.log('Hey')
+        console.log('Hey');
 
         const updatedUser = await User.findByIdAndUpdate(
             req.user.id,
@@ -36,7 +36,7 @@ router.put("/", authMiddleware, async (req, res) => {
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
-        console.log('Hey')
+        console.log('Hey');
     }
 });
 

@@ -21,13 +21,13 @@ router.put("/", authMiddleware, async (req, res) => {
     try {
         const { 
             fullName, dateOfBirth, gender, homeAddress, country, zipCode, 
-            college, degree, higherSecondaryEducation, mobileNumber
+            college, degree, higherSecondaryEducation, mobileNumber, username
         } = req.body;
         
 
         const updatedUser = await User.findByIdAndUpdate(
             req.user.id,
-            { fullName, dateOfBirth, gender, homeAddress, country, zipCode, college, degree, higherSecondaryEducation, mobileNumber },
+            { fullName, dateOfBirth, gender, homeAddress, country, zipCode, college, degree, higherSecondaryEducation, mobileNumber, username },
             { new: true, runValidators: true }
         );
 

@@ -9,43 +9,34 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
     try {
-        const { fullName, email, password, username, mobileNumber, dateOfBirth, gender, homeAddress, country, zipCode, college, degree, higherSecondaryEducation } = req.body;
+        const { fullName, email, password, username, mobileNumber } = req.body;
 
-        if (!fullName || !email || !password || !username || !mobileNumber || !dateOfBirth || !gender || !homeAddress || !country || !zipCode || !college || !degree || !higherSecondaryEducation) {
-            return res.status(400).json({ message: "All fields are required" });
+        // Check if the username already exists
+        let existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ message: "Username is already taken" });
         }
 
-        let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ message: "User already exists" });
+        // Check if the email already exists
+        existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email is already registered" });
+        }
 
+        // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        user = new User({
-            fullName,
-            email,
-            password: hashedPassword,
-            username,
-            mobileNumber,
-            dateOfBirth,
-            gender,
-            homeAddress,
-            country,
-            zipCode,
-            college,
-            degree,
-            higherSecondaryEducation
-        });
-
+        // Create new user
+        const user = new User({ fullName, email, password: hashedPassword, username, mobileNumber });
         await user.save();
 
+        // Generate JWT Token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-        res.status(201).json({ token, user: { id: user._id, fullName, email, username, mobileNumber } });
+        res.status(201).json({ token, user: { id: user._id, fullName, email, username } });
 
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 });
-
-export default router;

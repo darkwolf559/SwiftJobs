@@ -22,6 +22,7 @@ router.post("/", async (req, res) => {
         let existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({ message: "Username is already taken" });
+            console.log("Username has taken log")
         }
 
         // Check if the email already exists
@@ -33,6 +34,7 @@ router.post("/", async (req, res) => {
         // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+        console.log('Yes password was passed')
 
         // Create new user
         const user = new User({

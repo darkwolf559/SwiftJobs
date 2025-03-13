@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "rea
 import Slider from "@react-native-community/slider";
 import { CheckBox, Button, Avatar, Image } from "react-native-elements";
 import LinearGradient from "react-native-linear-gradient";
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const FilterScreen = () => {
   const [salaryRange, setSalaryRange] = useState({ min: 200000, max: 800000 });

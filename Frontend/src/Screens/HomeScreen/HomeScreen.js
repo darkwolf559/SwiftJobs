@@ -16,8 +16,7 @@ const HomeScreen = () => {
   
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
-    // You can add navigation here like:
-    // navigation.navigate(tabName);
+ 
   };
 
   const toggleDrawer = () => {
@@ -37,7 +36,7 @@ const HomeScreen = () => {
 
 
       
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} >
           <FontAwesome name="sliders" size={24} color="white" />
         </TouchableOpacity>
 

@@ -3,16 +3,16 @@ import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Company from '../CompanyPage/company';
 import axios from 'axios';
+import { Linking } from 'react-native';
 
 
-
-const JobSingle = () => {
+const JobSingle = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('Description');
   const [jobData, setJobData] = useState(null);
   const [userRating, setUserRating] = useState(0);
   const [userComment, setUserComment] = useState('');
   const [reviews, setReviews] = useState([]);
-
+  const { jobId, companyInfo } = route.params || {};
   const [ratingStats, setRatingStats] = useState({
     5: 150,
     4: 63,
@@ -109,7 +109,89 @@ const JobSingle = () => {
         );
         case 'Company':
           return (
-           <Company/>
+            <View style={styles.companyTabContainer}>
+            {/* About Us Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionAbout}>About Us</Text>
+              <View style={styles.sectionContent}>
+                <Text style={styles.description}>{companyInfo?.description || 'Company description not available'}</Text>
+              </View>
+            </View>
+            
+            {/* Company Overview Section */}
+            <View style={{marginLeft: 20}}>
+              <View>
+                <Text style={styles.overview}>COMPANY OVERVIEW</Text>
+              </View>
+              
+              <View style={styles.details}>
+                <Icon name="storefront" size={30} color="#601cd6" style={{ marginTop: 10 }} />
+                <View>
+                  <Text style={styles.overTopic}>Services</Text>
+                  <Text style={styles.overFeature}>{companyInfo?.services || 'Service information not available'}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.details}>
+                <Icon name="location" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
+                <View>
+                  <Text style={styles.overTopic}>Location</Text>
+                  <Text style={styles.overFeature}>{companyInfo?.location || 'Location not available'}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.details}>
+                <Icon name="call" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
+                <View>
+                  <Text style={styles.overTopic}>Phone Number</Text>
+                  <Text style={styles.overFeature}>{companyInfo?.contactPhone || 'Phone number not available'}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.details}>
+                <Icon name="mail" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
+                <View>
+                  <Text style={styles.overTopic}>Email Address</Text>
+                  <Text style={styles.overFeature}>{companyInfo?.contactEmail || 'Email not available'}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.details}>
+                <Icon name="logo-chrome" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
+                <View>
+                  <Text style={styles.overTopic}>Website</Text>
+                  <Text style={styles.overFeature}>{companyInfo?.website || 'Website not available'}</Text>
+                </View>
+              </View>
+              
+              {/* Social Profile Section */}
+              <View>
+                <Text style={styles.overview}>SOCIAL PROFILE</Text>
+              </View>
+              
+              <View style={styles.details}>
+                <TouchableOpacity onPress={() => openLink('https://www.linkedin.com/swiftjobs')}>
+                  <Icon name="logo-linkedin" size={35} color="#0077B5" style={{ marginTop: 10,marginLeft:30 }}/>
+                </TouchableOpacity>
+                
+                <TouchableOpacity onPress={() => openLink('https://twitter.com/swiftjobs')}>
+                  <Icon name="logo-twitter" size={35} color="#1DA1F2" style={{ marginTop: 10,marginLeft:30}}/>
+                </TouchableOpacity>
+                
+                <TouchableOpacity onPress={() => openLink('https://wa.me/94751239976')}>
+                  <Icon name="logo-whatsapp" size={35} color="#128C7E" style={{ marginTop: 10,marginLeft:30}}/>
+                </TouchableOpacity>
+                
+                <TouchableOpacity onPress={() => openLink('https://youtube.com/swiftjobs')}>
+                  <Icon name="logo-youtube" size={35} color="#FF0000" style={{ marginTop: 10,marginLeft:30}}/>
+                </TouchableOpacity>
+                
+                <TouchableOpacity onPress={() => openLink('https://www.facebook.com/swiftjobs')}>
+                  <Icon name="logo-facebook" size={35} color="#1877F2" style={{ marginTop: 10,marginLeft:30}}/>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
           );
           case 'Review':
             return (
@@ -271,17 +353,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 5,
   },
   title: {
-    fontSize: 18, fontWeight: 'bold', textAlign: 'center', color: '#333', marginBottom: 5,
-  },
-  row: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10,
-  },
-  salary: {
-    fontSize: 14, color: '#666', marginRight: 10,
-  },
-  fullTime: {
-    backgroundColor: '#ddd', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5, fontSize: 12, color: '#333',
-  },
+    fontSize: 18, fontWeight: 'bold', textAlign: 'center', color: '#333', marginBottom: 5,},
+  row: {flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10,},
+  salary: {fontSize: 14, color: '#666', marginRight: 10,},
+  fullTime: {backgroundColor: '#ddd', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5, fontSize: 12, color: '#333',},
   divider: {
     height: 1,backgroundColor: '#ccc',marginVertical: 10,
   },
@@ -350,15 +425,9 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 5,
   },
-  ratingCount: {
-    width: 30,textAlign: 'right',color: '#666',
-  },
-  yourRatingText: {
-    fontSize: 18,fontWeight: 'bold',marginBottom: 10,marginTop: 10,
-  },
-  userRatingContainer: {
-    backgroundColor: '#fff',padding: 15,borderRadius: 10,marginBottom: 20,shadowColor: '#000',shadowOpacity: 0.1,shadowRadius: 4,elevation: 3,
-  },
+  ratingCount: {width: 30,textAlign: 'right',color: '#666',},
+  yourRatingText: {fontSize: 18,fontWeight: 'bold',marginBottom: 10,marginTop: 10,},
+  userRatingContainer: {backgroundColor: '#fff',padding: 15,borderRadius: 10,marginBottom: 20,shadowColor: '#000',shadowOpacity: 0.1,shadowRadius: 4,elevation: 3,},
   starRatingContainer: {
     flexDirection: 'row',justifyContent: 'center',marginBottom: 15,
   },
@@ -366,14 +435,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   commentInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',borderRadius: 5,padding: 10,minHeight: 80,textAlignVertical: 'top',marginBottom: 15,
+    borderWidth: 1,borderColor: '#ddd',borderRadius: 5,padding: 10,minHeight: 80,textAlignVertical: 'top',marginBottom: 15,
   },
   submitButton: {
-    backgroundColor: '#9370DB',
-    borderRadius: 5,
-    padding: 15,
-    alignItems: 'center',
+    backgroundColor: '#9370DB',borderRadius: 5,padding: 15,alignItems: 'center',
   },
   submitButtonText: {
     color: '#fff',
@@ -393,27 +458,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    width: 40,height: 40,borderRadius: 20,backgroundColor: '#9370DB',justifyContent: 'center',alignItems: 'center', marginRight: 10,
-  },
+  avatarContainer: {width: 40,height: 40,borderRadius: 20,backgroundColor: '#9370DB',justifyContent: 'center',alignItems: 'center', marginRight: 10,},
   avatarText: {
     color: '#fff',fontWeight: 'bold',fontSize: 18,
   },
   reviewerName: {
     fontWeight: 'bold',fontSize: 16,
   },
-  reviewDate: {
-    color: '#888',fontSize: 12,
-  },
-  reviewRating: {
-    flexDirection: 'row',
-  },
-  reviewComment: {
-    fontSize: 14,lineHeight: 20,color: '#333',
-  },
+  reviewDate: {color: '#888',fontSize: 12,},
+  reviewRating: {flexDirection: 'row',},
+  reviewComment: {fontSize: 14,lineHeight: 20,color: '#333',},
   noReviewsText: {
     textAlign: 'center',color: '#666',fontSize: 16,padding: 20,
-  }
+  },
+  companyTabContainer: {
+    padding: 10,marginLeft:-23
+  },
+  section: {
+    marginVertical: 15,
+  },
+  sectionAbout: {fontSize: 20,fontWeight: 'bold',color: 'black',marginBottom: 10,marginTop: 10,marginLeft: 20},
+  sectionContent: {backgroundColor: 'white',borderRadius: 12,padding: 15,marginLeft: 10},
+  description: {fontSize: 16,color: '#333',},
+  overview: {fontSize: 20,marginTop: 20,fontWeight: 'bold',color: 'black',marginBottom: 10},
+  details: {backgroundColor: 'white',width: 350,flexDirection: 'row',marginTop: 5,},
+  overTopic: {marginTop: 10,marginLeft: 7,fontWeight: "bold",color: "black"},
+  overFeature: {margin: 4,marginLeft: 7},
 });
 
 export default JobSingle;

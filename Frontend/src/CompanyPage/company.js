@@ -106,7 +106,18 @@ const Company = ({navigation}) => {
         color="#357EC7"
       />
         <View>
-        <TouchableOpacity onPress={() => navigation.navigate('JobSingle', { jobId: job.id })}>
+        <TouchableOpacity onPress={() => navigation.navigate('JobSingle', { 
+          jobId: job.id,
+          companyInfo: {
+            name: companyInfo.name,
+            description: companyInfo.description,
+            services: companyInfo.services,
+            location: companyInfo.location,
+            contactPhone: companyInfo.contactPhone,
+            contactEmail: companyInfo.contactEmail,
+            website: companyInfo.website
+          }
+        })}>
           <Text style={styles.overTopic}>{job.title}</Text>
           </TouchableOpacity>
           <Text style={styles.overFeature}>{job.company}</Text>

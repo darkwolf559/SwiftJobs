@@ -4,10 +4,10 @@ import Slider from "@react-native-community/slider";
 import { CheckBox, Button, Avatar, Image } from "react-native-elements";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import { useNavigation } from "@react-navigation/native";
 const FilterScreen = () => {
   const [salaryRange, setSalaryRange] = useState({ min: 200000, max: 800000 });
-
+  const navigation = useNavigation();
   const initialJobTypes = {
     fullTime: true,
     partTime: false,
@@ -53,14 +53,18 @@ const FilterScreen = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#6a11cb", "#2575fc"]} style={styles.header}>
-        <TouchableOpacity onPress={() => Alert.alert("Menu clicked!")}> 
-          <Image 
-            source={require('../MyProject/Swift-Jobs-/photos/menu.png')} 
-            style={{ width: 30, height: 30 }} 
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>FILTER</Text>
+      <LinearGradient 
+              colors={["#623AA2", "#F97794"]} 
+              style={styles.header}
+            >
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Icon name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>FILTER</Text>
+              <View style={{ width: 24 }}/>
       </LinearGradient>
 
       <ScrollView contentContainerStyle={[styles.filterBox, { paddingBottom: 100 }]} showsVerticalScrollIndicator={true}>
@@ -127,10 +131,13 @@ const FilterScreen = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <LinearGradient colors={["#6a11cb", "#2575fc"]} style={styles.gradientButton}>
-            <Button title="SHOW RESULT" buttonStyle={styles.searchButton} onPress={handleSearch} />
-          </LinearGradient>
-          <Button title="CLEAR" type="outline" buttonStyle={styles.clearButton} onPress={clearFilters} />
+        <LinearGradient colors={["#601cd6", "#601cd6"]} style={styles.gradientButton}>
+        <Button title="SHOW RESULT" buttonStyle={styles.searchButton} onPress={handleSearch} />
+      </LinearGradient>
+
+      <Button title="CLEAR" type="outline" buttonStyle={styles.clearButton} titleStyle={{ color: "#601cd6" }} onPress={clearFilters} 
+/>
+
         </View>
       </ScrollView>
 
@@ -141,8 +148,6 @@ const FilterScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  header: { flexDirection: "row", alignItems: "center", padding: 15 },
-  headerText: { color: "white", fontSize: 18, fontWeight: "bold", marginLeft: 15 },
   filterBox: { backgroundColor: "white", margin: 10, padding: 20, borderRadius: 10, elevation: 3 },
   label: { fontSize: 16, fontWeight: "bold", marginVertical: 10 },
   salaryText: { fontSize: 14, marginBottom: 5 },
@@ -154,6 +159,14 @@ const styles = StyleSheet.create({
   selectedExperience: { color: "#6a11cb", fontWeight: "bold", textDecorationLine: "underline" },
   buttonContainer: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
   avatar: { position: "absolute", bottom: 20, right: 20 },
+  header: {height: 60,flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',paddingHorizontal: 15,},
+  backButton: {padding: 10,},
+  headerTitle: {color: '#fff',fontSize: 18,fontWeight: 'bold',},
+  searchButton:{color:"#6a11cb"},
+  gradientButton: {borderRadius: 5,overflow: "hidden",marginBottom: 10,},
+  searchButton: {backgroundColor: "transparent", paddingVertical: 12,},
+  clearButton: {borderColor: "#601cd6", borderWidth: 2,  paddingVertical: 12,backgroundColor: "transparent",},
+  
 });
 
 export default FilterScreen;

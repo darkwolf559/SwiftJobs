@@ -45,7 +45,7 @@ export default App = () => {
         <Stack.Screen name="InviteFriend" component={InviteFriend} />
         <Stack.Screen name="Company" component={Company} />
         <Stack.Screen name="JobSingle" component={JobSingle} />
-        <Stack.Screen name="FilterScreen" component={FilterScreen} />
+   
 
        
       </Stack.Navigator>

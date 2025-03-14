@@ -16,6 +16,8 @@ import InviteFriend from './src/Screens/InviteFriend/InviteFriend.js';
 import Company from './src/CompanyPage/company.js';
 import JobSingle from './src/JobSinglePage/job.js';
 import FilterScreen from './src/FilterPage/filter.js';
+import JobsList from './src/Screens/JobList/JobList.js';
+
 
 
 const Stack = createNativeStackNavigator();
@@ -45,8 +47,8 @@ export default App = () => {
         <Stack.Screen name="InviteFriend" component={InviteFriend} />
         <Stack.Screen name="Company" component={Company} />
         <Stack.Screen name="JobSingle" component={JobSingle} />
-   
-
+        <Stack.Screen name="FilterScreen" component={FilterScreen} />
+        <Stack.Screen name="JobsList" component={JobsList} />
        
       </Stack.Navigator>
     </NavigationContainer>

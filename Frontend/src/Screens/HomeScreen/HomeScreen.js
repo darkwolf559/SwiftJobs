@@ -134,7 +134,7 @@ const HomeScreen = () => {
 
 
       
-        <TouchableOpacity style={styles.iconButton} >
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')} >
           <FontAwesome name="sliders" size={24} color="white" />
         </TouchableOpacity>
 

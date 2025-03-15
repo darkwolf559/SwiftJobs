@@ -103,6 +103,7 @@ const FilterScreen = () => {
         />
 
         <Text style={styles.label}>Job Type</Text>
+        
         <View style={styles.jobTypeContainer}>
           {Object.keys(jobTypes).map((type) => (
             <CheckBox
@@ -115,8 +116,9 @@ const FilterScreen = () => {
             />
           ))}
         </View>
-
+        
         <Text style={styles.label}>Experience Level</Text>
+         
         <View style={styles.experienceContainer}>
           {["Entry Level", "Mid Level", "Senior Level"].map((level) => (
             <TouchableOpacity key={level} onPress={() => setExperience(level)}>

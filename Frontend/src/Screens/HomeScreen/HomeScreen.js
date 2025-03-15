@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import TabNavigation from "../../compenents/TabNavigation";
 import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Avatar } from "react-native-elements";
 const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
@@ -117,9 +118,11 @@ const HomeScreen = () => {
       <Text style={styles.sectionTitle}>{title}</Text>
       <TouchableOpacity onPress={onSeeAll}>
         <Text style={styles.seeAllText}>See All</Text>
+        
       </TouchableOpacity>
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
@@ -132,7 +135,7 @@ const HomeScreen = () => {
           <Text style={styles.headerText}>HOME</Text>
         </View>
 
-
+        
       
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')} >
           <FontAwesome name="sliders" size={24} color="white" />
@@ -141,7 +144,18 @@ const HomeScreen = () => {
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-    
+     
+
+      <TouchableOpacity 
+  style={styles.avatar}
+  onPress={() => navigation.navigate('Chatbot')}
+>
+  <Image 
+    source={require('../../assets/bot.png')}
+    style={{ width: 160, height: 150 }} 
+  />
+</TouchableOpacity>
+
     {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('Categories'))}
     <ScrollView 
       horizontal 
@@ -170,7 +184,7 @@ const HomeScreen = () => {
         <TouchableOpacity
           key={job.id}
           style={styles.jobCard}
-          onPress={() => navigation.navigate('JobDetails', { job })}
+          onPress={() => navigation.navigate('JobSingle', { job })}
         >
           <View style={styles.jobHeader}>
             <Image
@@ -233,6 +247,7 @@ const HomeScreen = () => {
             source={{ uri: testimonial.image }}
             style={styles.testimonialImage}
           />
+          
           <Text style={styles.testimonialName}>{testimonial.name}</Text>
           <Text style={styles.testimonialRole}>{testimonial.role}</Text>
           <Text style={styles.testimonialText}>{testimonial.text}</Text>
@@ -303,6 +318,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+
   seeAllText: {
     color: '#623AA2',
     fontSize: 16,
@@ -430,6 +446,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  
   companyLogo: {
     width: 60,
     height: 60,
@@ -462,6 +479,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  avatar: {
+      position: 'absolute',
+      right:30,
+      top:520,
+      zIndex: 999, 
+      elevation: 1000,  
+      width: 70,
+      height: 70,
+      borderRadius: 35, 
+      backgroundColor: '#fff',
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    
+  },
+  
   testimonialImage: {
     width: 60,
     height: 60,

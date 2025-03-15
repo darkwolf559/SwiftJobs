@@ -17,6 +17,8 @@ import Company from './src/CompanyPage/company.js';
 import JobSingle from './src/JobSinglePage/job.js';
 import FilterScreen from './src/FilterPage/filter.js';
 import JobsList from './src/Screens/JobList/JobList.js';
+import Chatbot from './src/Chatbot/Chatbot.js';
+
 
 
 
@@ -49,6 +51,8 @@ export default App = () => {
         <Stack.Screen name="JobSingle" component={JobSingle} />
         <Stack.Screen name="FilterScreen" component={FilterScreen} />
         <Stack.Screen name="JobsList" component={JobsList} />
+        <Stack.Screen name="Chatbot" component={Chatbot} />
+     
        
       </Stack.Navigator>
     </NavigationContainer>

@@ -11,7 +11,7 @@ const jobSchema = new mongoose.Schema({
     workingHoursPerDay: { type: Number, required: true },
     employerMobile: { type: String, required: true },
     applicationDeadline: { type: Date, required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Employer's ID
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 }, { timestamps: true });
 
 const Job = mongoose.model("Job", jobSchema);

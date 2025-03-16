@@ -1,40 +1,34 @@
-import Job from "../models/job.js"; // Ensure the model exists
+import Job from "../models/job.js";
 
-// Create a new job post
 export const createJob = async (req, res) => {
     try {
-        const { title, description, payment, location, duration, category, requiredSkills, workingHours, employerMobile, applicationDeadline } = req.body;
+        const { jobTitle, jobDescription, payment, location, duration, jobCategory, requiredSkills, workingHoursPerDay, employerMobile, applicationDeadline } = req.body;
 
-        if (!title || !description || !payment || !location || !duration || !category || !requiredSkills || !workingHours || !employerMobile || !applicationDeadline) {
-            return res.status(400).json({ message: "All fields are required." });
-        }
-
-        const newJob = new Job({
-            title,
-            description,
+        const job = new Job({
+            jobTitle,
+            jobDescription,
             payment,
             location,
             duration,
-            category,
+            jobCategory,
             requiredSkills,
-            workingHours,
+            workingHoursPerDay,
             employerMobile,
             applicationDeadline,
-            postedBy: req.user.id, // Ensure user authentication
+            createdBy: req.user.id,
         });
 
-        await newJob.save();
-        res.status(201).json({ message: "Job posted successfully", job: newJob });
+        await job.save();
+        res.status(201).json({ message: "Job posted successfully", job });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-// Get all job listings
-export const getAllJobs = async (req, res) => {
+export const getJobs = async (req, res) => {
     try {
-        const jobs = await Job.find().populate("postedBy", "fullName email");
-        res.status(200).json(jobs);
+        const jobs = await Job.find().populate("createdBy", "fullName email");
+        res.json(jobs);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

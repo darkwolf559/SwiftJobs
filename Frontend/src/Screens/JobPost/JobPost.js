@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
-  TextInput, 
-  TouchableOpacity, 
-  SafeAreaView,
-  StatusBar,
-  Platform,
-  KeyboardAvoidingView,
+import { StyleSheet, View, Text, ScrollView,  TextInput,  TouchableOpacity,  SafeAreaView, StatusBar, Platform, KeyboardAvoidingView,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+const { width } = Dimensions.get('window');
+import { useNavigation } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
+import { Dimensions } from 'react-native';
+
 
 const JobPostingPage = () => {
-  
+ 
+  const navigation = useNavigation();
   const [formData, setFormData] = useState({
     jobTitle: '',
     jobDescription: '',
@@ -119,13 +116,21 @@ const JobPostingPage = () => {
       <StatusBar backgroundColor="#8a4bff" barStyle="light-content" />
       
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>POST A JOB</Text>
-        <View style={styles.headerRight} />
-      </View>
+       <LinearGradient 
+              colors={["#623AA2", "#F97794"]} 
+              style={styles.header}
+            >
+              <TouchableOpacity 
+                style={styles.iconButton} 
+                onPress={() => navigation.goBack()}
+              >
+                <Icon name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+              <View style={styles.headerCenter}>
+                <Text style={styles.headerTitle}>POST JOB</Text>
+              </View>
+            
+            </LinearGradient>
       
       {/* Main Content */}
       <KeyboardAvoidingView
@@ -198,13 +203,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    width: width,
     height: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 15,
-    backgroundColor: '#8a4bff',
-    // Gradient effect will be applied via a library like react-native-linear-gradient
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  iconButton: {
+    padding: 5
   },
   backButton: {
     width: 40,
@@ -212,18 +233,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerRight: {
-    width: 40,
-  },
+ 
   scrollView: {
     flex: 1,
   },

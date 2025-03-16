@@ -139,20 +139,20 @@ const Company = ({navigation}) => {
     <View style={styles.container}>
             {/* Header */}
             <LinearGradient 
-              colors={["#623AA2", "#F97794"]} 
-              style={styles.header}
-            >
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-              >
-                <Icon name="arrow-back" size={24} color="white" />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>COMPANIES</Text>
-              <TouchableOpacity style={styles.searchButton}>
-                <Icon name="search" size={24} color="white" />
-              </TouchableOpacity>
-            </LinearGradient>
+             colors={["#623AA2", "#F97794"]} 
+             style={styles.header}
+           >
+             <TouchableOpacity 
+               style={styles.backButton} 
+               onPress={() => navigation.goBack()}
+             >
+               <Icon name="arrow-back" size={24} color="white" />
+             </TouchableOpacity>
+             <View style={styles.headerCenter}>
+               <Text style={styles.headerTitle}>COMPANY</Text>
+             </View>
+             <View style={{width: 24, opacity: 0}} />
+           </LinearGradient>
             </View>
       <Image 
         source={require('../assets/building.jpg')} 

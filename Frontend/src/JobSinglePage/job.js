@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Company from '../CompanyPage/company';
 import axios from 'axios';
 import { Linking } from 'react-native';
-
+import LinearGradient from 'react-native-linear-gradient';
 
 const JobSingle = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('Description');
@@ -12,7 +12,7 @@ const JobSingle = ({ route, navigation }) => {
   const [userRating, setUserRating] = useState(0);
   const [userComment, setUserComment] = useState('');
   const [reviews, setReviews] = useState([]);
-  const { jobId, companyInfo } = route.params || {};
+  const { jobId, companyInfo } = route.params || { jobId: null, companyInfo: {} };
   const [ratingStats, setRatingStats] = useState({
     5: 150,
     4: 63,
@@ -21,7 +21,10 @@ const JobSingle = ({ route, navigation }) => {
     1: 20
   });
 
-
+  const openLink = (url) => {
+    Linking.openURL(url).catch(() => Alert.alert('Error', 'Failed to open link'));
+  };
+  
   const submitReview = () => {
     if (userRating === 0) {
       Alert.alert('Error', 'Please select a rating');
@@ -37,13 +40,15 @@ const JobSingle = ({ route, navigation }) => {
       avatar: null
     };
 
-    setReviews([newReview, ...reviews]);
+    setReviews((prevReviews) => [newReview, ...prevReviews]);
+
     
  
-    setRatingStats(prevStats => ({
+    setRatingStats((prevStats) => ({
       ...prevStats,
-      [userRating]: (prevStats[userRating] || 0) + 1
+      [userRating]: (prevStats[userRating] || 0) + 1,
     }));
+    
     
     
    
@@ -295,7 +300,24 @@ const JobSingle = ({ route, navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View>
+       <View>
+      <LinearGradient 
+  colors={["#623AA2", "#F97794"]} 
+  style={styles.header}
+>
+  <TouchableOpacity 
+    style={styles.backButton} 
+    onPress={() => navigation.goBack()}
+  >
+    <Icon name="arrow-back" size={24} color="white" />
+  </TouchableOpacity>
+  <View style={styles.headerCenter}>
+    <Text style={styles.headerTitle}>JOB SINGLE</Text>
+  </View>
+  <View style={{width: 24, opacity: 0}} />
+</LinearGradient>
+      </View>
+      <View style={{marginLeft:15}}>
         <View style={styles.card}>
           <Icon name="car" size={30} color="#601cd6" style={{ marginLeft:137 }}/>
           <Text style={styles.title}>{jobData?.title}</Text>
@@ -334,12 +356,15 @@ const JobSingle = ({ route, navigation }) => {
         {renderTabContent()}
       </View>
       
-      <View style={styles.bottom}>
-        <TouchableOpacity><Icon name="bookmark" size={35} color="#601cd6" style={{ marginTop: 15,marginLeft:20 }}></Icon></TouchableOpacity>
-        <View style={styles.button}>
-          <Button title='APPLY' color={"#601cd6"}></Button>
-        </View>
-      </View>
+      <View style={styles.bottomContainer}>
+  <TouchableOpacity style={styles.bookmarkButton}>
+    <Icon name="bookmark" size={40} color="#601cd6" />
+  </TouchableOpacity>
+  
+  <TouchableOpacity style={styles.applyButton}>
+    <Text style={styles.applyButtonText}>APPLY</Text>
+  </TouchableOpacity>
+</View>
     </ScrollView>
   );
 };
@@ -348,6 +373,18 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 50,
+  },
+  header: {
+    height: 60,
+    flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',paddingHorizontal: 15,
+  },
+  backButton: {
+    padding: 10,
+  },
+ 
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,fontWeight: 'bold',},container: {flexGrow: 1,backgroundColor: '#f5f5f5',
   },
   card: {
     backgroundColor: '#fff', padding: 20, borderRadius: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 5,
@@ -395,11 +432,31 @@ const styles = StyleSheet.create({
   points: {
     margin: 5
   },
-  bottom: {
-    flexDirection: "row",marginTop: 20
+  bottomContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 20,
+    paddingHorizontal: 15,
   },
-  button: {
-    marginTop: 19,marginLeft: 100,width: 200,color:"black"
+  bookmarkButton: {
+    width: 50,
+    height: 50,
+    
+  },
+  applyButton: {
+    width: '70%',
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: '#601cd6',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
    reviewContainer: {
     marginTop: 15,

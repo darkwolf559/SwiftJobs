@@ -48,7 +48,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
             break;
 
             case 'Post a Job':
-              navigation?.navigate('Post a Job');
+              navigation?.navigate('');
               break;    
           
       // Add other cases as needed

@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import TabNavigation from "../../compenents/TabNavigation";
 import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import FilterScreen from "../../FilterPage/filter";
 import { Avatar } from "react-native-elements";
 const { width } = Dimensions.get("window");
 

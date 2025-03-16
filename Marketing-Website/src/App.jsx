@@ -38,8 +38,8 @@ const SwiftJobsLanding = () => {
     { name: "Radun Senula", role: "Frontend", image: "radun1.jpg", bio: "Radun brings creativity and a keen eye for design to the SDGP project. They focus on crafting user interfaces that are visually engaging and easy to navigate, enhancing the overall user experience of the platform." },
     { name: "Pasan Pramuditha", role: "Lead Developer", image: "pasan.jpg", bio: "Pasan is the Lead Developer, bringing strong technical expertise and problem-solving skills to the project. They specialize in creating efficient, scalable solutions and ensure that the project’s technical architecture is robust and performs seamlessly across all systems." },
     { name: "Chenath Karunasena", role: "Backend", image: "chenath.jpg", bio: "Chenath handles the backend development with expertise in server-side technologies. They focus on building a secure, scalable, and efficient infrastructure to support the platform’s functionality." },
-    { name: "Rusitha Navod", role: "Backend", image: "rusitha1.jpg", bio: "Rusitha ensures the backend systems of the platform are optimized for performance and reliability. Their knowledge of databases and API integration helps ensure that the platform runs efficiently and securely." },
-    { name: "Pehan Janu", role: "Frontend", image: "pehan.jpg", bio: "Pehan is a detail-oriented frontend developer who specializes in building clean, responsive, and user-friendly interfaces. Their work ensures that the platform delivers a smooth experience across different devices and screen sizes." }
+    { name: "Rusitha Navod", role: "Backend", image: "rusi.jpg", bio: "Rusitha ensures the backend systems of the platform are optimized for performance and reliability. Their knowledge of databases and API integration helps ensure that the platform runs efficiently and securely." },
+    { name: "Pehan Janu", role: "Frontend", image: "peha.jpg", bio: "Pehan is a detail-oriented frontend developer who specializes in building clean, responsive, and user-friendly interfaces. Their work ensures that the platform delivers a smooth experience across different devices and screen sizes." }
   ];
 
   useEffect(() => {

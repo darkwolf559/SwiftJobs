@@ -17,7 +17,6 @@ const JobPostingPage = () => {
     payment: '',
     location: '',
     duration: '',
-    jobCategory: '',
     requiredSkills: '',
     workingHours: '',
     employerName: '',
@@ -30,16 +29,6 @@ const JobPostingPage = () => {
   // Validation state
   const [errors, setErrors] = useState({});
 
- 
-  const categories = [
-    'DEVELOPER',
-    'TECHNOLOGY',
-    'ACCOUNTING',
-    'MARKETING',
-    'SALES'
-  ];
-
- 
   const handleChange = (field, value) => {
     setFormData({
       ...formData,
@@ -64,7 +53,6 @@ const JobPostingPage = () => {
     if (!formData.payment) newErrors.payment = 'Payment information is required';
     if (!formData.location) newErrors.location = 'Location is required';
     if (!formData.duration) newErrors.duration = 'Duration is required';
-    if (!formData.jobCategory) newErrors.jobCategory = 'Category is required';
     if (!formData.requiredSkills) newErrors.requiredSkills = 'Required skills are required';
     if (!formData.workingHours) newErrors.workingHours = 'Working hours are required';
     if (!formData.employerEmail) newErrors.employerEmail = 'Contact email is required';
@@ -147,24 +135,6 @@ const JobPostingPage = () => {
             {renderField('Payment', 'payment', 'e.g., $50,000 - $70,000 a year')}
             {renderField('Location', 'location', 'e.g., Los Angeles, CA')}
             {renderField('Duration', 'duration', 'e.g., Full-time, Contract')}
-            
-            {/* Category Dropdown */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>
-                Job Category <Text style={styles.requiredStar}>*</Text>
-              </Text>
-              <View style={[styles.textInput, styles.pickerContainer, errors.jobCategory && styles.errorInput]}>
-                <TouchableOpacity style={styles.pickerButton}>
-                  <Text style={formData.jobCategory ? styles.pickerText : styles.placeholderText}>
-                    {formData.jobCategory || 'Select a category'}
-                  </Text>
-                  <Text style={styles.dropdownIcon}>▼</Text>
-                </TouchableOpacity>
-              </View>
-              {errors.jobCategory && (
-                <Text style={styles.errorText}>{errors.jobCategory}</Text>
-              )}
-            </View>
             
             {renderField('Required Skills', 'requiredSkills', 'List required skills separated by commas', true)}
             {renderField('Working Hours', 'workingHours', 'e.g., 40 hours/week')}
@@ -279,27 +249,6 @@ const styles = StyleSheet.create({
     color: '#e94b97',
     fontSize: 14,
     marginTop: 4,
-  },
-  pickerContainer: {
-    justifyContent: 'center',
-    paddingVertical: 12,
-  },
-  pickerButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  pickerText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: '#999',
-  },
-  dropdownIcon: {
-    fontSize: 14,
-    color: '#555',
   },
   submitButton: {
     backgroundColor: '#673ab7',

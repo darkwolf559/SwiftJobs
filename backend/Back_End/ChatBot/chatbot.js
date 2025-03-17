@@ -15,11 +15,12 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import axios from 'axios';
 
-// Replace this with your actual backend server URL
+// Update this with your Node.js backend URL
 const BACKEND_URL = 'http://10.0.2.2:5000'; // For Android emulator
 // const BACKEND_URL = 'http://localhost:5000'; // For iOS simulator
+// const BACKEND_URL = 'https://your-deployed-backend-url.com'; // For production
 
-const Chatbot = () => {  // Removed apiKey prop since we're using backend now
+const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -90,20 +91,18 @@ const Chatbot = () => {  // Removed apiKey prop since we're using backend now
     }
   };
 
-  // Function to format timestamp
+  // Rest of your component remains the same
   const getMessageTime = () => {
     const now = new Date();
     return now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
   };
 
-  // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
     if (flatListRef.current && messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   };
 
-  // Render the chat bubbles with appropriate styling
   const renderMessage = ({ item }) => {
     const isUser = item.sender === 'user';
     

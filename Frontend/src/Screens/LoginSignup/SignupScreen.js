@@ -1,74 +1,17 @@
-import { View, Text, StyleSheet, Image, TextInput, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TextInput, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import React from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import axios from 'axios'; // Make sure to install axios: npm install axios
-
-const API_URL = 'http://YOUR_BACKEND_URL/api/users'; // Replace with your actual backend URL
 
 const SignupScreen = () => {
-  const navigation = useNavigation();
-  
-  // State for form inputs
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();  
 
-  // Navigate to login screen
-  const handleNavigateToLogin = () => {
-    navigation.navigate("Login");
-  };
-
-  // Handle the registration process
-  const handleRegister = async () => {
-    // Basic validation
-    if (!username || !password || !email || !mobile) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
-    // Password validation (at least 6 characters)
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      // Send registration request to backend
-      const response = await axios.post(API_URL, {
-        username,
-        password,
-        email,
-        mobile
-      });
-
-      // If successful, show success message and navigate to login
-      Alert.alert(
-        'Success',
-        'Account created successfully! Please login.',
-        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
-      );
-    } catch (error) {
-      // Handle errors from the API
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-      Alert.alert('Error', errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRegister = () => {
+    navigation.navigate("Login");  
   };
 
   return (
@@ -94,71 +37,40 @@ const SignupScreen = () => {
 
           <View style={styles.inputContainer}>
             <FontAwesome name="user" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.textInput} 
-              placeholder="Enter your username"   
-              placeholderTextColor="#9A9A9A"
-              value={username}
-              onChangeText={setUsername}
-            />
+            <TextInput style={styles.textInput} placeholder="Enter your username"   placeholderTextColor="#9A9A9A" />
           </View>
 
           <View style={styles.inputContainer}>
             <Fontisto name="locked" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.textInput} 
-              placeholder="Enter your Password"   
-              placeholderTextColor="#9A9A9A"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+            <TextInput style={styles.textInput} placeholder="Enter your Password"   placeholderTextColor="#9A9A9A"secureTextEntry />
           </View>
 
           <View style={styles.inputContainer}>
             <AntDesign name="mail" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.textInput} 
-              placeholder="Enter your Email"   
-              placeholderTextColor="#9A9A9A"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <TextInput style={styles.textInput} placeholder="Enter your Email"   placeholderTextColor="#9A9A9A"/>
           </View>
 
           <View style={styles.inputContainer}>
             <AntDesign name="mobile1" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.textInput} 
-              placeholder="Enter your Mobile"   
-              placeholderTextColor="#9A9A9A"
-              value={mobile}
-              onChangeText={setMobile}
-              keyboardType="phone-pad"
-            />
+            <TextInput style={styles.textInput} placeholder="Enter your Mobile"   placeholderTextColor="#9A9A9A" />
           </View>
 
           <View style={styles.createButtonContainer}>
             <Text style={styles.create}>Create</Text>
 
-            <TouchableOpacity onPress={handleRegister} disabled={isLoading}>
-              <LinearGradient
-                colors={["#623AA2", "#F97794"]}
-                style={styles.linearGradient}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <AntDesign name="arrowright" size={24} color={"white"} style={styles.inputIcon} />
-                )}
-              </LinearGradient>
+            <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+            <LinearGradient
+              colors={["#623AA2", "#F97794"]}
+              style={styles.linearGradient}
+            >
+              <AntDesign name="arrowright" size={24} color={"white"} style={styles.inputIcon} />
+            </LinearGradient>
+
             </TouchableOpacity>
           </View>
 
           <View style={styles.footerContainer}>
-            <TouchableOpacity onPress={handleNavigateToLogin}>
+            <TouchableOpacity onPress={handleRegister}>
               <Text style={styles.footerText}>
                 or create Account using Social Media
               </Text>

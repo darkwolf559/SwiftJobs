@@ -272,3 +272,137 @@ const FilterScreen = ({ navigation }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#F8F8F8',
+    },
+    header: {
+      height: 60,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 15,
+    },
+    menuButton: {
+      padding: 5,
+    },
+    headerTitle: {
+      color: 'white',
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginLeft: 15,
+    },
+    emptySpace: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      padding: 20,
+    },
+    section: {
+      marginBottom: 25,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      color: '#333',
+    },
+    sliderContainer: {
+      marginBottom: 10,
+    },
+    slider: {
+      width: '100%',
+      height: 40,
+    },
+    salaryLabels: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 5,
+    },
+    salaryLabel: {
+      color: '#666',
+    },
+    checkboxGrid: {
+      marginTop: 5,
+    },
+    checkboxRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+    },
+    checkboxContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '48%',
+    },
+    checkbox: {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      padding: 0,
+      margin: 0,
+    },
+    checkboxLabel: {
+      marginLeft: -5,
+      fontSize: 14,
+      color: '#333',
+    },
+    experienceTabs: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    experienceTab: {
+      flex: 1,
+      padding: 12,
+      alignItems: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: 'transparent',
+    },
+    activeExperienceTab: {
+      borderBottomColor: '#623AA2',
+    },
+    experienceTabText: {
+      color: '#888',
+      fontSize: 14,
+    },
+    activeExperienceTabText: {
+      color: '#623AA2',
+      fontWeight: 'bold',
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      padding: 15,
+      backgroundColor: 'white',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 5,
+    },
+    showResultButton: {
+      flex: 2,
+      backgroundColor: '#623AA2',
+      padding: 15,
+      borderRadius: 5,
+      alignItems: 'center',
+      marginRight: 10,
+    },
+    showResultButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+    },
+    clearButton: {
+      flex: 1,
+      padding: 15,
+      borderRadius: 5,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#ccc',
+    },
+    clearButtonText: {
+      color: '#333',
+    },
+  });
+  
+  export default FilterScreen;

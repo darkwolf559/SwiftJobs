@@ -1,74 +1,63 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema({
-  // Required fields for minimal registration
+const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
-    trim: true
+    unique: true
+  },
+  fullName: {
+    type: String,
+    required: true
   },
   email: {
     type: String,
     required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  mobileNumber: {
-    type: String,
-    required: true,
-    trim: true
+    unique: true
   },
   password: {
     type: String,
     required: true
   },
-  
-  // Optional fields (can be filled in later)
-  fullName: {
+  gender: {
     type: String,
-    required: false
+    enum: ['Male', 'Female', 'Other', ''],
+    default: ''
   },
   dateOfBirth: {
     type: Date,
-    required: false
+    default: null
   },
-  gender: {
+  phoneNumber: {
     type: String,
-    required: false
+    default: ''
   },
   homeAddress: {
     type: String,
-    required: false
+    default: ''
   },
   country: {
     type: String,
-    required: false
+    default: ''
   },
   zipCode: {
     type: String,
-    required: false
+    default: ''
   },
   college: {
     type: String,
-    required: false
+    default: ''
   },
-  degree: {
+  highSchool: {
     type: String,
-    required: false
+    default: ''
   },
   higherSecondaryEducation: {
     type: String,
-    required: false
+    default: ''
   },
-  
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
-
-const User = mongoose.model("User", userSchema);
-
-export default User;

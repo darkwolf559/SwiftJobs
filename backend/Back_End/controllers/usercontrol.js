@@ -1,5 +1,5 @@
 import User from "../models/user.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";  
 import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
@@ -10,7 +10,7 @@ export const registerUser = async (req, res) => {
         let userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: "User already exists" });
 
-        // Hash the password
+        // Hash the password with bcrypt instead of bcryptjs
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 

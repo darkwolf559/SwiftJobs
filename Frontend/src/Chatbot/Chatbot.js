@@ -10,25 +10,30 @@ import {
   SafeAreaView, 
   KeyboardAvoidingView, 
   Platform,
-  StatusBar
+  StatusBar,
+  Alert
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import axios from 'axios';
+import GeminiAPI from '../../GeminiAPI';
 
-// Replace this with your actual backend server URL
-const BACKEND_URL = 'http://10.0.2.2:5000'; // For Android emulator
-// const BACKEND_URL = 'http://localhost:5000'; // For iOS simulator
 
-const Chatbot = () => {  // Removed apiKey prop since we're using backend now
+const Chatbot = ({ apiKey = GeminiAPI}) => { // Use env variable as default
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef(null);
 
-  // Function to send user message and get response
+  // Function to send user message and get response directly from Gemini API
   const sendMessage = async () => {
     // Check if message is empty
     if (inputText.trim().length === 0) return;
+
+    // Check if API key is provided
+    if (!apiKey) {
+      Alert.alert('API Key Required', 'Please provide a Gemini API key to use the chatbot.');
+      return;
+    }
 
     // Add user message to the chat
     const userMessage = { id: Date.now(), text: inputText, sender: 'user' };
@@ -40,27 +45,52 @@ const Chatbot = () => {  // Removed apiKey prop since we're using backend now
     // Prepare conversation history for context
     const conversationHistory = [
       ...messages.map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.text
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
       })),
-      { role: 'user', content: inputText }
+      { role: 'user', parts: [{ text: inputText }] }
     ];
 
     setIsLoading(true);
 
     try {
-      // Send message to our backend server instead of directly to OpenAI
+      // Make a direct request to the Gemini API using Gemini 2.0 Flash model
       const response = await axios.post(
-        `${BACKEND_URL}/api/chat`,
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
         {
-          messages: conversationHistory
+          contents: conversationHistory,
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          }
         }
       );
+
+      // Extract the response text from Gemini's response
+      let botResponse = '';
+      if (response.data && 
+          response.data.candidates && 
+          response.data.candidates[0] && 
+          response.data.candidates[0].content && 
+          response.data.candidates[0].content.parts && 
+          response.data.candidates[0].content.parts[0]) {
+        botResponse = response.data.candidates[0].content.parts[0].text;
+      } else {
+        botResponse = "Sorry, I couldn't generate a response. Please try again.";
+      }
 
       // Get chatbot response
       const botMessage = {
         id: Date.now() + 1,
-        text: response.data.data,
+        text: botResponse,
         sender: 'bot',
       };
 
@@ -79,7 +109,7 @@ const Chatbot = () => {  // Removed apiKey prop since we're using backend now
       // Add error message to chat with more details
       const errorMessage = {
         id: Date.now() + 1,
-        text: `Error: ${error.message || "Unknown error"}. Please try again later.`,
+        text: `Error: ${error.message || "Unknown error"}. Please make sure your API key is valid and try again.`,
         sender: 'bot',
         isError: true,
       };

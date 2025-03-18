@@ -44,25 +44,53 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        console.log("Login attempt details:");
+        console.log("Email:", email);
+        console.log("Password length:", password ? password.length : 'No password provided');
+
+        // Check if email or password are empty
+        if (!email || !password) {
+            return res.status(400).json({ 
+                message: "Email and password are required",
+                details: {
+                    emailProvided: !!email,
+                    passwordProvided: !!password
+                }
+            });
+        }
         
-        // Check if the email exists in database
+        // Find user by email
         const user = await User.findOne({ email });
         
+        // Detailed logging for debugging
         if (!user) {
-            return res.status(400).json({ message: "Invalid email or password" });
+            console.log(`No user found with email: ${email}`);
+            console.log("Existing users in database:");
+            const allUsers = await User.find({}, 'email');
+            console.log(allUsers.map(u => u.email));
+            
+            return res.status(400).json({ 
+                message: "Invalid email or password",
+                details: "User not found"
+            });
         }
         
         // Verify password
         const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
-            return res.status(400).json({ message: "Invalid email or password" });
+            console.log(`Password mismatch for email: ${email}`);
+            return res.status(400).json({ 
+                message: "Invalid email or password",
+                details: "Password does not match"
+            });
         }
 
         // Create JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-        // Return success with token and minimal user info
+        // Return success with token and user info
         res.json({ 
             token, 
             user: { 
@@ -73,7 +101,10 @@ export const loginUser = async (req, res) => {
         });
     } catch (error) {
         console.error("Login error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ 
+            message: "Server error during login", 
+            error: error.message 
+        });
     }
 };
 

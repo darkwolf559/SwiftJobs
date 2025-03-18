@@ -8,12 +8,16 @@ const UserSchema = new mongoose.Schema({
   },
   fullName: {
     type: String,
-    required: true
+    default: ''
   },
   email: {
     type: String,
     required: true,
     unique: true
+  },
+  mobileNumber: {
+    type: String,
+    required: true
   },
   password: {
     type: String,
@@ -61,3 +65,6 @@ const UserSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Change export to use mongoose.model
+export default mongoose.model('User', UserSchema);

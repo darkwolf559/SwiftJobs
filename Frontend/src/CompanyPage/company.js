@@ -30,20 +30,7 @@ const Company = ({navigation}) => {
   };
   const [companyInfo, setCompanyInfo] = useState(defaultCompanyInfo);
 
-  useEffect(() => {
-    const fetchCompanyData = async () => {
-      try {
-        const companyResponse = await axios.get('http://192.168.43.152:5000/api/company');
-        setCompanyInfo(companyResponse.data || defaultCompanyInfo);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        Alert.alert('Error', 'Unable to fetch company information');
-        setCompanyInfo(defaultCompanyInfo);
-      }
-    };
-
-    fetchCompanyData();
-  }, []);
+  
 
   const { name,services, location, description, contactEmail, contactPhone, website } = companyInfo;
 

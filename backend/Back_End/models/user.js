@@ -1,20 +1,74 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-    fullName: { type: String, required: true },
-    dateOfBirth: { type: Date, required: true },
-    gender: { type: String, required: true },
-    homeAddress: { type: String, required: true },
-    country: { type: String, required: true },
-    zipCode: { type: String, required: true },
-    college: { type: String, required: true },
-    degree: { type: String, required: true },
-    higherSecondaryEducation: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    username: { type: String, required: true, unique: true },
-    mobileNumber: { type: String, required: true },
-    password: { type: String, required: true },
-}, { timestamps: true });
+  // Required fields for minimal registration
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  mobileNumber: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  
+  // Optional fields (can be filled in later)
+  fullName: {
+    type: String,
+    required: false
+  },
+  dateOfBirth: {
+    type: Date,
+    required: false
+  },
+  gender: {
+    type: String,
+    required: false
+  },
+  homeAddress: {
+    type: String,
+    required: false
+  },
+  country: {
+    type: String,
+    required: false
+  },
+  zipCode: {
+    type: String,
+    required: false
+  },
+  college: {
+    type: String,
+    required: false
+  },
+  degree: {
+    type: String,
+    required: false
+  },
+  higherSecondaryEducation: {
+    type: String,
+    required: false
+  },
+  
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
 const User = mongoose.model("User", userSchema);
+
 export default User;

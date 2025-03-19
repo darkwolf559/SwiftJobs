@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,37 +6,180 @@ import {
   ScrollView, 
   Image, 
   TouchableOpacity, 
-  Dimensions 
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+const API_URL = 'http://192.168.43.152:5000/api';
 
 const UserProfile = ({ navigation }) => {
-  const userData = {
-    fullName: "Mark Gutierrez",
-    email: "mail@example.com",
-    gender: "Male",
-    dateOfBirth: "28 May 1992",
-    phoneNumber: "623-466-7667",
-    homeAddress: "2750 Cambridge Drive Phoenix",
-    country: "Belarus",
-    zipCode: "7667",
-    education: {
-      college: "Public affairs specialist",
-      highSchool: "Public affairs specialist",
-      higherSecondary: "Public affairs specialist"
-    },
-    skills: ["PHOTOSHOP", "ILLUSTRATOR", "AFTER EFFECT", "PREMIER PRO", "COREL DRAW", "FRAMES"],
-    resume: {
-      lastUpdated: "16 June 2021"
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch user profile from API
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Get auth token from storage
+      const token = await AsyncStorage.getItem('authToken');
+      
+      if (!token) {
+        // If no token, redirect to login
+        navigation.navigate('Login');
+        return;
+      }
+      
+      // Make API request with auth token
+      const response = await axios.get(`${API_URL}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setUserData(response.data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError('Failed to load profile data');
+      
+      // Handle expired token or unauthorized access
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        Alert.alert(
+          'Session Expired', 
+          'Your session has expired. Please log in again.',
+          [{ text: 'OK', onPress: () => handleLogout() }]
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Handle user logout
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  // Load user profile on component mount
+  useEffect(() => {
+    fetchUserProfile();
+    
+    // Add listener to refresh data when screen comes into focus
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchUserProfile();
+    });
+    
+    // Clean up listener on unmount
+    return unsubscribe;
+  }, [navigation]);
 
   const handleEditPress = () => {
     navigation.navigate('EditProfile', { userData });
   };
+
+  // Show loading spinner while data is being fetched
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient 
+          colors={["#623AA2", "#F97794"]} 
+          style={styles.header}
+        >
+          <TouchableOpacity 
+            style={styles.menuButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>PROFILE</Text>
+          <View style={styles.emptySpace} />
+        </LinearGradient>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#623AA2" />
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Show error message if data fetch failed
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient 
+          colors={["#623AA2", "#F97794"]} 
+          style={styles.header}
+        >
+          <TouchableOpacity 
+            style={styles.menuButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>PROFILE</Text>
+          <View style={styles.emptySpace} />
+        </LinearGradient>
+        <View style={styles.errorContainer}>
+          <Icon name="alert-circle-outline" size={70} color="#f97794" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={fetchUserProfile}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // Show empty state if no data is available
+  if (!userData) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient 
+          colors={["#623AA2", "#F97794"]} 
+          style={styles.header}
+        >
+          <TouchableOpacity 
+            style={styles.menuButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>PROFILE</Text>
+          <View style={styles.emptySpace} />
+        </LinearGradient>
+        <View style={styles.emptyStateContainer}>
+          <Icon name="person-outline" size={80} color="#ccc" />
+          <Text style={styles.emptyStateText}>No profile data available</Text>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('EditProfile')}
+            style={styles.createProfileButton}
+          >
+            <Text style={styles.createProfileButtonText}>Create Profile</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -52,7 +195,21 @@ const UserProfile = ({ navigation }) => {
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>PROFILE</Text>
-        <View style={styles.emptySpace} />
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={() => {
+            Alert.alert(
+              'Logout',
+              'Are you sure you want to logout?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Logout', onPress: handleLogout }
+              ]
+            );
+          }}
+        >
+          <Icon name="log-out-outline" size={24} color="white" />
+        </TouchableOpacity>
       </LinearGradient>
 
       <ScrollView style={styles.scrollView}>
@@ -72,7 +229,7 @@ const UserProfile = ({ navigation }) => {
               />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{userData.fullName}</Text>
+              <Text style={styles.profileName}>{userData.fullName || userData.username}</Text>
               <Text style={styles.profileEmail}>{userData.email}</Text>
             </View>
           </View>
@@ -84,22 +241,29 @@ const UserProfile = ({ navigation }) => {
           <View style={styles.sectionContent}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Full Name</Text>
-              <Text style={styles.infoValue}>{userData.fullName}</Text>
+              <Text style={styles.infoValue}>{userData.fullName || 'Not provided'}</Text>
+            </View>
+            
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Username</Text>
+              <Text style={styles.infoValue}>{userData.username}</Text>
             </View>
             
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Gender</Text>
-              <Text style={styles.infoValue}>{userData.gender}</Text>
+              <Text style={styles.infoValue}>{userData.gender || 'Not provided'}</Text>
             </View>
             
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Date Of Birth</Text>
-              <Text style={styles.infoValue}>{userData.dateOfBirth}</Text>
+              <Text style={styles.infoValue}>
+                {userData.dateOfBirth ? new Date(userData.dateOfBirth).toLocaleDateString() : 'Not provided'}
+              </Text>
             </View>
             
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Phone Number</Text>
-              <Text style={styles.infoValue}>{userData.phoneNumber}</Text>
+              <Text style={styles.infoValue}>{userData.phoneNumber || userData.mobileNumber || 'Not provided'}</Text>
             </View>
             
             <View style={styles.infoItem}>
@@ -115,18 +279,18 @@ const UserProfile = ({ navigation }) => {
           <View style={styles.sectionContent}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Home Address</Text>
-              <Text style={styles.infoValue}>{userData.homeAddress}</Text>
+              <Text style={styles.infoValue}>{userData.homeAddress || 'Not provided'}</Text>
             </View>
             
             <View style={styles.horizontalInfoContainer}>
               <View style={[styles.infoItem, styles.horizontalInfoItem]}>
                 <Text style={styles.infoLabel}>Country</Text>
-                <Text style={styles.infoValue}>{userData.country}</Text>
+                <Text style={styles.infoValue}>{userData.country || 'Not provided'}</Text>
               </View>
               
               <View style={[styles.infoItem, styles.horizontalInfoItem]}>
                 <Text style={styles.infoLabel}>Zip Code</Text>
-                <Text style={styles.infoValue}>{userData.zipCode}</Text>
+                <Text style={styles.infoValue}>{userData.zipCode || 'Not provided'}</Text>
               </View>
             </View>
           </View>
@@ -138,63 +302,42 @@ const UserProfile = ({ navigation }) => {
           <View style={styles.sectionContent}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>College</Text>
-              <Text style={styles.infoValue}>{userData.education.college}</Text>
+              <Text style={styles.infoValue}>{userData.college || 'Not provided'}</Text>
             </View>
             
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>High School Degree</Text>
-              <Text style={styles.infoValue}>{userData.education.highSchool}</Text>
+              <Text style={styles.infoValue}>{userData.highSchool || 'Not provided'}</Text>
             </View>
             
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Higher Secondary Education</Text>
-              <Text style={styles.infoValue}>{userData.education.higherSecondary}</Text>
+              <Text style={styles.infoValue}>{userData.higherSecondaryEducation || 'Not provided'}</Text>
             </View>
           </View>
         </View>
 
-        {/* Skills Section */}
+        {/* Account Information Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SKILLS</Text>
+          <Text style={styles.sectionTitle}>ACCOUNT INFORMATION</Text>
           <View style={styles.sectionContent}>
-            <View style={styles.skillsContainer}>
-              {userData.skills.map((skill, index) => (
-                <LinearGradient 
-                  key={index}
-                  colors={["#623AA2", "#F97794"]} 
-                  style={styles.skillItem}
-                >
-                  <Text style={styles.skillText}>{skill}</Text>
-                </LinearGradient>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        {/* Resume Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>MY RESUME</Text>
-          <View style={styles.sectionContent}>
-            <View style={styles.resumeContainer}>
-              <View style={styles.resumeIcon}>
-                <Icon name="document-text" size={24} color="#666" />
-              </View>
-              <View style={styles.resumeInfo}>
-                <Text style={styles.resumeName}>{userData.fullName}</Text>
-                <Text style={styles.resumeDate}>Updated on {userData.resume.lastUpdated}</Text>
-              </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Account Created</Text>
+              <Text style={styles.infoValue}>
+                {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Unknown'}
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Edit Button */}
         <View style={styles.editButtonContainer}>
-           <TouchableOpacity onPress={handleEditPress}>
+          <TouchableOpacity onPress={handleEditPress}>
             <LinearGradient 
               colors={["#623AA2", "#F97794"]} 
               style={styles.editButton}
             >
-              <Text style={styles.editButtonText}>EDIT</Text>
+              <Text style={styles.editButtonText}>EDIT PROFILE</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -208,6 +351,59 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginVertical: 15,
+  },
+  retryButton: {
+    backgroundColor: '#623AA2',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666',
+    marginVertical: 15,
+  },
+  createProfileButton: {
+    backgroundColor: '#623AA2',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  createProfileButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
   header: {
     height: 60,
     flexDirection: 'row',
@@ -216,6 +412,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   menuButton: {
+    padding: 5,
+  },
+  logoutButton: {
     padding: 5,
   },
   headerTitle: {
@@ -318,49 +517,6 @@ const styles = StyleSheet.create({
   horizontalInfoItem: {
     width: '48%',
   },
-  skillsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 5,
-  },
-  skillItem: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  skillText: {
-    color: '#fff',
-    fontWeight: '500',
-  },
-  resumeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-  },
-  resumeIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  resumeInfo: {
-    flex: 1,
-  },
-  resumeName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
-  },
-  resumeDate: {
-    fontSize: 14,
-    color: '#666',
-  },
   editButtonContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
@@ -370,8 +526,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
-    width: 100,
-    alignSelf: 'center',
   },
   editButtonText: {
     color: '#fff',

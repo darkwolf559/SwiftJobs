@@ -1,17 +1,99 @@
-import { View, Text, StyleSheet, Image, TextInput, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, Image, TextInput, ImageBackground, TouchableOpacity, KeyboardAvoidingView, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { authService } from '../../services/api'; // Import auth service
 
 const SignupScreen = () => {
   const navigation = useNavigation();  
+  
+  // State for form fields
+  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleRegister = () => {
+  const handleLogin = () => {
     navigation.navigate("Login");  
+  };
+
+  // Email validation function
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Handle signup function
+  const handleSignup = async () => {
+    // Reset error message
+    setErrorMessage('');
+    
+    // Validate inputs
+    if (!username || !fullName || !password || !email || !mobile) {
+      setErrorMessage('All fields are required');
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setErrorMessage('Please enter a valid email address');
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters long');
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('Attempting to register user with:', {
+        username,
+        email,
+        mobileNumber: mobile,
+      });
+      
+      // Call the registration API
+      const response = await authService.register({
+        username,
+        password,
+        email,
+        mobileNumber: mobile,
+        fullName: fullName // Using explicit fullName field
+      });
+      
+      setLoading(false);
+      
+      // Show success message and navigate to login
+      Alert.alert(
+        'Registration Successful',
+        'Your account has been created successfully. Please log in.',
+        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+      );
+    } catch (error) {
+      setLoading(false);
+      
+      console.error('Registration error details:', error);
+      
+      // Set error message for display
+      const errorMsg = error?.message || 'Could not create account. Please try again.';
+      setErrorMessage(errorMsg);
+      
+      // Handle registration errors
+      Alert.alert(
+        'Registration Failed', 
+        errorMsg
+      );
+    }
   };
 
   return (
@@ -35,58 +117,112 @@ const SignupScreen = () => {
             <Text style={styles.createAccountText}>Create Account </Text>
           </View>
 
+          {/* Display error message if any */}
+          {errorMessage ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          ) : null}
+
           <View style={styles.inputContainer}>
             <FontAwesome name="user" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput style={styles.textInput} placeholder="Enter your username"   placeholderTextColor="#9A9A9A" />
+            <TextInput 
+              style={styles.textInput} 
+              placeholder="Enter your username" 
+              placeholderTextColor="#9A9A9A" 
+              value={username}
+              onChangeText={setUsername}
+            />
+          </View>
+          
+          <View style={styles.inputContainer}>
+            <FontAwesome name="id-card" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
+            <TextInput 
+              style={styles.textInput} 
+              placeholder="Enter your full name" 
+              placeholderTextColor="#9A9A9A" 
+              value={fullName}
+              onChangeText={setFullName}
+            />
           </View>
 
           <View style={styles.inputContainer}>
             <Fontisto name="locked" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput style={styles.textInput} placeholder="Enter your Password"   placeholderTextColor="#9A9A9A"secureTextEntry />
+            <TextInput 
+              style={styles.textInput} 
+              placeholder="Enter your Password" 
+              placeholderTextColor="#9A9A9A"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
           </View>
 
           <View style={styles.inputContainer}>
             <AntDesign name="mail" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput style={styles.textInput} placeholder="Enter your Email"   placeholderTextColor="#9A9A9A"/>
+            <TextInput 
+              style={styles.textInput} 
+              placeholder="Enter your Email" 
+              placeholderTextColor="#9A9A9A"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
           </View>
 
           <View style={styles.inputContainer}>
             <AntDesign name="mobile1" size={24} color={"#9A9A9A"} style={styles.inputIcon} />
-            <TextInput style={styles.textInput} placeholder="Enter your Mobile"   placeholderTextColor="#9A9A9A" />
+            <TextInput 
+              style={styles.textInput} 
+              placeholder="Enter your Mobile" 
+              placeholderTextColor="#9A9A9A"
+              keyboardType="phone-pad"
+              value={mobile}
+              onChangeText={setMobile}
+            />
           </View>
 
           <View style={styles.createButtonContainer}>
             <Text style={styles.create}>Create</Text>
 
-            <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-            <LinearGradient
-              colors={["#623AA2", "#F97794"]}
-              style={styles.linearGradient}
-            >
-              <AntDesign name="arrowright" size={24} color={"white"} style={styles.inputIcon} />
-            </LinearGradient>
-
+            <TouchableOpacity onPress={handleSignup} disabled={loading}>
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="#623AA2" />
+                </View>
+              ) : (
+                <LinearGradient
+                  colors={["#623AA2", "#F97794"]}
+                  style={styles.linearGradient}
+                >
+                  <AntDesign name="arrowright" size={24} color={"white"} style={styles.inputIcon} />
+                </LinearGradient>
+              )}
             </TouchableOpacity>
           </View>
 
           <View style={styles.footerContainer}>
-            <TouchableOpacity onPress={handleRegister}>
+            <TouchableOpacity onPress={handleLogin}>
               <Text style={styles.footerText}>
-                or create Account using Social Media
+                Already have an account? <Text style={{ textDecorationLine: "underline" }}>Login</Text>
               </Text>
-
-              <View style={styles.socialMediaContainer}>
-                <View style={styles.socialIconWrapper}>
-                  <Entypo name="facebook-with-circle" size={30} color={"#3b5998"} />
-                </View>
-                <View style={styles.socialIconWrapper}>
-                  <Entypo name="twitter-with-circle" size={30} color={"#1DA1F2"} />
-                </View>
-                <View style={styles.socialIconWrapper}>
-                  <AntDesign name="google" size={30} color={"#DB4437"} />
-                </View>
-              </View>
             </TouchableOpacity>
+
+            <Text style={[styles.footerText, { marginTop: 20 }]}>
+              or create Account using Social Media
+            </Text>
+
+            <View style={styles.socialMediaContainer}>
+              <View style={styles.socialIconWrapper}>
+                <Entypo name="facebook-with-circle" size={30} color={"#3b5998"} />
+              </View>
+              <View style={styles.socialIconWrapper}>
+                <Entypo name="twitter-with-circle" size={30} color={"#1DA1F2"} />
+              </View>
+              <View style={styles.socialIconWrapper}>
+                <AntDesign name="google" size={30} color={"#DB4437"} />
+              </View>
+            </View>
           </View>
           
           {/* Add extra space at the bottom to prevent content from being hidden behind the vector */}
@@ -118,6 +254,18 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "bold", 
     color: "#0f0f0f",
+  },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 40,
+    marginBottom: 15,
+  },
+  errorText: {
+    color: '#d32f2f',
+    textAlign: 'center',
+    fontSize: 14,
   },
   inputContainer: {
     backgroundColor: "#FFFFFF",
@@ -166,6 +314,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginHorizontal: 10,
+  },
+  loadingContainer: {
+    height: 34,
+    width: 56,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 10,
+    backgroundColor: '#f0f0f0',
   },
   footerText: {
     color: "#262626",

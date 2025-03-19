@@ -6,22 +6,21 @@ export const registerUser = async (req, res) => {
     try {
         const { username, email, mobileNumber, password } = req.body;
 
-        // Check if user already exists
+        
         let userExists = await User.findOne({ $or: [{ email }, { username }] });
         if (userExists) return res.status(400).json({ message: "User already exists" });
 
-        // Hash the password 
+        
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create new user with default profile fields
+        
         const user = new User({
             username,
             email,
             mobileNumber,
             password: hashedPassword,
-            // Initialize other profile fields with defaults
-            fullName: '', // Empty string instead of being required
+            fullName: '', 
             gender: '',
             dateOfBirth: null,
             phoneNumber: '',
@@ -49,7 +48,7 @@ export const loginUser = async (req, res) => {
         console.log("Email:", email);
         console.log("Password length:", password ? password.length : 'No password provided');
 
-        // Check if email or password are empty
+        
         if (!email || !password) {
             return res.status(400).json({ 
                 message: "Email and password are required",
@@ -60,10 +59,10 @@ export const loginUser = async (req, res) => {
             });
         }
         
-        // Find user by email
+        
         const user = await User.findOne({ email });
         
-        // Detailed logging for debugging
+        
         if (!user) {
             console.log(`No user found with email: ${email}`);
             console.log("Existing users in database:");
@@ -76,7 +75,7 @@ export const loginUser = async (req, res) => {
             });
         }
         
-        // Verify password
+        
         const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
@@ -90,7 +89,7 @@ export const loginUser = async (req, res) => {
         // Create JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-        // Return success with token and user info
+       
         res.json({ 
             token, 
             user: { 
@@ -177,24 +176,24 @@ export const changePassword = async (req, res) => {
         const userId = req.user.id;
         const { currentPassword, newPassword } = req.body;
 
-        // Find user
+      
         const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Verify current password
+        
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Current password is incorrect' });
         }
 
-        // Hash new password
+        
         const salt = await bcrypt.genSalt(10);
         const hashedNewPassword = await bcrypt.hash(newPassword, salt);
 
-        // Update password
+        
         user.password = hashedNewPassword;
         await user.save();
 

@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import connectDB from "./config/dbconnect.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js";
@@ -11,6 +12,7 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // Routes
 app.use("/api/login", loginRoutes);

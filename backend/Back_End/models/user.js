@@ -8,20 +8,21 @@ const UserSchema = new mongoose.Schema({
   },
   fullName: {
     type: String,
-    default: ''
+    required: true
   },
   email: {
     type: String,
     required: true,
     unique: true
   },
-  mobileNumber: {
-    type: String,
-    required: true
-  },
   password: {
     type: String,
     required: true
+  },
+  mobileNumber: {
+    type: String,
+    default: '',
+    sparse: true  
   },
   gender: {
     type: String,
@@ -66,5 +67,5 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Change export to use mongoose.model
-export default mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
+export default User;

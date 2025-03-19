@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView,Image } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image } from "react-native";
 import React, { useState } from "react";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -15,7 +15,7 @@ const HomeScreen = () => {
   
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState("Home");
-  const [isDrawerVisible, setIsDrawerVisible] = useState (false);
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
   const categories = [
     {
@@ -108,7 +108,6 @@ const HomeScreen = () => {
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
- 
   };
 
   const toggleDrawer = () => {
@@ -119,7 +118,6 @@ const HomeScreen = () => {
       <Text style={styles.sectionTitle}>{title}</Text>
       <TouchableOpacity onPress={onSeeAll}>
         <Text style={styles.seeAllText}>See All</Text>
-        
       </TouchableOpacity>
     </View>
   );
@@ -136,143 +134,132 @@ const HomeScreen = () => {
           <Text style={styles.headerText}>HOME</Text>
         </View>
 
-        
-      
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')} >
           <FontAwesome name="sliders" size={24} color="white" />
         </TouchableOpacity>
-
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-     
+        {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('Categories'))}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesContainer}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={styles.categoryCard}
+              onPress={() => navigation.navigate('JobsList', { category })}
+            >
+              <View style={styles.categoryIcon}>
+                {category.Icon()}
+              </View>
+              <Text style={styles.categoryTitle}>{category.title}</Text>
+              <Text style={styles.jobCount}>({category.jobs} jobs)</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {renderSectionHeader("JOBS", () => navigation.navigate('Jobs'))}
+        <View style={styles.jobsContainer}>
+          {jobs.map((job) => (
+            <TouchableOpacity
+              key={job.id}
+              style={styles.jobCard}
+              onPress={() => navigation.navigate('JobSingle', { job })}
+            >
+              <View style={styles.jobHeader}>
+                <Image
+                  source={{ uri: 'https://images.unsplash.com/photo-1549924231-f129b911e442?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80' }}
+                  style={styles.companyLogo}
+                />
+                <View style={styles.jobInfo}>
+                  <Text style={styles.jobTitle}>{job.title}</Text>
+                  <Text style={styles.companyName}>{job.company}</Text>
+                  <Text style={styles.location}>{job.location}</Text>
+                </View>
+                <TouchableOpacity>
+                  <MaterialIcons name="bookmark-border" size={24} color="#623AA2" />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.jobDescription}>{job.description}</Text>
+              <View style={styles.jobFooter}>
+                <Text style={styles.salary}>{job.salary}</Text>
+                <TouchableOpacity style={styles.applyButton}>
+                  <Text style={styles.applyButtonText}>APPLY</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {renderSectionHeader("COMPANIES", () => navigation.navigate('Companies'))}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.companiesContainer}
+        >
+          {companies.map((company) => (
+            <TouchableOpacity
+              key={company.id}
+              style={styles.companyCard}
+              onPress={() => navigation.navigate('CompanyDetails', { company })}
+            >
+              <Image 
+                source={{ uri: company.logo }}
+                style={styles.companyLogo}
+                resizeMode="contain"
+              />
+              <Text style={styles.companyName}>{company.name}</Text>
+              <Text style={styles.companyJobs}>({company.jobCount} jobs)</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {renderSectionHeader("OUR TESTIMONIALS")}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.testimonialsContainer}
+        >
+          {testimonials.map((testimonial) => (
+            <View key={testimonial.id} style={styles.testimonialCard}>
+              <Image 
+                source={{ uri: testimonial.image }}
+                style={styles.testimonialImage}
+              />
+              <Text style={styles.testimonialName}>{testimonial.name}</Text>
+              <Text style={styles.testimonialRole}>{testimonial.role}</Text>
+              <Text style={styles.testimonialText}>{testimonial.text}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </ScrollView>
+
+      <TabNavigation 
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+      />
+
+      <CustomDrawer 
+        isVisible={isDrawerVisible}
+        onClose={() => setIsDrawerVisible(false)}
+        navigation={navigation}
+      />
 
       <TouchableOpacity 
-  style={styles.avatar}
-  onPress={() => navigation.navigate('Chatbot')}
->
-  <Image 
-    source={require('../../assets/bot.png')}
-    style={{ width: 160, height: 150 }} 
-  />
-</TouchableOpacity>
-
-    {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('Categories'))}
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false}
-      style={styles.categoriesContainer}
-    >
-      {categories.map((category) => (
-        <TouchableOpacity
-          key={category.id}
-          style={styles.categoryCard}
-          onPress={() => navigation.navigate('JobsList', { category })}
-        >
-          <View style={styles.categoryIcon}>
-            {category.Icon()}
-          </View>
-          <Text style={styles.categoryTitle}>{category.title}</Text>
-          <Text style={styles.jobCount}>({category.jobs} jobs)</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-
-
-    {renderSectionHeader("JOBS", () => navigation.navigate('Jobs'))}
-    <View style={styles.jobsContainer}>
-      {jobs.map((job) => (
-        <TouchableOpacity
-          key={job.id}
-          style={styles.jobCard}
-          onPress={() => navigation.navigate('JobSingle', { job })}
-        >
-          <View style={styles.jobHeader}>
-            <Image
-              source={{ uri: 'https://images.unsplash.com/photo-1549924231-f129b911e442?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80' }}
-              style={styles.companyLogo}
-            />
-            <View style={styles.jobInfo}>
-              <Text style={styles.jobTitle}>{job.title}</Text>
-              <Text style={styles.companyName}>{job.company}</Text>
-              <Text style={styles.location}>{job.location}</Text>
-            </View>
-            <TouchableOpacity>
-              <MaterialIcons name="bookmark-border" size={24} color="#623AA2" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.jobDescription}>{job.description}</Text>
-          <View style={styles.jobFooter}>
-            <Text style={styles.salary}>{job.salary}</Text>
-            <TouchableOpacity style={styles.applyButton}>
-              <Text style={styles.applyButtonText}>APPLY</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      ))}
+        style={styles.avatar}
+        onPress={() => navigation.navigate('Chatbot')}
+      >
+        <Image 
+          source={require('../../assets/bot.png')}
+          style={{ width: 160, height: 150 }} 
+        />
+      </TouchableOpacity>
     </View>
-
-    
-    {renderSectionHeader("COMPANIES", () => navigation.navigate('Companies'))}
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false}
-      style={styles.companiesContainer}
-    >
-      {companies.map((company) => (
-        <TouchableOpacity
-          key={company.id}
-          style={styles.companyCard}
-          onPress={() => navigation.navigate('CompanyDetails', { company })}
-        >
-          <Image 
-            source={{ uri: company.logo }}
-            style={styles.companyLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.companyName}>{company.name}</Text>
-          <Text style={styles.companyJobs}>({company.jobCount} jobs)</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-
-    {renderSectionHeader("OUR TESTIMONIALS")}
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false}
-      style={styles.testimonialsContainer}
-    >
-      {testimonials.map((testimonial) => (
-        <View key={testimonial.id} style={styles.testimonialCard}>
-          <Image 
-            source={{ uri: testimonial.image }}
-            style={styles.testimonialImage}
-          />
-          
-          <Text style={styles.testimonialName}>{testimonial.name}</Text>
-          <Text style={styles.testimonialRole}>{testimonial.role}</Text>
-          <Text style={styles.testimonialText}>{testimonial.text}</Text>
-        </View>
-      ))}
-    </ScrollView>
-  </ScrollView>
-
-  <TabNavigation 
-    activeTab={activeTab}
-    onTabPress={handleTabPress}
-  />
-
-  <CustomDrawer 
-    isVisible={isDrawerVisible}
-    onClose={() => setIsDrawerVisible(false)}
-    navigation={navigation}
-  />
-</View>
-   
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -319,12 +306,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
-
   seeAllText: {
     color: '#623AA2',
     fontSize: 16,
   },
-
   categoriesContainer: {
     marginBottom: 24,
   },
@@ -360,7 +345,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-
   jobsContainer: {
     marginBottom: 24,
   },
@@ -430,7 +414,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-
   companiesContainer: {
     marginBottom: 24,
   },
@@ -447,7 +430,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  
   companyLogo: {
     width: 60,
     height: 60,
@@ -464,7 +446,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-
   testimonialsContainer: {
     marginBottom: 24,
   },
@@ -481,24 +462,22 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   avatar: {
-      position: 'absolute',
-      right:30,
-      top:520,
-      zIndex: 999, 
-      elevation: 1000,  
-      width: 70,
-      height: 70,
-      borderRadius: 35, 
-      backgroundColor: '#fff',
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
-    
+    position: 'absolute',
+    right: 30,
+    bottom: 80, // Positioning it above the tab navigation
+    zIndex: 999, 
+    elevation: 1000,  
+    width: 70,
+    height: 70,
+    borderRadius: 35, 
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
-  
   testimonialImage: {
     width: 60,
     height: 60,

@@ -8,11 +8,17 @@ import {
   TextInput,
   Image,
   Dimensions,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = 'http://192.168.43.152:5000/api';
 
 const EditProfile = ({ navigation, route }) => {
   const [userData, setUserData] = useState(route.params?.userData || {});
@@ -64,9 +70,9 @@ const EditProfile = ({ navigation, route }) => {
         homeAddress: userData.homeAddress,
         country: userData.country,
         zipCode: userData.zipCode,
-        college: userData.education?.college,
-        highSchool: userData.education?.highSchool,
-        higherSecondaryEducation: userData.education?.higherSecondary,
+        college: userData.college,
+        highSchool: userData.highSchool,
+        higherSecondaryEducation: userData.higherSecondaryEducation,
         skills: skills
       };
       
@@ -297,39 +303,33 @@ const EditProfile = ({ navigation, route }) => {
             <Text style={styles.label}>College</Text>
             <TextInput
               style={styles.input}
-              value={userData.education?.college}
+              value={userData.college}
               onChangeText={(text) => setUserData({
-                ...userData,
-                education: { ...userData.education, college: text }
-              })}
+              ...userData,
+              college: text
+  })}
               placeholder="Enter your college"
-            />
-          </View>
+/>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>High School Degree</Text>
-            <TextInput
+           <TextInput
               style={styles.input}
-              value={userData.education?.highSchool}
+              value={userData.highSchool}
               onChangeText={(text) => setUserData({
-                ...userData,
-                education: { ...userData.education, highSchool: text }
-              })}
-              placeholder="Enter your high school degree"
-            />
-          </View>
+              ...userData,
+              highSchool: text
+  })}
+             placeholder="Enter your high school degree"
+/>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Higher Secondary Education</Text>
-            <TextInput
-              style={styles.input}
-              value={userData.education?.higherSecondary}
-              onChangeText={(text) => setUserData({
-                ...userData,
-                education: { ...userData.education, higherSecondary: text }
-              })}
-              placeholder="Enter your higher secondary education"
-            />
+           <TextInput
+             style={styles.input}
+             value={userData.higherSecondaryEducation}
+             onChangeText={(text) => setUserData({
+             ...userData,
+             higherSecondaryEducation: text
+  })}
+             placeholder="Enter your higher secondary education"
+/>
           </View>
         </View>
 

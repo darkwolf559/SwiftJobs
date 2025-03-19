@@ -137,3 +137,19 @@ export const getUserProfile = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+export const updateUserProfile = async (req, res) => {
+    try {
+      const updates = req.body;
+      const user = await User.findByIdAndUpdate(
+        req.user.id,
+        updates,
+        { new: true, runValidators: true }
+      ).select("-password");
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Update profile error:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };

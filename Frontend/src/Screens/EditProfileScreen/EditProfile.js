@@ -44,11 +44,66 @@ const EditProfile = ({ navigation, route }) => {
     }
   };
 
-  const handleSave = () => {
-    console.log('Saving user data:', { ...userData, profileImage, coverImage });
-    navigation.goBack();
+  const handleSave = async () => {
+    try {
+      setIsLoading(true); 
+      const token = await AsyncStorage.getItem('authToken');
+      
+      if (!token) {
+        Alert.alert('Error', 'You need to be logged in');
+        navigation.navigate('Login');
+        return;
+      }
+      
+      
+      const updatedData = {
+        fullName: userData.fullName,
+        gender: userData.gender,
+        phoneNumber: userData.phoneNumber,
+        email: userData.email,
+        homeAddress: userData.homeAddress,
+        country: userData.country,
+        zipCode: userData.zipCode,
+        college: userData.education?.college,
+        highSchool: userData.education?.highSchool,
+        higherSecondaryEducation: userData.education?.higherSecondary,
+        skills: skills
+      };
+      
+      console.log('Updating user data:', updatedData);
+      
+      // Make API request with auth token
+      const response = await axios.put(`${API_URL}/profile`, updatedData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      
+      if (profileImage || coverImage) {
+        console.log('Images need to be uploaded separately');
+      }
+      
+      Alert.alert('Success', 'Profile updated successfully');
+      
+      // Navigate back to profile screen
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      
+      if (error.response) {
+        Alert.alert('Update Failed', error.response.data.message || 'Failed to update profile');
+      } else if (error.request) {
+        Alert.alert('Network Error', 'Could not connect to the server');
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred');
+      }
+    } finally {
+      setIsLoading(false); 
+    }
   };
-
+  const [isLoading, setIsLoading] = useState(false);
   const handleAddSkill = () => {
     if (newSkill.trim()) {
       setSkills([...skills, newSkill.trim().toUpperCase()]);
@@ -326,16 +381,21 @@ const EditProfile = ({ navigation, route }) => {
 
         {/* Save Button */}
         <TouchableOpacity 
-          style={styles.saveButton}
-          onPress={handleSave}
-        >
-          <LinearGradient
-            colors={["#623AA2", "#F97794"]}
-            style={styles.saveButtonGradient}
-          >
-            <Text style={styles.saveButtonText}>SAVE</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+           style={styles.saveButton}
+           onPress={handleSave}
+           disabled={isLoading}
+>
+        <LinearGradient
+           colors={["#623AA2", "#F97794"]}
+           style={styles.saveButtonGradient}
+  >
+         {isLoading ? (
+         <ActivityIndicator size="small" color="#fff" />
+    ) : (
+         <Text style={styles.saveButtonText}>SAVE</Text>
+    )}
+         </LinearGradient>
+</TouchableOpacity>
       </ScrollView>
     </View>
   );

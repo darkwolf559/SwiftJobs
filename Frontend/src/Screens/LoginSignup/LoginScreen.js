@@ -8,14 +8,14 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// API URL - adjust based on your environment
-const API_URL = 'http://192.168.43.152:5000/api'; // For Android emulator
-// const API_URL = 'http://localhost:5000/api'; // For iOS simulator
+
+const API_URL = 'http://192.168.43.152:5000/api'; 
+
 
 const LoginScreen = () => {
   const navigation = useNavigation();  
   
-  // State for form fields
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,16 +60,12 @@ const LoginScreen = () => {
     } catch (error) {
       console.error('Login error:', error);
       
-      // Handle different error scenarios
+      
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         Alert.alert('Login Failed', error.response.data.message || 'Invalid credentials');
       } else if (error.request) {
-        // The request was made but no response was received
         Alert.alert('Network Error', 'Could not connect to the server. Please check your internet connection.');
       } else {
-        // Something happened in setting up the request that triggered an Error
         Alert.alert('Error', 'An unexpected error occurred');
       }
     } finally {

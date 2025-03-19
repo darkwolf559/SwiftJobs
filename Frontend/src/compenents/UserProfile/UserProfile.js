@@ -81,12 +81,12 @@ const UserProfile = ({ navigation }) => {
   useEffect(() => {
     fetchUserProfile();
     
-    // Add listener to refresh data when screen comes into focus
+  
     const unsubscribe = navigation.addListener('focus', () => {
       fetchUserProfile();
     });
     
-    // Clean up listener on unmount
+
     return unsubscribe;
   }, [navigation]);
 
@@ -183,7 +183,7 @@ const UserProfile = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      
       <LinearGradient 
         colors={["#623AA2", "#F97794"]} 
         style={styles.header}
@@ -213,7 +213,7 @@ const UserProfile = ({ navigation }) => {
       </LinearGradient>
 
       <ScrollView style={styles.scrollView}>
-        {/* Profile Banner and Info Card */}
+    
         <View style={styles.profileBannerContainer}>
           <Image 
             source={require('../../assets/20943599.jpg')}
@@ -235,7 +235,7 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Basic Information Section */}
+       
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>BASIC INFORMATION</Text>
           <View style={styles.sectionContent}>
@@ -273,7 +273,7 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Location Section */}
+    
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>LOCATION</Text>
           <View style={styles.sectionContent}>
@@ -296,7 +296,7 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Education Section */}
+   
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>EDUCATION</Text>
           <View style={styles.sectionContent}>
@@ -317,7 +317,7 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Account Information Section */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>ACCOUNT INFORMATION</Text>
           <View style={styles.sectionContent}>
@@ -330,7 +330,7 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Edit Button */}
+    
         <View style={styles.editButtonContainer}>
           <TouchableOpacity onPress={handleEditPress}>
             <LinearGradient 

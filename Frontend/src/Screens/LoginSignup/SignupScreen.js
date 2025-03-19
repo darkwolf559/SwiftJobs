@@ -6,7 +6,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { authService } from '../../services/api'; // Import auth service
+import { authService } from '../../services/api'; 
 
 const SignupScreen = () => {
   const navigation = useNavigation();  
@@ -68,7 +68,7 @@ const SignupScreen = () => {
         password,
         email,
         mobileNumber: mobile,
-        fullName: fullName // Using explicit fullName field
+        fullName: fullName 
       });
       
       setLoading(false);
@@ -98,7 +98,6 @@ const SignupScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Background vector image - placed first so it stays at the bottom */}
       <View style={styles.LoginVectorContainer}>
         <ImageBackground source={require("../../assets/createPageBottom.png")} style={styles.LoginVector}></ImageBackground>
       </View>
@@ -225,7 +224,7 @@ const SignupScreen = () => {
             </View>
           </View>
           
-          {/* Add extra space at the bottom to prevent content from being hidden behind the vector */}
+
           <View style={{ height: 50 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -290,7 +289,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -10,
     left: -10,
-    zIndex: -1, // Make sure it stays behind other content
+    zIndex: -1, 
   },
   LoginVector: {
     height: 250,

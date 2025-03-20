@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView,  TextInput,  TouchableOpacity,  SafeAreaView, StatusBar, Platform, KeyboardAvoidingView,
+import { StyleSheet, View, Text, ScrollView,  TextInput,  TouchableOpacity,  SafeAreaView, StatusBar, Platform, KeyboardAvoidingView,Modal,FlatList
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 const { width } = Dimensions.get('window');
@@ -13,6 +13,7 @@ const JobPostingPage = () => {
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
     jobTitle: '',
+    category: 'Select Category',
     jobDescription: '',
     payment: '',
     location: '',
@@ -25,9 +26,20 @@ const JobPostingPage = () => {
     employerWebsite: '',
     applicationDeadline: ''
   });
-
+  const categoryOptions = [
+    { id: 1, label: 'TECHNOLOGY' },
+    { id: 2, label: 'HEALTHCARE' },
+    { id: 3, label: 'EDUCATION' },
+    { id: 4, label: 'AGRICULTURE' },
+    { id: 5, label: 'FINANCIAL' },
+    { id: 6, label: 'TRANSPOTATION' },
+    { id: 7, label: 'CONSTRUCTION' },
+    { id: 8, label: 'DOMESTIC WORKS' },
+    { id: 9, label: 'OTHERS' }
+  ];
   // Validation state
   const [errors, setErrors] = useState({});
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData({
@@ -43,12 +55,28 @@ const JobPostingPage = () => {
     }
   };
 
+  const handleCategorySelect = (category) => {
+    setFormData({
+      ...formData,
+      category: category.label
+    });
+    setShowCategoryDropdown(false);
+    
+    // Clear error for category if exists
+    if (errors.category) {
+      const newErrors = {...errors};
+      delete newErrors.category;
+      setErrors(newErrors);
+    }
+  };
+
   // Validate the form
   const validateForm = () => {
     const newErrors = {};
     
     // Required fields
     if (!formData.jobTitle) newErrors.jobTitle = 'Job title is required';
+    if (formData.category === 'Select Category') newErrors.category = 'Category is required';
     if (!formData.jobDescription) newErrors.jobDescription = 'Job description is required';
     if (!formData.payment) newErrors.payment = 'Payment information is required';
     if (!formData.location) newErrors.location = 'Location is required';
@@ -99,6 +127,58 @@ const JobPostingPage = () => {
     </View>
   );
 
+  const renderCategoryDropdown = () => (
+    <View style={styles.fieldContainer}>
+      <Text style={styles.fieldLabel}>
+        Category <Text style={styles.requiredStar}>*</Text>
+      </Text>
+      <TouchableOpacity 
+        style={[
+          styles.dropdownButton,
+          errors.category && styles.errorInput
+        ]} 
+        onPress={() => setShowCategoryDropdown(true)}
+      >
+        <Text style={formData.category === 'Select Category' ? styles.dropdownPlaceholder : styles.dropdownText}>
+          {formData.category}
+        </Text>
+        <Icon name="arrow-drop-down" size={24} color="#555" />
+      </TouchableOpacity>
+      {errors.category && (
+        <Text style={styles.errorText}>{errors.category}</Text>
+      )}
+      
+      {/* Category Dropdown Modal */}
+      <Modal
+        visible={showCategoryDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCategoryDropdown(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setShowCategoryDropdown(false)}
+        >
+          <View style={styles.dropdownModal}>
+            <FlatList
+              data={categoryOptions}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({item}) => (
+                <TouchableOpacity 
+                  style={styles.dropdownItem}
+                  onPress={() => handleCategorySelect(item)}
+                >
+                  <Text style={styles.dropdownItemText}>{item.label}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#8a4bff" barStyle="light-content" />
@@ -131,6 +211,7 @@ const JobPostingPage = () => {
             
             {/* Form Fields */}
             {renderField('Job Title', 'jobTitle', 'e.g., Web Designing')}
+            {renderCategoryDropdown()}
             {renderField('Job Description', 'jobDescription', 'Describe the job responsibilities, requirements, and other details...', true)}
             {renderField('Payment', 'payment', 'e.g., $50,000 - $70,000 a year')}
             {renderField('Location', 'location', 'e.g., Los Angeles, CA')}
@@ -266,6 +347,50 @@ const styles = StyleSheet.create({
   bottomSpace: {
     height: 50,
   },
+  dropdownButton: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  dropdownPlaceholder: {
+    fontSize: 16,
+    color: '#aaa',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  dropdownModal: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    width: width * 0.8,
+    maxHeight: 300,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  dropdownItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: '#333',
+  }
 });
 
 export default JobPostingPage;

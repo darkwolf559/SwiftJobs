@@ -33,10 +33,8 @@ export default App = () => {
     <NavigationContainer>
       <StatusBar style="auto" />
 
-         
-
       <Stack.Navigator 
-        initialRouteName="Onboarding"
+        initialRouteName="Home"
         screenOptions={{headerShown: false}}
       >
         <Stack.Screen name="Home" component={HomeScreen} />

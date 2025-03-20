@@ -112,91 +112,54 @@ const JobSingle = ({ route, navigation }) => {
             </View>
           </>
         );
-        case 'Company':
+        case 'Employer':
           return (
-            <View style={styles.companyTabContainer}>
-            {/* About Us Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionAbout}>About Us</Text>
-              <View style={styles.sectionContent}>
-                <Text style={styles.description}>{companyInfo?.description || 'Company description not available'}</Text>
+            <>
+            <Text style={styles.topics}>Employer Information</Text>
+            <View style={styles.card}>
+              <View style={styles.employerDetail}>
+                <Icon name="business" size={24} color="#601cd6" />
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Company Name</Text>
+                  <Text style={styles.detailValue}>{jobData?.employerName}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.employerDetail}>
+                <Icon name="mail" size={24} color="#601cd6" />
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Email</Text>
+                  <Text style={styles.detailValue}>{jobData?.employerEmail}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.employerDetail}>
+                <Icon name="call" size={24} color="#601cd6" />
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Phone</Text>
+                  <Text style={styles.detailValue}>{jobData?.employerPhone}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.employerDetail}>
+                <Icon name="globe" size={24} color="#601cd6" />
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Website</Text>
+                  <TouchableOpacity onPress={() => openLink(jobData?.employerWebsite)}>
+                    <Text style={[styles.detailValue, styles.link]}>{jobData?.employerWebsite}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              
+              <View style={styles.employerDetail}>
+                <Icon name="calendar" size={24} color="#601cd6" />
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Application Deadline</Text>
+                  <Text style={styles.detailValue}>{jobData?.applicationDeadline}</Text>
+                </View>
               </View>
             </View>
-            
-            {/* Company Overview Section */}
-            <View style={{marginLeft: 20}}>
-              <View>
-                <Text style={styles.overview}>COMPANY OVERVIEW</Text>
-              </View>
-              
-              <View style={styles.details}>
-                <Icon name="storefront" size={30} color="#601cd6" style={{ marginTop: 10 }} />
-                <View>
-                  <Text style={styles.overTopic}>Services</Text>
-                  <Text style={styles.overFeature}>{companyInfo?.services || 'Service information not available'}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.details}>
-                <Icon name="location" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
-                <View>
-                  <Text style={styles.overTopic}>Location</Text>
-                  <Text style={styles.overFeature}>{companyInfo?.location || 'Location not available'}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.details}>
-                <Icon name="call" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
-                <View>
-                  <Text style={styles.overTopic}>Phone Number</Text>
-                  <Text style={styles.overFeature}>{companyInfo?.contactPhone || 'Phone number not available'}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.details}>
-                <Icon name="mail" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
-                <View>
-                  <Text style={styles.overTopic}>Email Address</Text>
-                  <Text style={styles.overFeature}>{companyInfo?.contactEmail || 'Email not available'}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.details}>
-                <Icon name="logo-chrome" size={30} color="#601cd6" style={{ marginTop: 10 }}/>
-                <View>
-                  <Text style={styles.overTopic}>Website</Text>
-                  <Text style={styles.overFeature}>{companyInfo?.website || 'Website not available'}</Text>
-                </View>
-              </View>
-              
-              {/* Social Profile Section */}
-              <View>
-                <Text style={styles.overview}>SOCIAL PROFILE</Text>
-              </View>
-              
-              <View style={styles.details}>
-                <TouchableOpacity onPress={() => openLink('https://www.linkedin.com/swiftjobs')}>
-                  <Icon name="logo-linkedin" size={35} color="#0077B5" style={{ marginTop: 10,marginLeft:30 }}/>
-                </TouchableOpacity>
-                
-                <TouchableOpacity onPress={() => openLink('https://twitter.com/swiftjobs')}>
-                  <Icon name="logo-twitter" size={35} color="#1DA1F2" style={{ marginTop: 10,marginLeft:30}}/>
-                </TouchableOpacity>
-                
-                <TouchableOpacity onPress={() => openLink('https://wa.me/94751239976')}>
-                  <Icon name="logo-whatsapp" size={35} color="#128C7E" style={{ marginTop: 10,marginLeft:30}}/>
-                </TouchableOpacity>
-                
-                <TouchableOpacity onPress={() => openLink('https://youtube.com/swiftjobs')}>
-                  <Icon name="logo-youtube" size={35} color="#FF0000" style={{ marginTop: 10,marginLeft:30}}/>
-                </TouchableOpacity>
-                
-                <TouchableOpacity onPress={() => openLink('https://www.facebook.com/swiftjobs')}>
-                  <Icon name="logo-facebook" size={35} color="#1877F2" style={{ marginTop: 10,marginLeft:30}}/>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+          </>
           );
           case 'Review':
             return (
@@ -340,7 +303,7 @@ const JobSingle = ({ route, navigation }) => {
         </View>
 
         <View style={styles.tabContainer}>
-          {['Description', 'Company','Review'].map((tab) => (
+          {['Description', 'Employer','Review'].map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[styles.tab, activeTab === tab && styles.activeTab]}

@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome5';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
-import { jobService } from '../../services/api'; // Import job service
+import { jobService } from '../../services/api'; 
 
 const { width } = Dimensions.get('window');
 
@@ -28,55 +28,55 @@ const CategoryScreen = ({ navigation }) => {
     {
       id: '1',
       title: 'TECHNOLOGY',
-      Icon: () => <Icon name="code" size={24} color="#623AA2" />,
+      Icon: () => <Icon name="computer" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '2',
       title: 'HEALTHCARE',
-      Icon: () => <IoniconsIcon name="laptop-outline" size={24} color="#6F67FE" />,
+      Icon: () => <FontAwesomeIcon name="stethoscope" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '3',
       title: 'EDUCATION',
-      Icon: () => <Icon name="trending-up" size={24} color="#6F67FE"/>,
+      Icon: () => <Icon name="school" size={24} color="#6F67FE"/>,
       jobs: 0,
     },
     {
       id: '4',
       title: 'AGRICULTURE',
-      Icon: () => <FontAwesomeIcon name="stethoscope" size={24} color="#6F67FE" />,
+      Icon: () => <FontAwesomeIcon name="tractor" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '5',
       title: 'FINANCIAL',
-      Icon: () => <FoundationIcon name="home" size={24} color="#6F67FE"/>,
+      Icon: () => <FontAwesomeIcon name="chart-line" size={24} color="#6F67FE"/>,
       jobs: 0,
     },
     {
       id: '6',
       title: 'TRANSPOTATION',
-      Icon: () => <FontAwesomeIcon name="pen-nib" size={24} color="#6F67FE"/>,
+      Icon: () => <FontAwesomeIcon name="truck" size={24} color="#6F67FE"/>,
       jobs: 0,
     },
     {
       id: '7',
       title: 'CONSTRUCTION',
-      Icon: () => <FontAwesomeIcon name="utensils" size={24} color="#6F67FE" />,
+      Icon: () => <FontAwesomeIcon name="hard-hat" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '8',
       title: 'DOMESTIC WORKS',
-      Icon: () => <Icon name="article" size={24} color="#6F67FE" />,
+      Icon: () => <FontAwesomeIcon name="home" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '9',
       title: 'OTHERS',
-      Icon: () => <Icon name="article" size={24} color="#6F67FE" />,
+      Icon: () => <Icon name="my-library-add" size={24} color="#6F67FE" />,
       jobs: 0,
     },
   ];

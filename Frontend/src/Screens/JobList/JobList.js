@@ -202,16 +202,16 @@ const JobsList = ({ route, navigation }) => {
             </TouchableOpacity>
           ))
         ) : (
-          <View style={styles.noJobsContainer}>
-            <Icon name="work-off" size={80} color="#ccc" />
-            <Text style={styles.noJobsText}>No jobs found in this category</Text>
-            <TouchableOpacity 
-              style={styles.postJobButton}
-              onPress={() => navigation.navigate('JobPosting')}
-            >
-              <Text style={styles.postJobText}>Post a Job</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.noJobsContainer}>
+        <Icon name="search-off" size={80} color="#CACACA" />
+        <Text style={styles.noJobsText}>No jobs found in this category</Text>
+      <TouchableOpacity 
+         style={styles.postJobButton}
+         onPress={() => navigation.navigate('JobPostingPage')}
+      >
+        <Text style={styles.postJobText}>Post a Job</Text>
+       </TouchableOpacity>
+        </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -321,6 +321,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  noJobsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  noJobsText: {
+    fontSize: 16,
+    color: '#757575',
+    marginTop: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  postJobButton: {
+    backgroundColor: '#623AA2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  postJobText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  }
 });
 
 export default JobsList;

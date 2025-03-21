@@ -22,7 +22,7 @@ const JobSingle = ({ route, navigation }) => {
     1: 20
   });
 
-  // Fetch job data from API
+
   useEffect(() => {
     const fetchJobData = async () => {
       try {
@@ -33,7 +33,7 @@ const JobSingle = ({ route, navigation }) => {
           console.log('Fetching job with ID:', jobId);
           const data = await jobService.getJobById(jobId);
           
-          // Format job data for display
+         
           const formattedJob = {
             title: data.jobTitle,
             salary: data.payment,
@@ -41,27 +41,23 @@ const JobSingle = ({ route, navigation }) => {
             location: data.location,
             jobDescription: data.jobDescription,
             requiredSkills: data.requiredSkills,
-            workingHours: data.workingHours ? `${data.workingHoursPerDay} hours per day` : 'Flexible',
+            workingHours: data.workingHours,
             employerName: data.employerName || 'Company Name Not Available',
             employerEmail: data.employerEmail || data.employerMobile || 'Email Not Available',
             employerPhone: data.employerPhone || 'Phone Not Available',
             employerWebsite: data.employerWebsite || 'Website Not Available',
-            applicationDeadline: new Date(data.applicationDeadline).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })
+            applicationDeadline: data.applicationDeadline || 'Deadline not Available'
           };
           
           setJobData(formattedJob);
         } else {
-          // Fallback to sample data if no job ID
+          
           setJobData(getSampleJobData());
         }
       } catch (error) {
         console.error('Error fetching job data:', error);
         setError('Failed to load job details. Please try again.');
-        setJobData(getSampleJobData()); // Use sample data as fallback
+        setJobData(getSampleJobData());
       } finally {
         setLoading(false);
       }
@@ -70,7 +66,7 @@ const JobSingle = ({ route, navigation }) => {
     fetchJobData();
   }, [jobId]);
 
-  // Sample job data as fallback
+
   const getSampleJobData = () => {
     return {
       title: "Driving Vacancy",
@@ -94,7 +90,7 @@ const JobSingle = ({ route, navigation }) => {
       return;
     }
     
-    // Add https:// if not present
+ 
     const fullUrl = url.startsWith('http') ? url : `https://${url}`;
     Linking.openURL(fullUrl).catch(() => Alert.alert('Error', 'Failed to open link'));
   };
@@ -127,7 +123,7 @@ const JobSingle = ({ route, navigation }) => {
     Alert.alert('Success', 'Your review has been submitted!');
   };
 
-  // Show loading indicator
+
   if (loading) {
     return (
       <>
@@ -155,7 +151,7 @@ const JobSingle = ({ route, navigation }) => {
     );
   }
 
-  // Show error message
+
   if (error && !jobData) {
     return (
       <>
@@ -382,19 +378,31 @@ const JobSingle = ({ route, navigation }) => {
       <ScrollView contentContainerStyle={styles.container}>
       
       <View style={{marginLeft:15}}>
-        <View style={styles.card}>
-          <Icon name="briefcase" size={30} color="#601cd6" style={{ marginLeft:150 }}/>
-          <Text style={styles.title}>{jobData?.title}</Text>
-
-          <View style={styles.row}>
-            <Text style={styles.salary}>{jobData?.salary}</Text>
-            <Text style={styles.fullTime}>{jobData?.jobType}</Text>
-          </View>
-          
-          <View style={styles.locationRow}>
-            <Text style={styles.location}>{jobData?.location}</Text>
-          </View>
-        </View>
+      <View style={styles.jobHeaderContainer}>
+      <View style={styles.jobCard}>
+      <View style={styles.iconContainer}>
+      <Icon name="today" size={36} color="#601cd6" />
+    </View>
+    <Text style={styles.jobTitle}>{jobData?.title}</Text>
+    
+      <View style={styles.jobMetaContainer}>
+      <View style={styles.salaryContainer}>
+        <Icon name="cash-outline" size={16} color="#666" style={styles.metaIcon} />
+        <Text style={styles.salaryText}>{jobData?.salary}</Text>
+      </View>
+      
+      <View style={styles.jobTypeContainer}>
+        <Icon name="time-outline" size={16} color="#666" style={styles.metaIcon} />
+        <Text style={styles.jobTypeText}>{jobData?.jobType}</Text>
+       </View>
+     </View>
+    
+      <View style={styles.locationContainer}>
+      <Icon name="location-outline" size={16} color="#666" style={styles.metaIcon} />
+      <Text style={styles.locationText}>{jobData?.location}</Text>
+    </View>
+     </View>
+    </View>
 
         <View style={styles.tabContainer}>
           {['Description', 'Employer', 'Review'].map((tab) => (
@@ -503,39 +511,78 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#333',
-    marginBottom: 5,
+  jobHeaderContainer: {
+    paddingHorizontal: 15,
+    width: '100%',
   },
-  row: {
+  jobCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    alignItems: 'center',
+    marginLeft:-15
+  },
+  iconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#f0e6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  jobTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  jobMetaContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    width: '100%',
+    marginBottom: 12,
   },
-  salary: {
-    fontSize: 14,
+  salaryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  jobTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0e6ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  metaIcon: {
+    marginRight: 5,
+  },
+  salaryText: {
+    fontSize: 15,
     color: '#666',
-    marginRight: 10,
   },
-  fullTime: {
-    backgroundColor: '#ddd',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    fontSize: 12,
-    color: '#333',
-  },
-  locationRow: {
-    marginTop: -10,
-  },
-  location: {
+  jobTypeText: {
     fontSize: 14,
+    color: '#601cd6',
+    fontWeight: '600',
+  },
+  locationText: {
+    fontSize: 15,
     color: '#666',
-    marginLeft: 130,
   },
   topics: {
     color: "black",

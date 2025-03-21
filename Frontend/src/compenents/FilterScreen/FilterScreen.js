@@ -1,408 +1,271 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Slider
-} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
+import Slider from "@react-native-community/slider";
+import { Button, Avatar } from "react-native-elements";
+import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
-import { CheckBox } from '@rneui/themed';
+import { useNavigation } from "@react-navigation/native";
+import CityAutocomplete from "../compenents/CityAutoComplete";
 
-const FilterScreen = ({ navigation }) => {
-  // State for salary range
-  const [salaryRange, setSalaryRange] = useState([200000, 800000]);
+const FilterScreen = () => {
+  const [salaryRange, setSalaryRange] = useState({ min: 200000, max: 800000 });
+  const navigation = useNavigation();
   
-  // State for job types
-  const [jobTypes, setJobTypes] = useState({
-    fullTime: true,
-    partTime: false,
-    contract: false,
-    internship: true,
-    freelance: true,
-    commission: false
-  });
+
+  const initialCategories = {
+    technology: false,
+    healthcare: false,
+    education: false,
+    agriculture: false,
+    financial: false,
+    transportation: false,
+    construction: false,
+    domesticWorks: false,
+    others: false,
+  };
   
-  // State for experience level
-  const [experienceLevel, setExperienceLevel] = useState('mid');
-  
-  // Handle job type toggle
-  const toggleJobType = (type) => {
-    setJobTypes(prev => ({
-      ...prev,
-      [type]: !prev[type]
+  const [categories, setCategories] = useState(initialCategories);
+  const [location, setLocation] = useState('');
+
+ 
+  const toggleCategory = (category) => {
+    setCategories((prevCategories) => ({
+      ...prevCategories,
+      [category]: !prevCategories[category],
     }));
   };
+
   
-  // Handle experience level selection
-  const selectExperienceLevel = (level) => {
-    setExperienceLevel(level);
+  const clearFilters = () => {
+    setSalaryRange({ min: 200000, max: 800000 });
+    setCategories(initialCategories);
+    setLocation('');
   };
-  
-  // Handle min salary change
-  const handleMinSalaryChange = (value) => {
-    setSalaryRange([value, salaryRange[1]]);
+
+  const handleSearch = () => {
+    let minSalary = Number(salaryRange.min);
+    let maxSalary = Number(salaryRange.max);
+    
+    if (minSalary > maxSalary) {
+      const temp = minSalary;
+      minSalary = maxSalary;
+      maxSalary = temp;
+    }
+    
+    const selectedCategories = Object.keys(categories).filter(cat => categories[cat]);
+    
+    
+    const filters = {
+      salaryRange: {
+        min: isNaN(minSalary) ? 0 : minSalary,
+        max: isNaN(maxSalary) ? 1000000 : maxSalary
+      },
+      categories: selectedCategories,
+      location: location || '',
+    };
+    
+    if (selectedCategories.length === 0 && !location && 
+        minSalary === 200000 && maxSalary === 800000) {
+      Alert.alert(
+        "No Filters Applied", 
+        "You haven't selected any specific filters. All jobs will be shown.",
+        [{ 
+          text: "OK",
+          onPress: () => {
+            navigation.navigate('AllJobsScreen', { filters });
+          }
+        }]
+      );
+    } else {
+      navigation.navigate('AllJobsScreen', { filters });
+    }
   };
-  
-  // Handle max salary change
-  const handleMaxSalaryChange = (value) => {
-    setSalaryRange([salaryRange[0], value]);
-  };
-  
-  // Format currency
-  const formatCurrency = (value) => {
-    return $${value.toLocaleString()};
-  };
-  
+
   return (
     <View style={styles.container}>
-      {/* Header */}
       <LinearGradient 
         colors={["#623AA2", "#F97794"]} 
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 0}}
         style={styles.header}
       >
         <TouchableOpacity 
-          style={styles.menuButton}
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>FILTER</Text>
-        <View style={styles.emptySpace} />
+        <View style={{ width: 24 }}/>
       </LinearGradient>
-      
-      <ScrollView style={styles.content}>
-        {/* Salary Range */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Salary Range</Text>
-          <View style={styles.sliderContainer}>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={1000000}
-              step={10000}
-              value={salaryRange[0]}
-              onValueChange={handleMinSalaryChange}
-              minimumTrackTintColor="#623AA2"
-              maximumTrackTintColor="#E0E0E0"
-              thumbTintColor="#623AA2"
-            />
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={1000000}
-              step={10000}
-              value={salaryRange[1]}
-              onValueChange={handleMaxSalaryChange}
-              minimumTrackTintColor="#623AA2"
-              maximumTrackTintColor="#E0E0E0"
-              thumbTintColor="#623AA2"
-            />
-          </View>
-          <View style={styles.salaryLabels}>
-            <Text style={styles.salaryLabel}>Min: {formatCurrency(salaryRange[0])}</Text>
-            <Text style={styles.salaryLabel}>Max: {formatCurrency(salaryRange[1])}</Text>
-          </View>
+
+      <ScrollView 
+        contentContainerStyle={[styles.filterBox, { paddingBottom: 100 }]} 
+        showsVerticalScrollIndicator={true}
+      >
+        <Text style={styles.label}>Salary Range</Text>
+        <Text style={styles.salaryText}>Min: LKR {salaryRange.min.toLocaleString()}</Text>
+        <Slider
+          style={styles.slider}
+          minimumValue={1000}
+          maximumValue={1000000}
+          step={10000}
+          value={salaryRange.min}
+          onValueChange={(value) => {
+            if (value <= salaryRange.max) {
+              setSalaryRange({ ...salaryRange, min: value });
+            }
+          }}
+          minimumTrackTintColor="#6a11cb"
+          maximumTrackTintColor="#ddd"
+          thumbTintColor="#6a11cb"
+        />
+        <Text style={styles.salaryText}>Max: LKR {salaryRange.max.toLocaleString()}</Text>
+        <Slider
+          style={styles.slider}
+          minimumValue={1000}
+          maximumValue={1000000}
+          step={10000}
+          value={salaryRange.max}
+          onValueChange={(value) => {
+            if (value >= salaryRange.min) {
+              setSalaryRange({ ...salaryRange, max: value });
+            }
+          }}
+          minimumTrackTintColor="#6a11cb"
+          maximumTrackTintColor="#ddd"
+          thumbTintColor="#6a11cb"
+        />
+
+        <Text style={styles.label}>Location</Text>
+        <CityAutocomplete 
+          onCitySelect={(city) => setLocation(city)}
+          initialValue={location}
+        />
+
+        <Text style={styles.label}>Job Categories</Text>
+        <View style={styles.categoriesContainer}>
+          {Object.keys(categories).map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryButton, 
+                categories[category] && styles.selectedCategory
+              ]}
+              onPress={() => toggleCategory(category)}
+            >
+              <Text style={[
+                styles.categoryButtonText, 
+                categories[category] && styles.selectedCategoryText
+              ]}>
+                {categoryLabels[category]}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-        
-        {/* Job Type */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Job Type</Text>
-          <View style={styles.checkboxGrid}>
-            <View style={styles.checkboxRow}>
-              <View style={styles.checkboxContainer}>
-                <CheckBox
-                  checked={jobTypes.fullTime}
-                  onPress={() => toggleJobType('fullTime')}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checkedColor="#623AA2"
-                  containerStyle={styles.checkbox}
-                />
-                <Text style={styles.checkboxLabel}>Full Time (52)</Text>
-              </View>
-              <View style={styles.checkboxContainer}>
-                <CheckBox
-                  checked={jobTypes.partTime}
-                  onPress={() => toggleJobType('partTime')}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checkedColor="#623AA2"
-                  containerStyle={styles.checkbox}
-                />
-                <Text style={styles.checkboxLabel}>Part Time (82)</Text>
-              </View>
-            </View>
-            <View style={styles.checkboxRow}>
-              <View style={styles.checkboxContainer}>
-                <CheckBox
-                  checked={jobTypes.contract}
-                  onPress={() => toggleJobType('contract')}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checkedColor="#623AA2"
-                  containerStyle={styles.checkbox}
-                />
-                <Text style={styles.checkboxLabel}>Contract (150)</Text>
-              </View>
-              <View style={styles.checkboxContainer}>
-                <CheckBox
-                  checked={jobTypes.internship}
-                  onPress={() => toggleJobType('internship')}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checkedColor="#623AA2"
-                  containerStyle={styles.checkbox}
-                />
-                <Text style={styles.checkboxLabel}>Internship (180)</Text>
-              </View>
-            </View>
-            <View style={styles.checkboxRow}>
-              <View style={styles.checkboxContainer}>
-                <CheckBox
-                  checked={jobTypes.freelance}
-                  onPress={() => toggleJobType('freelance')}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checkedColor="#623AA2"
-                  containerStyle={styles.checkbox}
-                />
-                <Text style={styles.checkboxLabel}>Freelance (205)</Text>
-              </View>
-              <View style={styles.checkboxContainer}>
-                <CheckBox
-                  checked={jobTypes.commission}
-                  onPress={() => toggleJobType('commission')}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checkedColor="#623AA2"
-                  containerStyle={styles.checkbox}
-                />
-                <Text style={styles.checkboxLabel}>Commission (60)</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-        
-        {/* Experience Level */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Experience Level</Text>
-          <View style={styles.experienceTabs}>
-            <TouchableOpacity
-              style={[
-                styles.experienceTab, 
-                experienceLevel === 'entry' && styles.activeExperienceTab
-              ]}
-              onPress={() => selectExperienceLevel('entry')}
-            >
-              <Text style={[
-                styles.experienceTabText,
-                experienceLevel === 'entry' && styles.activeExperienceTabText
-              ]}>Entry Level</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.experienceTab, 
-                experienceLevel === 'mid' && styles.activeExperienceTab
-              ]}
-              onPress={() => selectExperienceLevel('mid')}
-            >
-              <Text style={[
-                styles.experienceTabText,
-                experienceLevel === 'mid' && styles.activeExperienceTabText
-              ]}>Mid Level</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.experienceTab, 
-                experienceLevel === 'senior' && styles.activeExperienceTab
-              ]}
-              onPress={() => selectExperienceLevel('senior')}
-            >
-              <Text style={[
-                styles.experienceTabText,
-                experienceLevel === 'senior' && styles.activeExperienceTabText
-              ]}>Senior Level</Text>
-            </TouchableOpacity>
-          </View>
+
+        <View style={styles.buttonContainer}>
+          <LinearGradient 
+            colors={["#601cd6", "#601cd6"]} 
+            style={styles.gradientButton}
+          >
+            <Button 
+              title="SHOW RESULT" 
+              buttonStyle={styles.searchButton} 
+              onPress={handleSearch} 
+            />
+          </LinearGradient>
+
+          <Button 
+            title="CLEAR" 
+            type="outline" 
+            buttonStyle={styles.clearButton} 
+            titleStyle={{ color: "#601cd6" }} 
+            onPress={clearFilters} 
+          />
         </View>
       </ScrollView>
-      
-      {/* Button Section */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.showResultButton}
-          onPress={() => {
-            // Handle the filter submission
-            const filters = {
-              salaryRange,
-              jobTypes,
-              experienceLevel
-            };
-            console.log('Applied filters:', filters);
-            navigation.goBack(); // Navigate back with results
-          }}
-        >
-          <Text style={styles.showResultButtonText}>SHOW RESULT</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.clearButton}
-          onPress={() => {
-            // Reset all filters
-            setSalaryRange([200000, 800000]);
-            setJobTypes({
-              fullTime: false,
-              partTime: false,
-              contract: false,
-              internship: false,
-              freelance: false,
-              commission: false
-            });
-            setExperienceLevel('entry');
-          }}
-        >
-          <Text style={styles.clearButtonText}>CLEAR</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
 
+const categoryLabels = {
+  technology: "TECHNOLOGY",
+  healthcare: "HEALTHCARE",
+  education: "EDUCATION",
+  agriculture: "AGRICULTURE",
+  financial: "FINANCIAL",
+  transportation: "TRANSPORTATION",
+  construction: "CONSTRUCTION",
+  domesticWorks: "DOMESTIC WORKS",
+  others: "OTHERS",
+};
+
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#F8F8F8',
-    },
-    header: {
-      height: 60,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 15,
-    },
-    menuButton: {
-      padding: 5,
-    },
-    headerTitle: {
-      color: 'white',
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginLeft: 15,
-    },
-    emptySpace: {
-      flex: 1,
-    },
-    content: {
-      flex: 1,
-      padding: 20,
-    },
-    section: {
-      marginBottom: 25,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 15,
-      color: '#333',
-    },
-    sliderContainer: {
-      marginBottom: 10,
-    },
-    slider: {
-      width: '100%',
-      height: 40,
-    },
-    salaryLabels: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingHorizontal: 5,
-    },
-    salaryLabel: {
-      color: '#666',
-    },
-    checkboxGrid: {
-      marginTop: 5,
-    },
-    checkboxRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 10,
-    },
-    checkboxContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      width: '48%',
-    },
-    checkbox: {
-      backgroundColor: 'transparent',
-      borderWidth: 0,
-      padding: 0,
-      margin: 0,
-    },
-    checkboxLabel: {
-      marginLeft: -5,
-      fontSize: 14,
-      color: '#333',
-    },
-    experienceTabs: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    experienceTab: {
-      flex: 1,
-      padding: 12,
-      alignItems: 'center',
-      borderBottomWidth: 2,
-      borderBottomColor: 'transparent',
-    },
-    activeExperienceTab: {
-      borderBottomColor: '#623AA2',
-    },
-    experienceTabText: {
-      color: '#888',
-      fontSize: 14,
-    },
-    activeExperienceTabText: {
-      color: '#623AA2',
-      fontWeight: 'bold',
-    },
-    buttonContainer: {
-      flexDirection: 'row',
-      padding: 15,
-      backgroundColor: 'white',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: -2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 5,
-    },
-    showResultButton: {
-      flex: 2,
-      backgroundColor: '#623AA2',
-      padding: 15,
-      borderRadius: 5,
-      alignItems: 'center',
-      marginRight: 10,
-    },
-    showResultButtonText: {
-      color: 'white',
-      fontWeight: 'bold',
-    },
-    clearButton: {
-      flex: 1,
-      padding: 15,
-      borderRadius: 5,
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: '#ccc',
-    },
-    clearButtonText: {
-      color: '#333',
-    },
-  });
-  
-  export default FilterScreen;
+  container: { flex: 1, backgroundColor: "#fff" },
+  filterBox: { backgroundColor: "white", margin: 10, padding: 20, borderRadius: 10, elevation: 3 },
+  label: { fontSize: 16, fontWeight: "bold", marginVertical: 10 },
+  salaryText: { fontSize: 14, marginBottom: 5 },
+  slider: { width: "100%", height: 40 },
+  categoriesContainer: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'space-between' 
+  },
+  categoryButton: {
+    width: '30%',
+    marginVertical: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  selectedCategory: {
+    backgroundColor: '#6a11cb',
+    borderColor: '#6a11cb',
+  },
+  categoryButtonText: {
+    color: '#666',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  selectedCategoryText: {
+    color: 'white',
+  },
+  buttonContainer: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    marginTop: 20 
+  },
+  avatar: { position: "absolute", bottom: 20, right: 20 },
+  header: {
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+  },
+  backButton: { padding: 10 },
+  headerTitle: { 
+    color: '#fff', 
+    fontSize: 18, 
+    fontWeight: 'bold' 
+  },
+  gradientButton: { 
+    borderRadius: 5, 
+    overflow: "hidden", 
+    marginBottom: 10 
+  },
+  searchButton: { 
+    backgroundColor: "transparent", 
+    paddingVertical: 12 
+  },
+  clearButton: { 
+    borderColor: "#601cd6", 
+    borderWidth: 2,  
+    paddingVertical: 12, 
+    backgroundColor: "transparent" 
+  },
+});
+
+export default FilterScreen;

@@ -9,7 +9,8 @@ import TabNavigation from "../../compenents/TabNavigation";
 import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { jobService } from '../../services/api'; 
-import ImageCarousel from "./imageMoving";
+import ImageCarousel from "./MovingImages";
+import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
@@ -26,25 +27,25 @@ const HomeScreen = () => {
     {
       id: '1',
       title: 'TECHNOLOGY',
-      Icon: () => <MaterialIcons name="code" size={24} color="#623AA2" />,
+      Icon: () => <MaterialIcons name="computer" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '2',
       title: 'HEALTHCARE',
-      Icon: () => <Icon name="laptop-outline" size={24} color="#6F67FE" />,
+      Icon: () => <FontAwesome5Icon name="stethoscope" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '3',
       title: 'EDUCATION',
-      Icon: () => <MaterialIcons name="trending-up" size={24} color="#6F67FE"/>,
+      Icon: () => <MaterialIcons name="school" size={24} color="#6F67FE" />,
       jobs: 0,
     },
     {
       id: '4',
-      title: 'MEDICAL',
-      Icon: () => <FontAwesome name="stethoscope" size={24} color="#6F67FE" />,
+      title: 'AGRICULTURE',
+      Icon: () => <FontAwesome5Icon name="tractor" size={24} color="#6F67FE" />,
       jobs: 0,
     },
   ];
@@ -227,7 +228,7 @@ const HomeScreen = () => {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
       
-        {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('Categories'))}
+        {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('CategoryScreen'))}
         {loadingCategories ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color="#623AA2" />
@@ -254,7 +255,7 @@ const HomeScreen = () => {
           </ScrollView>
         )}
 
-        {renderSectionHeader("JOBS", () => navigation.navigate('Jobs'))}
+        {renderSectionHeader("JOBS", () => navigation.navigate('AllJobsScreen'))}
         {loadingJobs ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color="#623AA2" />
@@ -292,43 +293,23 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               ))
             ) : (
-              <View style={styles.noJobsContainer}>
-                <Text style={styles.noJobsText}>No jobs available yet</Text>
-                <TouchableOpacity 
-                  style={styles.postJobButton}
-                  onPress={() => navigation.navigate('JobPosting')}
-                >
-                  <Text style={styles.postJobButtonText}>Post a Job</Text>
-                </TouchableOpacity>
-              </View>
+        <View style={styles.noJobsContainer}>
+        <Icon name="search-off" size={80} color="#CACACA" />
+        <Text style={styles.noJobsText}>No jobs found in this category</Text>
+      <TouchableOpacity 
+         style={styles.postJobButton}
+         onPress={() => navigation.navigate('JobPostingPage')}
+      >
+        <Text style={styles.postJobText}>Post a Job</Text>
+       </TouchableOpacity>
+        </View>
             )}
           </View>
         )}
 
-        {renderSectionHeader("COMPANIES", () => navigation.navigate('Companies'))}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.companiesContainer}
-        >
-          {companies.map((company) => (
-            <TouchableOpacity
-              key={company.id}
-              style={styles.companyCard}
-              onPress={() => navigation.navigate('CompanyDetails', { company })}
-            >
-              <Image 
-                source={{ uri: company.logo }}
-                style={styles.companyLogo}
-                resizeMode="contain"
-              />
-              <Text style={styles.companyName}>{company.name}</Text>
-              <Text style={styles.companyJobs}>({company.jobCount} jobs)</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
 
-        {renderSectionHeader("OUR TESTIMONIALS")}
+
+       {renderSectionHeader("OUR TESTIMONIALS", () => navigation.navigate('TestimonialsScreen'))}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -427,7 +408,6 @@ const styles = StyleSheet.create({
   categoryCard: {
     backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 12,
     marginRight: 12,
     width: 150,
     alignItems: 'center',
@@ -610,6 +590,43 @@ const styles = StyleSheet.create({
     color: '#444',
     lineHeight: 20,
   },
+
+  noJobsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  noJobsText: {
+    fontSize: 16,
+    color: '#757575',
+    marginTop: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  postJobButton: {
+    backgroundColor: '#623AA2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  postJobText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  } 
 });
 
 export default HomeScreen;

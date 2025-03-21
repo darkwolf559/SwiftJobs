@@ -24,7 +24,6 @@ const AllJobsScreen = ({ route, navigation }) => {
   const [error, setError] = useState(null);
   const [isFiltered, setIsFiltered] = useState(false);
 
-  // Map between category IDs from the API and the filter categories
   const categoryMappings = {
     'technology': ['technology', 'tech', '1'],
     'healthcare': ['healthcare', 'health', 'medical', '2'],
@@ -33,66 +32,124 @@ const AllJobsScreen = ({ route, navigation }) => {
     'financial': ['financial', 'finance', 'banking', '5'],
     'transportation': ['transportation', 'transport', 'logistics', '6', 'transpotation'],
     'construction': ['construction', 'building', '7'],
-    'domesticWorks': ['domestic works', 'domestic', '8', 'domesticworks'],
+    'domesticworks': ['domestic works', 'domestic', '8', 'domesticworks'],
     'others': ['others', 'other', '9']
   };
 
-  // Function to parse salary string to number
+ 
   const parseSalary = (salaryString) => {
-    // Remove non-numeric characters and convert to number
-    const numericSalary = parseFloat(
-      salaryString.replace(/[^0-9.-]+/g, '')
-    );
-    return isNaN(numericSalary) ? 0 : numericSalary;
+    if (!salaryString || typeof salaryString !== 'string') {
+      return { min: 0, max: 0 };
+    }
+    
+
+    if (salaryString.includes('-')) {
+      const parts = salaryString.split('-');
+      
+ 
+      const minValue = parseFloat(parts[0].replace(/[^0-9.]+/g, ''));
+      const maxValue = parseFloat(parts[1].replace(/[^0-9.]+/g, ''));
+      
+      return {
+        min: isNaN(minValue) ? 0 : minValue,
+        max: isNaN(maxValue) ? 0 : maxValue
+      };
+    } else {
+
+      const value = parseFloat(salaryString.replace(/[^0-9.]+/g, ''));
+      const numericValue = isNaN(value) ? 0 : value;
+      return { min: numericValue, max: numericValue };
+    }
   };
 
-  // Apply filters to jobs
   const applyFilters = (jobsList, filters) => {
+
     if (!filters) return jobsList;
+    if (!jobsList || jobsList.length === 0) return [];
 
-    console.log('Applying filters:', filters);
-    console.log('Total jobs before filtering:', jobsList.length);
+    const lenientFilters = {
+      salaryRange: filters.salaryRange || { min: 0, max: 1000000 },
+      categories: filters.categories || [],
+      location: filters.location || ''
+    };
+    
 
+    if (lenientFilters.salaryRange.min === undefined || isNaN(lenientFilters.salaryRange.min)) {
+      lenientFilters.salaryRange.min = 0;
+    }
+    if (lenientFilters.salaryRange.max === undefined || isNaN(lenientFilters.salaryRange.max)) {
+      lenientFilters.salaryRange.max = 1000000;
+    }
+    
     const filteredJobs = jobsList.filter(job => {
-      // Salary range filter
-      const salary = parseSalary(job.salary);
-      const salaryInRange = 
-        salary >= filters.salaryRange.min && 
-        salary <= filters.salaryRange.max;
+      //Salary Filter
+      let salaryInRange = true;
+      if (lenientFilters.salaryRange && 
+          (lenientFilters.salaryRange.min > 0 || lenientFilters.salaryRange.max < 1000000)) {
+        
+        const parsedSalary = parseSalary(job.salary || '0');
+        
 
-      // Location filter (case-insensitive, partial match)
-      const locationMatch = 
-        !filters.location || 
-        job.location.toLowerCase().includes(filters.location.toLowerCase());
+        if (parsedSalary.min === 0 && parsedSalary.max === 0) {
+          salaryInRange = true;
+        } else {
+          salaryInRange = (
+            (parsedSalary.min >= lenientFilters.salaryRange.min && parsedSalary.min <= lenientFilters.salaryRange.max) ||
+            (parsedSalary.max >= lenientFilters.salaryRange.min && parsedSalary.max <= lenientFilters.salaryRange.max) ||
+            (parsedSalary.min <= lenientFilters.salaryRange.min && parsedSalary.max >= lenientFilters.salaryRange.max)
+          );
+        }
+      }
 
-      // Enhanced category filter
+      //Location Filter
+      let locationMatch = true;
+      if (lenientFilters.location && lenientFilters.location.trim() !== '') {
+        
+        const jobLocation = job.location ? job.location.toString().toLowerCase() : '';
+        const filterLocation = lenientFilters.location.toString().toLowerCase();
+        
+  
+        if (!jobLocation) {
+          locationMatch = true;
+        } else {
+          locationMatch = jobLocation.includes(filterLocation);
+        }
+      }
+
+      //Category Filter
       let categoryMatch = true;
-      
-      if (filters.categories && filters.categories.length > 0) {
-        categoryMatch = filters.categories.some(selectedCategory => {
-          // Check if job's category matches any of the acceptable values
-          // for the selected category
-          const acceptableValues = categoryMappings[selectedCategory.toLowerCase()] || [];
+      if (lenientFilters.categories && lenientFilters.categories.length > 0) {
+        if (!job.category) {
+        
+          const hasOthersCategory = lenientFilters.categories.some(
+            cat => cat && cat.toLowerCase() === 'others'
+          );
+          categoryMatch = hasOthersCategory;
+        } else {
+          categoryMatch = lenientFilters.categories.some(selectedCategory => {
+            if (!selectedCategory) return false;
+            
+            const selectedCategoryLower = selectedCategory.toLowerCase();
           
-          // Check job.category (string) and job.category (ID) formats
-          const jobCategoryLower = job.category ? job.category.toString().toLowerCase() : '';
-          
-          // Debug logging
-          console.log(`Job "${job.title}" category: "${jobCategoryLower}", checking against: ${selectedCategory}`);
-          
-          return acceptableValues.includes(jobCategoryLower);
-        });
+            const acceptableValues = categoryMappings[selectedCategoryLower] || [];
+
+            const jobCategoryLower = job.category ? job.category.toString().toLowerCase() : '';
+            
+            if (jobCategoryLower === 'others' || jobCategoryLower === '9') {
+              return selectedCategoryLower === 'others';
+            }
+            
+           
+            return acceptableValues.some(value => 
+              jobCategoryLower.includes(value) || value.includes(jobCategoryLower)
+            );
+          });
+        }
       }
 
-      const matched = salaryInRange && locationMatch && categoryMatch;
-      if (!matched) {
-        console.log(`Job "${job.title}" filtered out. Salary match: ${salaryInRange}, Location match: ${locationMatch}, Category match: ${categoryMatch}`);
-      }
-      
-      return matched;
+      return salaryInRange && locationMatch && categoryMatch;
     });
 
-    console.log('Total jobs after filtering:', filteredJobs.length);
     return filteredJobs;
   };
 
@@ -102,18 +159,15 @@ const AllJobsScreen = ({ route, navigation }) => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Fetch jobs from API
+               
         const jobsData = await jobService.getAllJobs();
         
-        // Format job data
         const formattedJobs = jobsData.map(job => {
-          // Standardize the category format
+    
           let standardizedCategory = job.jobCategory;
           
-          // If jobCategory is a numeric ID, try to convert it to a string name
           if (job.jobCategory && !isNaN(job.jobCategory)) {
-            // Map from numeric ID to category name
+            
             const categoryMap = {
               '1': 'technology',
               '2': 'healthcare',
@@ -133,20 +187,18 @@ const AllJobsScreen = ({ route, navigation }) => {
             title: job.jobTitle,
             company: job.employerName || 'Unknown Company',
             location: job.location,
-            description: job.jobDescription.length > 150 
+            description: job.jobDescription && job.jobDescription.length > 150 
               ? job.jobDescription.substring(0, 150) + '...' 
-              : job.jobDescription,
-            salary: job.payment,
+              : job.jobDescription || 'No description available',
+            salary: job.payment || 'Not specified',
             createdBy: job.createdBy,
-            category: standardizedCategory // Use the standardized category
+            category: standardizedCategory 
           };
         });
 
-        // Check if filters were passed
         const { filters } = route.params || {};
 
         if (filters) {
-          console.log('Received filters:', filters);
           const filtered = applyFilters(formattedJobs, filters);
           setFilteredJobs(filtered);
           setIsFiltered(true);
@@ -160,14 +212,14 @@ const AllJobsScreen = ({ route, navigation }) => {
         console.error('Error fetching jobs:', error);
         setError('Failed to load jobs. Please try again.');
         
-        // Fallback to placeholder data
+        
         const placeholderJobs = [
           {
             id: 'placeholder1',
             title: 'Web Developer',
             company: 'Tech Company',
             location: 'Colombo',
-            description: 'Note: This is placeholder data. Backend connection failed.',
+            description: 'This is description',
             salary: 'LKR 50,000 - 70,000',
             category: 'technology'
           },
@@ -176,7 +228,7 @@ const AllJobsScreen = ({ route, navigation }) => {
             title: 'Nurse',
             company: 'General Hospital',
             location: 'Kandy',
-            description: 'Note: This is placeholder data. Backend connection failed.',
+            description: 'This is description',
             salary: 'LKR 40,000 - 60,000',
             category: 'healthcare'
           }
@@ -208,7 +260,6 @@ const AllJobsScreen = ({ route, navigation }) => {
     navigation.setParams({ filters: null });
   };
 
-  // Render loading state
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -265,7 +316,7 @@ const AllJobsScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       </LinearGradient>
 
-      {/* Error handling */}
+
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -278,7 +329,6 @@ const AllJobsScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* Jobs List or No Jobs View */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.jobsContainer}
@@ -339,6 +389,7 @@ const AllJobsScreen = ({ route, navigation }) => {
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

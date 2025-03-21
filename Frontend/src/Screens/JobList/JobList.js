@@ -14,6 +14,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { jobService } from '../../services/api'; 
+import JobCard from '../../compenents/JobCard';
 
 const { width } = Dimensions.get('window');
 
@@ -163,57 +164,32 @@ const JobsList = ({ route, navigation }) => {
       )}
 
       
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.jobsContainer}
-      >
-        {jobs.length > 0 ? (
-          jobs.map((job) => (
-            <TouchableOpacity
-              key={job.id}
-              style={styles.jobCard}
-              onPress={() => navigateToJobDetails(job)}
-            >
-              <View style={styles.jobHeader}>
-                <Image
-                  source={require('../../assets/20943599.jpg')}
-                  style={styles.companyLogo}
-                />
-                <View style={styles.jobTitleContainer}>
-                  <Text style={styles.jobTitle}>{job.title}</Text>
-                  <Text style={styles.companyInfo}>
-                    {job.company}, {job.location}
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.bookmarkButton}>
-                  <Icon name="bookmark-border" size={24} color="#623AA2" />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.jobDescription}>{job.description}</Text>
-              <View style={styles.jobFooter}>
-                <Text style={styles.salary}>{job.salary}</Text>
-                <TouchableOpacity 
-                  style={styles.applyButton}
-                  onPress={() => navigateToJobDetails(job)}
-                >
-                  <Text style={styles.applyButtonText}>APPLY</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))
-        ) : (
-        <View style={styles.noJobsContainer}>
+<ScrollView 
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={styles.jobsContainer}
+  >
+    {jobs.length > 0 ? (
+      jobs.map((job) => (
+        <JobCard
+          key={job.id}
+          job={job}
+          onPress={() => navigateToJobDetails(job)}
+          navigation={navigation}
+        />
+      ))
+    ) : (
+      <View style={styles.noJobsContainer}>
         <Icon name="search-off" size={80} color="#CACACA" />
         <Text style={styles.noJobsText}>No jobs found in this category</Text>
-      <TouchableOpacity 
-         style={styles.postJobButton}
-         onPress={() => navigation.navigate('JobPostingPage')}
-      >
-        <Text style={styles.postJobText}>Post a Job</Text>
-       </TouchableOpacity>
-        </View>
-        )}
-      </ScrollView>
+        <TouchableOpacity 
+          style={styles.postJobButton}
+          onPress={() => navigation.navigate('JobPostingPage')}
+        >
+          <Text style={styles.postJobText}>Post a Job</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </ScrollView>
     </SafeAreaView>
   );
 };

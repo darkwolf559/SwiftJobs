@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image, ActivityIndicator,Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from "react-native-linear-gradient";
@@ -11,6 +11,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { jobService } from '../../services/api'; 
 import ImageCarousel from "./MovingImages";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
+import JobCard from "../../compenents/JobCard";
+
 const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
@@ -255,57 +257,35 @@ const HomeScreen = () => {
           </ScrollView>
         )}
 
-        {renderSectionHeader("JOBS", () => navigation.navigate('AllJobsScreen'))}
-        {loadingJobs ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#623AA2" />
-          </View>
-        ) : (
-          <View style={styles.jobsContainer}>
-            {featuredJobs.length > 0 ? (
-              featuredJobs.map((job) => (
-                <TouchableOpacity
-                  key={job.id}
-                  style={styles.jobCard}
-                  onPress={() => navigateToJobDetails(job)}
-                >
-                  <View style={styles.jobHeader}>
-                    <Image
-                      source={{ uri: 'https://images.unsplash.com/photo-1549924231-f129b911e442?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80' }}
-                      style={styles.companyLogo}
-                    />
-                    <View style={styles.jobInfo}>
-                      <Text style={styles.jobTitle}>{job.title}</Text>
-                      <Text style={styles.companyName}>{job.company}</Text>
-                      <Text style={styles.location}>{job.location}</Text>
-                    </View>
-                    <TouchableOpacity>
-                      <MaterialIcons name="bookmark-border" size={24} color="#623AA2" />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.jobDescription}>{job.description}</Text>
-                  <View style={styles.jobFooter}>
-                    <Text style={styles.salary}>{job.salary}</Text>
-                    <TouchableOpacity style={styles.applyButton}>
-                      <Text style={styles.applyButtonText}>APPLY</Text>
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              ))
-            ) : (
+{renderSectionHeader("JOBS", () => navigation.navigate('AllJobsScreen'))}
+  {loadingJobs ? (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="small" color="#623AA2" />
+    </View>
+  ) : (
+    <View style={styles.jobsContainer}>
+      {featuredJobs.length > 0 ? (
+        featuredJobs.map((job) => (
+          <JobCard
+            key={job.id}
+            job={job}
+            onPress={() => navigateToJobDetails(job)}
+            navigation={navigation}
+          />
+        ))
+      ) : (
         <View style={styles.noJobsContainer}>
-        <Icon name="search-off" size={80} color="#CACACA" />
-        <Text style={styles.noJobsText}>No jobs found in this category</Text>
-      <TouchableOpacity 
-         style={styles.postJobButton}
-         onPress={() => navigation.navigate('JobPostingPage')}
-      >
-        <Text style={styles.postJobText}>Post a Job</Text>
-       </TouchableOpacity>
+          <Text style={styles.noJobsText}>No jobs available yet</Text>
+          <TouchableOpacity 
+            style={styles.postJobButton}
+            onPress={() => navigation.navigate('JobPosting')}
+          >
+            <Text style={styles.postJobButtonText}>Post a Job</Text>
+          </TouchableOpacity>
         </View>
-            )}
-          </View>
-        )}
+      )}
+    </View>
+  )}
 
 
 

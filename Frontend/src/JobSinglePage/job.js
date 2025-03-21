@@ -1,9 +1,12 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator,ToastAndroid } from 'react-native';
+import React, { useState, useEffect,useRef } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { jobService } from '../services/api';
+import { bookmarkService } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const JobSingle = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('Description');
@@ -14,6 +17,9 @@ const JobSingle = ({ route, navigation }) => {
   const [userComment, setUserComment] = useState('');
   const [reviews, setReviews] = useState([]);
   const { jobId } = route.params || { jobId: null };
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const isMounted = useRef(true);
   const [ratingStats, setRatingStats] = useState({
     5: 150,
     4: 63,
@@ -21,7 +27,24 @@ const JobSingle = ({ route, navigation }) => {
     2: 6,
     1: 20
   });
-
+  const checkBookmarkStatus = async () => {
+    try {
+      if (!jobId) return;
+      
+      
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      
+      const isBookmarked = await bookmarkService.checkBookmarkStatus(jobId);
+      if (isMounted.current) {
+        setIsBookmarked(isBookmarked);
+      }
+    } catch (error) {
+      console.error('Error checking bookmark status:', error);
+    }
+  };
+  
+  
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -64,9 +87,53 @@ const JobSingle = ({ route, navigation }) => {
     };
     
     fetchJobData();
+    checkBookmarkStatus();
   }, [jobId]);
 
-
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  
+  const toggleBookmark = async () => {
+    try {
+      
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+       
+        navigation.navigate('Login');
+        return;
+      }
+      
+      if (isMounted.current) {
+        setBookmarkLoading(true);
+      }
+      
+      if (isBookmarked) {
+        await bookmarkService.removeBookmark(jobId);
+        if (isMounted.current) {
+          setIsBookmarked(false);
+          ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
+        }
+      } else {
+        await bookmarkService.addBookmark(jobId);
+        if (isMounted.current) {
+          setIsBookmarked(true);
+          ToastAndroid.show("Job added to bookmarks", ToastAndroid.SHORT);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      if (isMounted.current) {
+        ToastAndroid.show("Failed to update bookmark", ToastAndroid.SHORT);
+      }
+    } finally {
+      if (isMounted.current) {
+        setBookmarkLoading(false);
+      }
+    }
+  };
   const getSampleJobData = () => {
     return {
       title: "Driving Vacancy",
@@ -422,9 +489,21 @@ const JobSingle = ({ route, navigation }) => {
       </View>
       
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.bookmarkButton}>
-          <Icon name="bookmark" size={40} color="#601cd6" />
-        </TouchableOpacity>
+      <TouchableOpacity 
+        style={styles.bookmarkButton}
+        onPress={toggleBookmark}
+        disabled={bookmarkLoading}
+>
+      {bookmarkLoading ? (
+      <ActivityIndicator size="small" color="#601cd6" />
+  ) : (
+        <Icon 
+          name={isBookmarked ? "bookmark" : "bookmark-outline"} 
+          size={40} 
+          color="#601cd6" 
+    />
+  )}
+</TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.applyButton}

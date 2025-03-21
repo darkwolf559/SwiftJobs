@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,72 +7,145 @@ import {
   ScrollView,
   SafeAreaView,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome5';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
+import { jobService } from '../../services/api'; // Import job service
 
 const { width } = Dimensions.get('window');
 
 const CategoryScreen = ({ navigation }) => {
-  const categories = [
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+ 
+  const baseCategories = [
     {
-      id: 1,
+      id: '1',
       title: 'TECHNOLOGY',
       Icon: () => <Icon name="code" size={24} color="#623AA2" />,
-      jobs: 680,
+      jobs: 0,
     },
     {
-      id: 2,
+      id: '2',
       title: 'HEALTHCARE',
       Icon: () => <IoniconsIcon name="laptop-outline" size={24} color="#6F67FE" />,
-      jobs: 1020,
+      jobs: 0,
     },
     {
-      id: 3,
+      id: '3',
       title: 'EDUCATION',
       Icon: () => <Icon name="trending-up" size={24} color="#6F67FE"/>,
-      jobs: 400,
+      jobs: 0,
     },
     {
-      id: 4,
+      id: '4',
       title: 'AGRICULTURE',
       Icon: () => <FontAwesomeIcon name="stethoscope" size={24} color="#6F67FE" />,
-      jobs: 410,
+      jobs: 0,
     },
     {
-      id: 5,
+      id: '5',
       title: 'FINANCIAL',
       Icon: () => <FoundationIcon name="home" size={24} color="#6F67FE"/>,
-      jobs: 2000,
+      jobs: 0,
     },
     {
-      id: 6,
+      id: '6',
       title: 'TRANSPOTATION',
       Icon: () => <FontAwesomeIcon name="pen-nib" size={24} color="#6F67FE"/>,
-      jobs: 500,
+      jobs: 0,
     },
     {
-      id: 7,
+      id: '7',
       title: 'CONSTRUCTION',
       Icon: () => <FontAwesomeIcon name="utensils" size={24} color="#6F67FE" />,
-      jobs: 880,
+      jobs: 0,
     },
     {
-      id: 8,
+      id: '8',
       title: 'DOMESTIC WORKS',
       Icon: () => <Icon name="article" size={24} color="#6F67FE" />,
-      jobs: 680,
+      jobs: 0,
     },
     {
-      id: 8,
+      id: '9',
       title: 'OTHERS',
       Icon: () => <Icon name="article" size={24} color="#6F67FE" />,
-      jobs: 680,
+      jobs: 0,
     },
   ];
+
+  
+  useEffect(() => {
+    fetchJobCounts();
+  }, []);
+
+  
+  const fetchJobCounts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      
+      const jobsData = await jobService.getAllJobs();
+      
+     
+      const categoryCounts = {};
+      jobsData.forEach(job => {
+        const categoryId = job.jobCategory;
+        categoryCounts[categoryId] = (categoryCounts[categoryId] || 0) + 1;
+      });
+      
+      
+      const updatedCategories = baseCategories.map(category => ({
+        ...category,
+        jobs: categoryCounts[category.id] || 0
+      }));
+      
+      setCategories(updatedCategories);
+    } catch (error) {
+      console.error('Error fetching job counts:', error);
+      setError('Failed to load categories. Please try again.');
+      setCategories(baseCategories); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LinearGradient 
+          colors={["#623AA2", "#F97794"]} 
+          style={styles.header}
+        >
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>CATEGORIES</Text>
+          </View>
+          <TouchableOpacity style={styles.iconButton}>
+            <Icon name="search" size={24} color="white" />
+          </TouchableOpacity>
+        </LinearGradient>
+        
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#623AA2" />
+          <Text style={styles.loadingText}>Loading categories...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,6 +167,19 @@ const CategoryScreen = ({ navigation }) => {
           <Icon name="search" size={24} color="white" />
         </TouchableOpacity>
       </LinearGradient>
+
+      {/* Error message if needed */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={fetchJobCounts}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Categories Grid */}
       <ScrollView 
@@ -149,6 +235,37 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#ffebee',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#d32f2f',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  retryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#623AA2',
+    borderRadius: 20,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   categoriesGrid: {
     flexDirection: 'row',

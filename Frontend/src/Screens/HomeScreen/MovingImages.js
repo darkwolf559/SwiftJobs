@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Image, StyleSheet, Dimensions, Animated } from 'react-native';
+import { View, Image, StyleSheet, Dimensions, Animated,TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -7,8 +8,8 @@ const ImageCarousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
-  
-  // You'll replace these with your actual asset imports
+  const navigation = useNavigation();
+
   const images = [
     require('../../assets/slider1.jpg'),
     require('../../assets/slider2.jpg'),
@@ -16,7 +17,7 @@ const ImageCarousel = () => {
     require('../../assets/slider4.png'),
   ];
   
-  // Auto play
+
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = (activeIndex + 1) % images.length;
@@ -25,10 +26,19 @@ const ImageCarousel = () => {
         offset: nextIndex * width, 
         animated: true 
       });
-    }, 3000); // Change images every 3 seconds
+    }, 5000); 
     
     return () => clearInterval(interval);
   }, [activeIndex, images.length]);
+
+  const handleImagePress = (index) => {
+    if (index === 2) { 
+      navigation.navigate('Chatbot');
+    }else if (index === 3){
+      navigation.navigate('FilterScreen');
+    }
+  };
+  
 
   const onScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -50,10 +60,14 @@ const ImageCarousel = () => {
           const newIndex = Math.round(ev.nativeEvent.contentOffset.x / width);
           setActiveIndex(newIndex);
         }}
-        renderItem={({ item }) => (
-          <View style={styles.slide}>
+        renderItem={({ item, index }) => (
+          <TouchableOpacity 
+            style={styles.slide}
+            activeOpacity={0.9}
+            onPress={() => handleImagePress(index)}
+          >
             <Image source={item} style={styles.image} />
-          </View>
+          </TouchableOpacity>
         )}
       />
       

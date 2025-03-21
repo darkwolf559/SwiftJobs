@@ -6,7 +6,7 @@ const { width } = Dimensions.get('window');
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Dimensions } from 'react-native';
-
+import CityAutocomplete from '../../compenents/CityAutoComplete';
 
 const JobPostingPage = () => {
  
@@ -69,7 +69,9 @@ const JobPostingPage = () => {
       setErrors(newErrors);
     }
   };
-
+  const handleCitySelect = (city) => {
+    handleChange('location', city);
+  };
   // Validate the form
   const validateForm = () => {
     const newErrors = {};
@@ -93,7 +95,7 @@ const JobPostingPage = () => {
   // Submit form
   const handleSubmit = () => {
     if (validateForm()) {
-      // Here you would typically send the data to your API
+      
       console.log('Form submitted:', formData);
       alert('Job posted successfully!');
       // Navigate back or clear form
@@ -127,6 +129,22 @@ const JobPostingPage = () => {
     </View>
   );
 
+  const renderCitySelector = () => (
+    <View style={styles.fieldContainer}>
+      <Text style={styles.fieldLabel}>
+        City <Text style={styles.requiredStar}>*</Text>
+      </Text>
+      <CityAutocomplete
+        initialValue={formData.location}
+        onCitySelect={handleCitySelect}
+        error={errors.location}
+      />
+      {errors.location && (
+        <Text style={styles.errorText}>{errors.location}</Text>
+      )}
+    </View>
+  );
+
   const renderCategoryDropdown = () => (
     <View style={styles.fieldContainer}>
       <Text style={styles.fieldLabel}>
@@ -148,7 +166,7 @@ const JobPostingPage = () => {
         <Text style={styles.errorText}>{errors.category}</Text>
       )}
       
-      {/* Category Dropdown Modal */}
+      
       <Modal
         visible={showCategoryDropdown}
         transparent
@@ -214,9 +232,8 @@ const JobPostingPage = () => {
             {renderCategoryDropdown()}
             {renderField('Job Description', 'jobDescription', 'Describe the job responsibilities, requirements, and other details...', true)}
             {renderField('Payment', 'payment', 'e.g., $50,000 - $70,000 a year')}
-            {renderField('Location', 'location', 'e.g., Los Angeles, CA')}
+            {renderCitySelector()}
             {renderField('Duration', 'duration', 'e.g., Full-time, Contract')}
-            
             {renderField('Required Skills', 'requiredSkills', 'List required skills separated by commas', true)}
             {renderField('Working Hours', 'workingHours', 'e.g., 40 hours/week')}
             

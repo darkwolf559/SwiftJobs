@@ -9,6 +9,7 @@ import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FilterScreen from "../../FilterPage/filter";
 import { Avatar } from "react-native-elements";
+import ImageCarousel from "./MovingImages";
 const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
@@ -139,6 +140,8 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </LinearGradient>
 
+      <ImageCarousel/>
+      
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('Categories'))}
         <ScrollView 

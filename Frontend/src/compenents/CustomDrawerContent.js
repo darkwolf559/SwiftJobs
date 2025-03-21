@@ -49,7 +49,11 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
             case 'Post a Job':
               navigation?.navigate('JobPostingPage');
-              break;    
+              break;
+              
+              case 'View Jobs':
+                navigation?.navigate('AllJobsScreen');
+                break; 
           
       // Add other cases as needed
       case 'Log Out':

@@ -20,6 +20,7 @@ import JobsList from './src/Screens/JobList/JobList.js';
 import Chatbot from './src/Chatbot/Chatbot.js';
 import JobPostingPage from './src/Screens/JobPost/JobPost.js';
 import { AuthProvider } from './src/context/AuthContext';
+import AllJobsScreen from './src/Screens/JobList/AllJobs.js';
 
 
 
@@ -52,6 +53,7 @@ export default App = () => {
         <Stack.Screen name="JobsList" component={JobsList} />
         <Stack.Screen name="Chatbot" component={Chatbot} />
         <Stack.Screen name="JobPostingPage" component={JobPostingPage} />
+        <Stack.Screen name="AllJobsScreen" component={AllJobsScreen} />
      
        
       </Stack.Navigator>

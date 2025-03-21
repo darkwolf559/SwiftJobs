@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,146 +8,124 @@ import {
   SafeAreaView,
   Dimensions,
   Image,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { jobService } from '../../services/api'; 
 
 const { width } = Dimensions.get('window');
 
 const JobsList = ({ route, navigation }) => {
   const { category } = route.params;
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data for developer jobs
-  const developerJobs = [
-    {
-      id: 1,
-      title: 'Web Designing',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$50,000 - $70,000 a year',
-    },
-    {
-      id: 2,
-      title: 'Projects Designing',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$50,000 - $70,000 a year',
-    },
-    {
-      id: 3,
-      title: 'Product Designing',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$35,000 - $85,000 a year',
-    },
-    {
-      id: 4,
-      title: 'Android Development',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$35,000 - $85,000 a year',
-    },
-    {
-      id: 5,
-      title: 'iOS Development',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$45,000 - $90,000 a year',
-    },
-    {
-      id: 6,
-      title: 'Full Stack Development',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$60,000 - $100,000 a year',
-    },
-    {
-      id: 7,
-      title: 'Backend Development',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$55,000 - $95,000 a year',
-    },
-    {
-      id: 8,
-      title: 'Frontend Development',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$45,000 - $85,000 a year',
-    },
-  ];
 
-  // ADDED: Mock data for other job categories
-  const technologyJobs = [
-    {
-      id: 1,
-      title: 'IT Support Specialist',
-      company: 'Google Inc.',
-      location: 'Mountain View, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$45,000 - $65,000 a year',
-    },
-    {
-      id: 2,
-      title: 'Network Administrator',
-      company: 'Microsoft Corp.',
-      location: 'Seattle, WA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$55,000 - $80,000 a year',
-    },
-    // More jobs would go here
-  ];
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
-  const accountingJobs = [
-    {
-      id: 1,
-      title: 'Financial Analyst',
-      company: 'Amazon Inc.',
-      location: 'Seattle, WA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$60,000 - $85,000 a year',
-    },
-    {
-      id: 2,
-      title: 'Tax Accountant',
-      company: 'Deloitte',
-      location: 'New York, NY',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$65,000 - $90,000 a year',
-    },
-    // More jobs would go here
-  ];
 
-  // ADDED: Function to get jobs based on category ID
-  const getJobsForCategory = (categoryId) => {
-    switch(categoryId) {
-      case 1: // DEVELOPER
-        return developerJobs;
-      case 2: // TECHNOLOGY
-        return technologyJobs;
-      case 3: // ACCOUNTING
-        return accountingJobs;
-      // For other categories, you would add more cases
-      default:
-        // If category not found, return a modified version of developer jobs
-        // This ensures something is displayed even for categories without specific data
-        return developerJobs.map(job => ({
-          ...job,
-          title: job.title.replace('Development', `${category.title.toLowerCase()} specialist`).replace('Designing', `${category.title.toLowerCase()} design`)
-        }));
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      
+      const jobsData = await jobService.getJobsByCategory(category.id);
+      
+      
+      const formattedJobs = jobsData.map(job => ({
+        id: job._id,
+        title: job.jobTitle,
+        company: job.employerName || 'Unknown Company',
+        location: job.location,
+        description: job.jobDescription.length > 150 
+          ? job.jobDescription.substring(0, 150) + '...' 
+          : job.jobDescription,
+        salary: job.payment,
+        createdBy: job.createdBy,
+        
+      }));
+      
+      setJobs(formattedJobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      setError('Failed to load jobs. Please try again.');
+      
+      
+      if (category.id === '1') { 
+        setJobs([
+          {
+            id: 'placeholder1',
+            title: 'Web Designing',
+            company: 'Facebook Inc.',
+            location: 'Los Angeles, CA',
+            description: 'Note: This is placeholder data. Backend connection failed.',
+            salary: '$50,000 - $70,000 a year',
+          },
+          {
+            id: 'placeholder2',
+            title: 'Projects Designing',
+            company: 'Facebook Inc.',
+            location: 'Los Angeles, CA',
+            description: 'Note: This is placeholder data. Backend connection failed.',
+            salary: '$50,000 - $70,000 a year',
+          }
+        ]);
+      } else {
+        setJobs([]);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ADDED: Get the appropriate jobs for the selected category
-  const jobsToShow = getJobsForCategory(category.id);
+  // Navigate to Job details screen
+  const navigateToJobDetails = (job) => {
+    navigation.navigate('JobSingle', { 
+      jobId: job.id,
+      companyInfo: {
+        name: job.company,
+        location: job.location,
+        
+      }
+    });
+  };
+
+  
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LinearGradient 
+          colors={["#623AA2", "#F97794"]} 
+          style={styles.header}
+        >
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>{category.title} JOBS</Text>
+            <Text style={styles.jobCount}>Loading...</Text>
+          </View>
+          <TouchableOpacity style={styles.iconButton}>
+            <Icon name="search" size={24} color="white" />
+          </TouchableOpacity>
+        </LinearGradient>
+        
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#623AA2" />
+          <Text style={styles.loadingText}>Loading jobs...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -164,55 +142,81 @@ const JobsList = ({ route, navigation }) => {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>{category.title} JOBS</Text>
-          {/* CHANGED: Display actual number of jobs from jobsToShow */}
-          <Text style={styles.jobCount}>{jobsToShow.length} jobs found</Text>
+          <Text style={styles.jobCount}>{jobs.length} jobs found</Text>
         </View>
         <TouchableOpacity style={styles.iconButton}>
           <Icon name="search" size={24} color="white" />
         </TouchableOpacity>
       </LinearGradient>
 
-      {/* Jobs List */}
+      
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={fetchJobs}
+          >
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.jobsContainer}
       >
-        {/* CHANGED: Map over jobsToShow instead of developerJobs */}
-        {jobsToShow.map((job) => (
-          <TouchableOpacity
-            key={job.id}
-            style={styles.jobCard}
-            onPress={() => {}}
-          >
-            <View style={styles.jobHeader}>
-              <Image
-                source={require('../../assets/20943599.jpg')}
-                style={styles.companyLogo}
-              />
-              <View style={styles.jobTitleContainer}>
-                <Text style={styles.jobTitle}>{job.title}</Text>
-                <Text style={styles.companyInfo}>
-                  {job.company}, {job.location}
-                </Text>
+        {jobs.length > 0 ? (
+          jobs.map((job) => (
+            <TouchableOpacity
+              key={job.id}
+              style={styles.jobCard}
+              onPress={() => navigateToJobDetails(job)}
+            >
+              <View style={styles.jobHeader}>
+                <Image
+                  source={require('../../assets/20943599.jpg')}
+                  style={styles.companyLogo}
+                />
+                <View style={styles.jobTitleContainer}>
+                  <Text style={styles.jobTitle}>{job.title}</Text>
+                  <Text style={styles.companyInfo}>
+                    {job.company}, {job.location}
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.bookmarkButton}>
+                  <Icon name="bookmark-border" size={24} color="#623AA2" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.bookmarkButton}>
-                <Icon name="bookmark-border" size={24} color="#623AA2" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.jobDescription}>{job.description}</Text>
-            <View style={styles.jobFooter}>
-              <Text style={styles.salary}>{job.salary}</Text>
-              <TouchableOpacity style={styles.applyButton}>
-                <Text style={styles.applyButtonText}>APPLY</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <Text style={styles.jobDescription}>{job.description}</Text>
+              <View style={styles.jobFooter}>
+                <Text style={styles.salary}>{job.salary}</Text>
+                <TouchableOpacity 
+                  style={styles.applyButton}
+                  onPress={() => navigateToJobDetails(job)}
+                >
+                  <Text style={styles.applyButtonText}>APPLY</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.noJobsContainer}>
+            <Icon name="work-off" size={80} color="#ccc" />
+            <Text style={styles.noJobsText}>No jobs found in this category</Text>
+            <TouchableOpacity 
+              style={styles.postJobButton}
+              onPress={() => navigation.navigate('JobPosting')}
+            >
+              <Text style={styles.postJobText}>Post a Job</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

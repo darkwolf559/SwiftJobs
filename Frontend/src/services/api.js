@@ -144,7 +144,61 @@ export const userService = {
 
 // Job Services
 export const jobService = {
+  // Create a new job
+  createJob: async (jobData) => {
+    try {
+      const response = await api.post('/jobs/create', jobData);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
 
+  // Get all jobs
+  getAllJobs: async () => {
+    try {
+      const response = await api.get('/jobs');
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Get jobs by category
+  getJobsByCategory: async (categoryId) => {
+    try {
+      const response = await api.get(`/jobs/category/${categoryId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Get job by ID
+  getJobById: async (jobId) => {
+    try {
+      const response = await api.get(`/jobs/${jobId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  }
 };
 
 export default {

@@ -1,78 +1,102 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
 import Slider from "@react-native-community/slider";
-import { CheckBox, Button, Avatar, Image } from "react-native-elements";
+import { Button, Avatar } from "react-native-elements";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from "@react-navigation/native";
+import CityAutocomplete from "../compenents/CityAutoComplete";
+
 const FilterScreen = () => {
   const [salaryRange, setSalaryRange] = useState({ min: 200000, max: 800000 });
   const navigation = useNavigation();
-  const initialJobTypes = {
-    fullTime: true,
-    partTime: false,
-    contract: false,
-    internship: true,
-    freelance: false,
-    commission: false,
-  };
-  const [jobTypes, setJobTypes] = useState(initialJobTypes);
-  const [experience, setExperience] = useState("Mid Level");
+  
 
-  const toggleJobType = (type) => {
-    setJobTypes((prevJobTypes) => ({
-      ...prevJobTypes,
-      [type]: !prevJobTypes[type],
+  const initialCategories = {
+    technology: false,
+    healthcare: false,
+    education: false,
+    agriculture: false,
+    financial: false,
+    transportation: false,
+    construction: false,
+    domesticWorks: false,
+    others: false,
+  };
+  
+  const [categories, setCategories] = useState(initialCategories);
+  const [location, setLocation] = useState('');
+
+ 
+  const toggleCategory = (category) => {
+    setCategories((prevCategories) => ({
+      ...prevCategories,
+      [category]: !prevCategories[category],
     }));
   };
 
+  
   const clearFilters = () => {
     setSalaryRange({ min: 200000, max: 800000 });
-    setJobTypes(initialJobTypes);
-    setExperience("Mid Level");
+    setCategories(initialCategories);
+    setLocation('');
   };
 
+  // Handle search with applied filters
   const handleSearch = () => {
     const filters = {
-      salaryRange,
-      jobTypes,
-      experience,
+      salaryRange: {
+        min: salaryRange.min,
+        max: salaryRange.max
+      },
+      categories: Object.keys(categories).filter(cat => categories[cat]),
+      location,
     };
-    console.log("Filters:", filters);
-    Alert.alert("Filters Applied", JSON.stringify(filters, null, 2));
+
+    
+    navigation.navigate('AllJobsScreen', { 
+      filters: filters 
+    });
   };
 
-  const jobTypeLabels = {
-    fullTime: "Full Time",
-    partTime: "Part Time",
-    contract: "Contract",
-    internship: "Internship",
-    freelance: "Freelance",
-    commission: "Commission",
+ 
+  const categoryLabels = {
+    technology: "TECHNOLOGY",
+    healthcare: "HEALTHCARE",
+    education: "EDUCATION",
+    agriculture: "AGRICULTURE",
+    financial: "FINANCIAL",
+    transportation: "TRANSPORTATION",
+    construction: "CONSTRUCTION",
+    domesticWorks: "DOMESTIC WORKS",
+    others: "OTHERS",
   };
 
   return (
     <View style={styles.container}>
       <LinearGradient 
-              colors={["#623AA2", "#F97794"]} 
-              style={styles.header}
-            >
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-              >
-                <Icon name="arrow-back" size={24} color="white" />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>FILTER</Text>
-              <View style={{ width: 24 }}/>
+        colors={["#623AA2", "#F97794"]} 
+        style={styles.header}
+      >
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>FILTER</Text>
+        <View style={{ width: 24 }}/>
       </LinearGradient>
 
-      <ScrollView contentContainerStyle={[styles.filterBox, { paddingBottom: 100 }]} showsVerticalScrollIndicator={true}>
+      <ScrollView 
+        contentContainerStyle={[styles.filterBox, { paddingBottom: 100 }]} 
+        showsVerticalScrollIndicator={true}
+      >
         <Text style={styles.label}>Salary Range</Text>
-        <Text style={styles.salaryText}>Min: ${salaryRange.min.toLocaleString()}</Text>
+        <Text style={styles.salaryText}>Min: LKR {salaryRange.min.toLocaleString()}</Text>
         <Slider
           style={styles.slider}
-          minimumValue={50000}
+          minimumValue={1000}
           maximumValue={1000000}
           step={10000}
           value={salaryRange.min}
@@ -85,10 +109,10 @@ const FilterScreen = () => {
           maximumTrackTintColor="#ddd"
           thumbTintColor="#6a11cb"
         />
-        <Text style={styles.salaryText}>Max: ${salaryRange.max.toLocaleString()}</Text>
+        <Text style={styles.salaryText}>Max: LKR{salaryRange.max.toLocaleString()}</Text>
         <Slider
           style={styles.slider}
-          minimumValue={50000}
+          minimumValue={1000}
           maximumValue={1000000}
           step={10000}
           value={salaryRange.max}
@@ -102,48 +126,56 @@ const FilterScreen = () => {
           thumbTintColor="#6a11cb"
         />
 
-        <Text style={styles.label}>Job Type</Text>
-        
-        <View style={styles.jobTypeContainer}>
-          {Object.keys(jobTypes).map((type) => (
-            <CheckBox
-              key={type}
-              title={`${jobTypeLabels[type]} (${Math.floor(Math.random() * 200) + 50})`}
-              checked={jobTypes[type]}
-              onPress={() => toggleJobType(type)}
-              checkedColor="#6a11cb"
-              containerStyle={styles.checkBox}
-            />
-          ))}
-        </View>
-        
-        <Text style={styles.label}>Experience Level</Text>
-         
-        <View style={styles.experienceContainer}>
-          {["Entry Level", "Mid Level", "Senior Level"].map((level) => (
-            <TouchableOpacity key={level} onPress={() => setExperience(level)}>
-              <Text style={[styles.experience, experience === level && styles.selectedExperience]}>
-                {level}
+        <Text style={styles.label}>Location</Text>
+        <CityAutocomplete 
+          onCitySelect={(city) => setLocation(city)}
+          initialValue={location}
+        />
+
+        <Text style={styles.label}>Job Categories</Text>
+        <View style={styles.categoriesContainer}>
+          {Object.keys(categories).map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryButton, 
+                categories[category] && styles.selectedCategory
+              ]}
+              onPress={() => toggleCategory(category)}
+            >
+              <Text style={[
+                styles.categoryButtonText, 
+                categories[category] && styles.selectedCategoryText
+              ]}>
+                {categoryLabels[category]}
               </Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity onPress={() => setExperience("")}> 
-            <Text style={styles.experience}>Reset</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.buttonContainer}>
-        <LinearGradient colors={["#601cd6", "#601cd6"]} style={styles.gradientButton}>
-        <Button title="SHOW RESULT" buttonStyle={styles.searchButton} onPress={handleSearch} />
-      </LinearGradient>
+          <LinearGradient 
+            colors={["#601cd6", "#601cd6"]} 
+            style={styles.gradientButton}
+          >
+            <Button 
+              title="SHOW RESULT" 
+              buttonStyle={styles.searchButton} 
+              onPress={handleSearch} 
+            />
+          </LinearGradient>
 
-      <Button title="CLEAR" type="outline" buttonStyle={styles.clearButton} titleStyle={{ color: "#601cd6" }} onPress={clearFilters} 
-/>
-
+          <Button 
+            title="CLEAR" 
+            type="outline" 
+            buttonStyle={styles.clearButton} 
+            titleStyle={{ color: "#601cd6" }} 
+            onPress={clearFilters} 
+          />
         </View>
       </ScrollView>
 
-      <Avatar rounded source={{ uri: "https://randomuser.me/api/portraits/women/57.jpg" }} size="medium" containerStyle={styles.avatar} />
+
     </View>
   );
 };
@@ -154,21 +186,67 @@ const styles = StyleSheet.create({
   label: { fontSize: 16, fontWeight: "bold", marginVertical: 10 },
   salaryText: { fontSize: 14, marginBottom: 5 },
   slider: { width: "100%", height: 40 },
-  jobTypeContainer: { flexWrap: "wrap", flexDirection: "row", justifyContent: "space-between" },
-  checkBox: { backgroundColor: "transparent", borderWidth: 0, padding: 0 },
-  experienceContainer: { flexDirection: "row", justifyContent: "space-between", marginVertical: 10 },
-  experience: { fontSize: 16, padding: 10, color: "gray" },
-  selectedExperience: { color: "#6a11cb", fontWeight: "bold", textDecorationLine: "underline" },
-  buttonContainer: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
+  categoriesContainer: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'space-between' 
+  },
+  categoryButton: {
+    width: '30%',
+    marginVertical: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  selectedCategory: {
+    backgroundColor: '#6a11cb',
+    borderColor: '#6a11cb',
+  },
+  categoryButtonText: {
+    color: '#666',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  selectedCategoryText: {
+    color: 'white',
+  },
+  buttonContainer: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    marginTop: 20 
+  },
   avatar: { position: "absolute", bottom: 20, right: 20 },
-  header: {height: 60,flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',paddingHorizontal: 15,},
-  backButton: {padding: 10,},
-  headerTitle: {color: '#fff',fontSize: 18,fontWeight: 'bold',},
-  searchButton:{color:"#6a11cb"},
-  gradientButton: {borderRadius: 5,overflow: "hidden",marginBottom: 10,},
-  searchButton: {backgroundColor: "transparent", paddingVertical: 12,},
-  clearButton: {borderColor: "#601cd6", borderWidth: 2,  paddingVertical: 12,backgroundColor: "transparent",},
-  
+  header: {
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+  },
+  backButton: { padding: 10 },
+  headerTitle: { 
+    color: '#fff', 
+    fontSize: 18, 
+    fontWeight: 'bold' 
+  },
+  gradientButton: { 
+    borderRadius: 5, 
+    overflow: "hidden", 
+    marginBottom: 10 
+  },
+  searchButton: { 
+    backgroundColor: "transparent", 
+    paddingVertical: 12 
+  },
+  clearButton: { 
+    borderColor: "#601cd6", 
+    borderWidth: 2,  
+    paddingVertical: 12, 
+    backgroundColor: "transparent" 
+  },
 });
 
 export default FilterScreen;

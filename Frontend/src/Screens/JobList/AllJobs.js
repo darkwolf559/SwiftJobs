@@ -14,74 +14,238 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { jobService } from '../../services/api'; 
+import JobCard from '../../compenents/JobCard';
 
 const { width } = Dimensions.get('window');
 
-const AllJobsScreen = ({ navigation }) => {
+const AllJobsScreen = ({ route, navigation }) => {
   const [jobs, setJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isFiltered, setIsFiltered] = useState(false);
+
+  const categoryMappings = {
+    'technology': ['technology', 'tech', '1'],
+    'healthcare': ['healthcare', 'health', 'medical', '2'],
+    'education': ['education', 'teaching', '3'],
+    'agriculture': ['agriculture', 'farming', '4'],
+    'financial': ['financial', 'finance', 'banking', '5'],
+    'transportation': ['transportation', 'transport', 'logistics', '6', 'transpotation'],
+    'construction': ['construction', 'building', '7'],
+    'domesticworks': ['domestic works', 'domestic', '8', 'domesticworks'],
+    'others': ['others', 'other', '9']
+  };
 
  
-  useEffect(() => {
-    fetchAllJobs();
-  }, []);
+  const parseSalary = (salaryString) => {
+    if (!salaryString || typeof salaryString !== 'string') {
+      return { min: 0, max: 0 };
+    }
+    
 
- s
-  const fetchAllJobs = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+    if (salaryString.includes('-')) {
+      const parts = salaryString.split('-');
       
+ 
+      const minValue = parseFloat(parts[0].replace(/[^0-9.]+/g, ''));
+      const maxValue = parseFloat(parts[1].replace(/[^0-9.]+/g, ''));
       
-      const jobsData = await jobService.getAllJobs();
-      
-      
-      const formattedJobs = jobsData.map(job => ({
-        id: job._id,
-        title: job.jobTitle,
-        company: job.employerName || 'Unknown Company',
-        location: job.location,
-        description: job.jobDescription.length > 150 
-          ? job.jobDescription.substring(0, 150) + '...' 
-          : job.jobDescription,
-        salary: job.payment,
-        createdBy: job.createdBy,
-        category: job.jobCategory
-      }));
-      
-      setJobs(formattedJobs);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-      setError('Failed to load jobs. Please try again.');
-      
-      
-      setJobs([
-        {
-          id: 'placeholder1',
-          title: 'Web Developer',
-          company: 'Tech Company',
-          location: 'Colombo',
-          description: 'This is description',
-          salary: '$LKR50,000',
-          category: '1'
-        },
-        {
-          id: 'placeholder2',
-          title: 'Nurse',
-          company: 'General Hospital',
-          location: 'Kandy',
-          description: 'This is description',
-          salary: 'LKR40,000',
-          category: '2'
-        }
-      ]);
-    } finally {
-      setLoading(false);
+      return {
+        min: isNaN(minValue) ? 0 : minValue,
+        max: isNaN(maxValue) ? 0 : maxValue
+      };
+    } else {
+
+      const value = parseFloat(salaryString.replace(/[^0-9.]+/g, ''));
+      const numericValue = isNaN(value) ? 0 : value;
+      return { min: numericValue, max: numericValue };
     }
   };
 
+  const applyFilters = (jobsList, filters) => {
+
+    if (!filters) return jobsList;
+    if (!jobsList || jobsList.length === 0) return [];
+
+    const lenientFilters = {
+      salaryRange: filters.salaryRange || { min: 0, max: 1000000 },
+      categories: filters.categories || [],
+      location: filters.location || ''
+    };
+    
+
+    if (lenientFilters.salaryRange.min === undefined || isNaN(lenientFilters.salaryRange.min)) {
+      lenientFilters.salaryRange.min = 0;
+    }
+    if (lenientFilters.salaryRange.max === undefined || isNaN(lenientFilters.salaryRange.max)) {
+      lenientFilters.salaryRange.max = 1000000;
+    }
+    
+    const filteredJobs = jobsList.filter(job => {
+      //Salary Filter
+      let salaryInRange = true;
+      if (lenientFilters.salaryRange && 
+          (lenientFilters.salaryRange.min > 0 || lenientFilters.salaryRange.max < 1000000)) {
+        
+        const parsedSalary = parseSalary(job.salary || '0');
+        
+
+        if (parsedSalary.min === 0 && parsedSalary.max === 0) {
+          salaryInRange = true;
+        } else {
+          salaryInRange = (
+            (parsedSalary.min >= lenientFilters.salaryRange.min && parsedSalary.min <= lenientFilters.salaryRange.max) ||
+            (parsedSalary.max >= lenientFilters.salaryRange.min && parsedSalary.max <= lenientFilters.salaryRange.max) ||
+            (parsedSalary.min <= lenientFilters.salaryRange.min && parsedSalary.max >= lenientFilters.salaryRange.max)
+          );
+        }
+      }
+
+      //Location Filter
+      let locationMatch = true;
+      if (lenientFilters.location && lenientFilters.location.trim() !== '') {
+        
+        const jobLocation = job.location ? job.location.toString().toLowerCase() : '';
+        const filterLocation = lenientFilters.location.toString().toLowerCase();
+        
   
+        if (!jobLocation) {
+          locationMatch = true;
+        } else {
+          locationMatch = jobLocation.includes(filterLocation);
+        }
+      }
+
+      //Category Filter
+      let categoryMatch = true;
+      if (lenientFilters.categories && lenientFilters.categories.length > 0) {
+        if (!job.category) {
+        
+          const hasOthersCategory = lenientFilters.categories.some(
+            cat => cat && cat.toLowerCase() === 'others'
+          );
+          categoryMatch = hasOthersCategory;
+        } else {
+          categoryMatch = lenientFilters.categories.some(selectedCategory => {
+            if (!selectedCategory) return false;
+            
+            const selectedCategoryLower = selectedCategory.toLowerCase();
+          
+            const acceptableValues = categoryMappings[selectedCategoryLower] || [];
+
+            const jobCategoryLower = job.category ? job.category.toString().toLowerCase() : '';
+            
+            if (jobCategoryLower === 'others' || jobCategoryLower === '9') {
+              return selectedCategoryLower === 'others';
+            }
+            
+           
+            return acceptableValues.some(value => 
+              jobCategoryLower.includes(value) || value.includes(jobCategoryLower)
+            );
+          });
+        }
+      }
+
+      return salaryInRange && locationMatch && categoryMatch;
+    });
+
+    return filteredJobs;
+  };
+
+  // Fetch jobs and apply filters
+  useEffect(() => {
+    const fetchJobsAndApplyFilters = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+               
+        const jobsData = await jobService.getAllJobs();
+        
+        const formattedJobs = jobsData.map(job => {
+    
+          let standardizedCategory = job.jobCategory;
+          
+          if (job.jobCategory && !isNaN(job.jobCategory)) {
+            
+            const categoryMap = {
+              '1': 'technology',
+              '2': 'healthcare',
+              '3': 'education',
+              '4': 'agriculture',
+              '5': 'financial',
+              '6': 'transportation',
+              '7': 'construction',
+              '8': 'domesticWorks',
+              '9': 'others'
+            };
+            standardizedCategory = categoryMap[job.jobCategory] || job.jobCategory;
+          }
+          
+          return {
+            id: job._id,
+            title: job.jobTitle,
+            company: job.employerName || 'Unknown Company',
+            location: job.location,
+            description: job.jobDescription && job.jobDescription.length > 150 
+              ? job.jobDescription.substring(0, 150) + '...' 
+              : job.jobDescription || 'No description available',
+            salary: job.payment || 'Not specified',
+            createdBy: job.createdBy,
+            category: standardizedCategory 
+          };
+        });
+
+        const { filters } = route.params || {};
+
+        if (filters) {
+          const filtered = applyFilters(formattedJobs, filters);
+          setFilteredJobs(filtered);
+          setIsFiltered(true);
+        } else {
+          setFilteredJobs(formattedJobs);
+          setIsFiltered(false);
+        }
+
+        setJobs(formattedJobs);
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+        setError('Failed to load jobs. Please try again.');
+        
+        
+        const placeholderJobs = [
+          {
+            id: 'placeholder1',
+            title: 'Web Developer',
+            company: 'Tech Company',
+            location: 'Colombo',
+            description: 'This is description',
+            salary: 'LKR 50,000 - 70,000',
+            category: 'technology'
+          },
+          {
+            id: 'placeholder2',
+            title: 'Nurse',
+            company: 'General Hospital',
+            location: 'Kandy',
+            description: 'This is description',
+            salary: 'LKR 40,000 - 60,000',
+            category: 'healthcare'
+          }
+        ];
+
+        setFilteredJobs(placeholderJobs);
+        setJobs(placeholderJobs);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchJobsAndApplyFilters();
+  }, [route.params]);
+
+  // Navigate to Job details screen
   const navigateToJobDetails = (job) => {
     navigation.navigate('JobSingle', { 
       jobId: job.id,
@@ -92,7 +256,11 @@ const AllJobsScreen = ({ navigation }) => {
     });
   };
 
-  
+  // Clear filters
+  const clearFilters = () => {
+    navigation.setParams({ filters: null });
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -137,79 +305,63 @@ const AllJobsScreen = ({ navigation }) => {
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>ALL JOBS</Text>
-          <Text style={styles.jobCount}>{jobs.length} jobs found</Text>
+          <Text style={styles.headerTitle}>
+            {isFiltered ? 'FILTERED JOBS' : 'ALL JOBS'}
+          </Text>
+          <Text style={styles.jobCount}>
+            {filteredJobs.length} jobs found
+          </Text>
         </View>
         <TouchableOpacity style={styles.iconButton}>
           <Icon name="search" size={24} color="white" />
         </TouchableOpacity>
       </LinearGradient>
 
-  
+
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity 
             style={styles.retryButton}
-            onPress={fetchAllJobs}
+            onPress={() => navigation.goBack()}
           >
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
       )}
 
-  
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.jobsContainer}
-      >
-        {jobs.length > 0 ? (
-          jobs.map((job) => (
-            <TouchableOpacity
-              key={job.id}
-              style={styles.jobCard}
-              onPress={() => navigateToJobDetails(job)}
-            >
-              <View style={styles.jobHeader}>
-                <Image
-                  source={require('../../assets/20943599.jpg')}
-                  style={styles.companyLogo}
-                />
-                <View style={styles.jobTitleContainer}>
-                  <Text style={styles.jobTitle}>{job.title}</Text>
-                  <Text style={styles.companyInfo}>
-                    {job.company}, {job.location}
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.bookmarkButton}>
-                  <Icon name="bookmark-border" size={24} color="#623AA2" />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.jobDescription}>{job.description}</Text>
-              <View style={styles.jobFooter}>
-                <Text style={styles.salary}>{job.salary}</Text>
-                <TouchableOpacity 
-                  style={styles.applyButton}
-                  onPress={() => navigateToJobDetails(job)}
-                >
-                  <Text style={styles.applyButtonText}>APPLY</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <View style={styles.noJobsContainer}>
-            <Icon name="work-off" size={80} color="#ccc" />
-            <Text style={styles.noJobsText}>No jobs found</Text>
-            <TouchableOpacity 
-              style={styles.postJobButton}
-              onPress={() => navigation.navigate('JobPostingPage')}
-            >
-              <Text style={styles.postJobText}>Post a Job</Text>
-            </TouchableOpacity>
-          </View>
+<ScrollView 
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={styles.jobsContainer}
+  >
+    {filteredJobs.length > 0 ? (
+      filteredJobs.map((job) => (
+        <JobCard
+          key={job.id}
+          job={job}
+          onPress={() => navigateToJobDetails(job)}
+          navigation={navigation}
+        />
+      ))
+    ) : (
+      <View style={styles.noJobsContainer}>
+        <Icon name="work-off" size={80} color="#ccc" />
+        <Text style={styles.noJobsText}>
+          {isFiltered 
+            ? 'No jobs match your filter criteria' 
+            : 'No jobs available'}
+        </Text>
+        {isFiltered && (
+          <TouchableOpacity 
+            style={styles.clearFilterButton}
+            onPress={clearFilters}
+          >
+            <Text style={styles.clearFilterButtonText}>Clear Filters</Text>
+          </TouchableOpacity>
         )}
-      </ScrollView>
+      </View>
+    )}
+  </ScrollView>
     </SafeAreaView>
   );
 };
@@ -277,7 +429,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#623AA2',
     borderRadius: 20,
   },
-  retryText: {
+  retryButtonText: {
     color: 'white',
     fontWeight: 'bold',
   },
@@ -359,17 +511,18 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 16,
     marginBottom: 24,
+    textAlign: 'center',
   },
-  postJobButton: {
+  clearFilterButton: {
     backgroundColor: '#623AA2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 25,
   },
-  postJobText: {
-    color: '#fff',
-    fontSize: 16,
+  clearFilterButtonText: {
+    color: 'white',
     fontWeight: 'bold',
+    textAlign: 'center',
   }
 });
 

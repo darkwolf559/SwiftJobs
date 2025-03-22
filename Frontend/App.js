@@ -21,6 +21,8 @@ import Chatbot from './src/Chatbot/Chatbot.js';
 import JobPostingPage from './src/Screens/JobPost/JobPost.js';
 import { AuthProvider } from './src/context/AuthContext';
 import AllJobsScreen from './src/Screens/JobList/AllJobs.js';
+import TestimonialsScreen from './src/compenents/Testimonials/TestimonialsScreen.js';
+import BookmarksScreen from './src/Screens/Bookmark/BookmarksScreen.js';
 
 
 
@@ -35,7 +37,7 @@ export default App = () => {
       <StatusBar style="auto" />
 
       <Stack.Navigator 
-        initialRouteName="Home"
+        initialRouteName="Onboarding"
         screenOptions={{headerShown: false}}
       >
         <Stack.Screen name="Home" component={HomeScreen} />
@@ -54,6 +56,8 @@ export default App = () => {
         <Stack.Screen name="Chatbot" component={Chatbot} />
         <Stack.Screen name="JobPostingPage" component={JobPostingPage} />
         <Stack.Screen name="AllJobsScreen" component={AllJobsScreen} />
+        <Stack.Screen name="TestimonialsScreen" component={TestimonialsScreen} />
+        <Stack.Screen name="BookmarksScreen" component={BookmarksScreen} />
      
        
       </Stack.Navigator>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Platform } from 'react-native';
 
+// List of Sri Lankan cities
 const sriLankaCities = [
   "Colombo",
   "Dehiwala-Mount Lavinia",
@@ -61,7 +62,7 @@ const CityAutocomplete = ({ onCitySelect, initialValue = '', error }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef(null);
 
-  
+  // Update filtered cities when searchText changes
   useEffect(() => {
     if (searchText.length >= 2) {
       const filtered = sriLankaCities.filter(
@@ -75,13 +76,13 @@ const CityAutocomplete = ({ onCitySelect, initialValue = '', error }) => {
     }
   }, [searchText]);
 
- 
+  // Handle city selection
   const handleCitySelect = (city) => {
     setSearchText(city);
     setShowDropdown(false);
     onCitySelect(city);
     
-    
+    // Blur the input to hide keyboard
     if (inputRef.current) {
       inputRef.current.blur();
     }
@@ -102,7 +103,7 @@ const CityAutocomplete = ({ onCitySelect, initialValue = '', error }) => {
         }}
       />
 
-      
+      {/* Dropdown menu with absolute positioning */}
       {showDropdown && (
         <View style={styles.dropdown}>
           <ScrollView 
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: 'absolute',
-    top: 50, 
+    top: 50, // Position below input
     left: 0,
     right: 0,
     maxHeight: 200,

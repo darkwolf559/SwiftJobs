@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image } from "react-native";
-import React, { useState } from "react";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image, ActivityIndicator,Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import FontAwesome from 'react-native-vector-icons/FontAwesome'; 
@@ -7,59 +8,47 @@ import { useNavigation } from "@react-navigation/native";
 import TabNavigation from "../../compenents/TabNavigation";
 import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import FilterScreen from "../../FilterPage/filter";
-import { Avatar } from "react-native-elements";
+import { jobService } from '../../services/api'; 
 import ImageCarousel from "./MovingImages";
+import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
+import JobCard from "../../compenents/JobCard";
+
 const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
-  
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState("Home");
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+  const [featuredJobs, setFeaturedJobs] = useState([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [categoryCounts, setCategoryCounts] = useState({});
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
+  
   const categories = [
     {
-      id: 1,
-      title: 'DEVELOPER',
-      Icon: () => <MaterialIcons name="code" size={24} color="#623AA2" />,
-      jobs: 8,
-    },
-    {
-      id: 2,
+      id: '1',
       title: 'TECHNOLOGY',
-      Icon: () => <Icon name="laptop-outline" size={24} color="#6F67FE" />,
-      jobs: 1020,
+      Icon: () => <MaterialIcons name="computer" size={24} color="#6F67FE" />,
+      jobs: 0,
     },
     {
-      id: 3,
-      title: 'ACCOUNTING',
-      Icon: () => <MaterialIcons name="trending-up" size={24} color="#6F67FE"/>,
-      jobs: 400,
+      id: '2',
+      title: 'HEALTHCARE',
+      Icon: () => <FontAwesome5Icon name="stethoscope" size={24} color="#6F67FE" />,
+      jobs: 0,
     },
     {
-      id: 4,
-      title: 'MEDICAL',
-      Icon: () => <FontAwesome name="stethoscope" size={24} color="#6F67FE" />,
-      jobs: 410,
-    },
-  ];
-  const jobs = [
-    {
-      id: 1,
-      title: 'Web Designing',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$50,000 - $70,000 a year',
+      id: '3',
+      title: 'EDUCATION',
+      Icon: () => <MaterialIcons name="school" size={24} color="#6F67FE" />,
+      jobs: 0,
     },
     {
-      id: 2,
-      title: 'Projects Designing',
-      company: 'Facebook Inc.',
-      location: 'Los Angeles, CA',
-      description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
-      salary: '$50,000 - $70,000 a year',
+      id: '4',
+      title: 'AGRICULTURE',
+      Icon: () => <FontAwesome5Icon name="tractor" size={24} color="#6F67FE" />,
+      jobs: 0,
     },
   ];
 
@@ -107,6 +96,92 @@ const HomeScreen = () => {
     },
   ];
 
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchJobs();
+      fetchCategoryCounts();
+    }, [])
+  );
+
+  
+  const fetchJobs = async () => {
+    try {
+      setLoadingJobs(true);
+      
+      // Get all jobs from the API
+      const jobsData = await jobService.getAllJobs();
+      
+      
+      const randomizedJobs = jobsData
+        .sort(() => 0.5 - Math.random()) 
+        .slice(0, 2); 
+      
+      
+      const formattedJobs = randomizedJobs.map(job => ({
+        id: job._id,
+        title: job.jobTitle,
+        company: job.employerName || 'Unknown Company',
+        location: job.location,
+        description: job.jobDescription.length > 150 
+          ? job.jobDescription.substring(0, 150) + '...' 
+          : job.jobDescription,
+        salary: job.payment,
+      }));
+      
+      setFeaturedJobs(formattedJobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      
+      
+      setFeaturedJobs([
+        {
+          id: 'placeholder1',
+          title: 'Web Designing',
+          company: 'Facebook Inc.',
+          location: 'Los Angeles, CA',
+          description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
+          salary: '$50,000 - $70,000 a year',
+        },
+        {
+          id: 'placeholder2',
+          title: 'Projects Designing',
+          company: 'Facebook Inc.',
+          location: 'Los Angeles, CA',
+          description: 'It is a long established fact that a reader will be distracted by content of a page when looking at its layout...',
+          salary: '$50,000 - $70,000 a year',
+        },
+      ]);
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  
+  const fetchCategoryCounts = async () => {
+    try {
+      setLoadingCategories(true);
+      
+      
+      const jobsData = await jobService.getAllJobs();
+      
+      // Calculate job counts for each category
+      const counts = {};
+      jobsData.forEach(job => {
+        const categoryId = job.jobCategory;
+        counts[categoryId] = (counts[categoryId] || 0) + 1;
+      });
+      
+      setCategoryCounts(counts);
+    } catch (error) {
+      console.error('Error fetching category counts:', error);
+      
+      setCategoryCounts({});
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
   };
@@ -114,6 +189,7 @@ const HomeScreen = () => {
   const toggleDrawer = () => {
     setIsDrawerVisible(!isDrawerVisible);
   };
+  
   const renderSectionHeader = (title, onSeeAll) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -123,6 +199,16 @@ const HomeScreen = () => {
     </View>
   );
   
+  
+  const navigateToJobDetails = (job) => {
+    navigation.navigate('JobSingle', { 
+      jobId: job.id,
+      companyInfo: {
+        name: job.company,
+        location: job.location,
+      }
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -143,84 +229,67 @@ const HomeScreen = () => {
       <ImageCarousel/>
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('Categories'))}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesContainer}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={styles.categoryCard}
-              onPress={() => navigation.navigate('JobsList', { category })}
-            >
-              <View style={styles.categoryIcon}>
-                {category.Icon()}
-              </View>
-              <Text style={styles.categoryTitle}>{category.title}</Text>
-              <Text style={styles.jobCount}>({category.jobs} jobs)</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {renderSectionHeader("JOBS", () => navigation.navigate('Jobs'))}
-        <View style={styles.jobsContainer}>
-          {jobs.map((job) => (
-            <TouchableOpacity
-              key={job.id}
-              style={styles.jobCard}
-              onPress={() => navigation.navigate('JobSingle', { job })}
-            >
-              <View style={styles.jobHeader}>
-                <Image
-                  source={{ uri: 'https://images.unsplash.com/photo-1549924231-f129b911e442?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80' }}
-                  style={styles.companyLogo}
-                />
-                <View style={styles.jobInfo}>
-                  <Text style={styles.jobTitle}>{job.title}</Text>
-                  <Text style={styles.companyName}>{job.company}</Text>
-                  <Text style={styles.location}>{job.location}</Text>
+      
+        {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('CategoryScreen'))}
+        {loadingCategories ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#623AA2" />
+          </View>
+        ) : (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesContainer}
+          >
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={styles.categoryCard}
+                onPress={() => navigation.navigate('JobsList', { category })}
+              >
+                <View style={styles.categoryIcon}>
+                  {category.Icon()}
                 </View>
-                <TouchableOpacity>
-                  <MaterialIcons name="bookmark-border" size={24} color="#623AA2" />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.jobDescription}>{job.description}</Text>
-              <View style={styles.jobFooter}>
-                <Text style={styles.salary}>{job.salary}</Text>
-                <TouchableOpacity style={styles.applyButton}>
-                  <Text style={styles.applyButtonText}>APPLY</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
+                <Text style={styles.categoryTitle}>{category.title}</Text>
+                <Text style={styles.jobCount}>({categoryCounts[category.id] || 0} jobs)</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+{renderSectionHeader("JOBS", () => navigation.navigate('AllJobsScreen'))}
+  {loadingJobs ? (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="small" color="#623AA2" />
+    </View>
+  ) : (
+    <View style={styles.jobsContainer}>
+      {featuredJobs.length > 0 ? (
+        featuredJobs.map((job) => (
+          <JobCard
+            key={job.id}
+            job={job}
+            onPress={() => navigateToJobDetails(job)}
+            navigation={navigation}
+          />
+        ))
+      ) : (
+        <View style={styles.noJobsContainer}>
+          <Text style={styles.noJobsText}>No jobs available yet</Text>
+          <TouchableOpacity 
+            style={styles.postJobButton}
+            onPress={() => navigation.navigate('JobPosting')}
+          >
+            <Text style={styles.postJobButtonText}>Post a Job</Text>
+          </TouchableOpacity>
         </View>
+      )}
+    </View>
+  )}
 
-        {renderSectionHeader("COMPANIES", () => navigation.navigate('Companies'))}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.companiesContainer}
-        >
-          {companies.map((company) => (
-            <TouchableOpacity
-              key={company.id}
-              style={styles.companyCard}
-              onPress={() => navigation.navigate('CompanyDetails', { company })}
-            >
-              <Image 
-                source={{ uri: company.logo }}
-                style={styles.companyLogo}
-                resizeMode="contain"
-              />
-              <Text style={styles.companyName}>{company.name}</Text>
-              <Text style={styles.companyJobs}>({company.jobCount} jobs)</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
 
-        {renderSectionHeader("OUR TESTIMONIALS")}
+
+       {renderSectionHeader("OUR TESTIMONIALS", () => navigation.navigate('TestimonialsScreen'))}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -319,7 +388,6 @@ const styles = StyleSheet.create({
   categoryCard: {
     backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 12,
     marginRight: 12,
     width: 150,
     alignItems: 'center',
@@ -467,7 +535,7 @@ const styles = StyleSheet.create({
   avatar: {
     position: 'absolute',
     right: 30,
-    bottom: 80, // Positioning it above the tab navigation
+    bottom: 80, 
     zIndex: 999, 
     elevation: 1000,  
     width: 70,
@@ -502,6 +570,43 @@ const styles = StyleSheet.create({
     color: '#444',
     lineHeight: 20,
   },
+
+  noJobsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  noJobsText: {
+    fontSize: 16,
+    color: '#757575',
+    marginTop: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  postJobButton: {
+    backgroundColor: '#623AA2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  postJobText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  } 
 });
 
 export default HomeScreen;

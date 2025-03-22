@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView,  TextInput,  TouchableOpacity,  SafeAreaView, StatusBar, Platform, KeyboardAvoidingView,Modal,FlatList
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView, StatusBar, Platform, KeyboardAvoidingView, Modal, FlatList, Alert, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-const { width } = Dimensions.get('window');
+import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Dimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jobService } from '../../services/api';
 import CityAutocomplete from '../../compenents/CityAutoComplete';
 
+const { width } = Dimensions.get('window');
+
 const JobPostingPage = () => {
- 
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+  
+  // Form data state
   const [formData, setFormData] = useState({
     jobTitle: '',
     category: 'Select Category',
@@ -26,26 +31,62 @@ const JobPostingPage = () => {
     employerWebsite: '',
     applicationDeadline: ''
   });
+  
+  // Category options - make sure category IDs match your backend
   const categoryOptions = [
-    { id: 1, label: 'TECHNOLOGY' },
-    { id: 2, label: 'HEALTHCARE' },
-    { id: 3, label: 'EDUCATION' },
-    { id: 4, label: 'AGRICULTURE' },
-    { id: 5, label: 'FINANCIAL' },
-    { id: 6, label: 'TRANSPOTATION' },
-    { id: 7, label: 'CONSTRUCTION' },
-    { id: 8, label: 'DOMESTIC WORKS' },
-    { id: 9, label: 'OTHERS' }
+    { id: '1', label: 'TECHNOLOGY' },
+    { id: '2', label: 'HEALTHCARE' },
+    { id: '3', label: 'EDUCATION' },
+    { id: '4', label: 'AGRICULTURE' },
+    { id: '5', label: 'FINANCIAL' },
+    { id: '6', label: 'TRANSPORTATION' },
+    { id: '7', label: 'CONSTRUCTION' },
+    { id: '8', label: 'DOMESTIC WORKS' },
+    { id: '9', label: 'OTHERS' }
   ];
+  
   // Validation state
   const [errors, setErrors] = useState({});
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
+  // Load user data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userDataString = await AsyncStorage.getItem('userData');
+        if (userDataString) {
+          const parsedUserData = JSON.parse(userDataString);
+          setUserData(parsedUserData);
+          
+          // Pre-fill employer info if available
+          setFormData(prevData => ({
+            ...prevData,
+            employerName: parsedUserData.fullName || '',
+            employerEmail: parsedUserData.email || ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    
+    loadUserData();
+  }, []);
+
   const handleChange = (field, value) => {
-    setFormData({
-      ...formData,
-      [field]: value
-    });
+    if (field === 'payment') {
+      // Remove non-numeric characters except decimal point
+      const numericValue = value.replace(/[^0-9.]/g, '');
+      setFormData({
+        ...formData,
+        [field]: numericValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [field]: value
+      });
+    }
     
     // Clear error when typing
     if (errors[field]) {
@@ -55,10 +96,16 @@ const JobPostingPage = () => {
     }
   };
 
+  // Handle city selection from autocomplete
+  const handleCitySelect = (city) => {
+    handleChange('location', city);
+  };
+
   const handleCategorySelect = (category) => {
     setFormData({
       ...formData,
-      category: category.label
+      category: category.label,
+      categoryId: category.id // Store the category ID for the backend
     });
     setShowCategoryDropdown(false);
     
@@ -69,9 +116,7 @@ const JobPostingPage = () => {
       setErrors(newErrors);
     }
   };
-  const handleCitySelect = (city) => {
-    handleChange('location', city);
-  };
+
   // Validate the form
   const validateForm = () => {
     const newErrors = {};
@@ -80,7 +125,17 @@ const JobPostingPage = () => {
     if (!formData.jobTitle) newErrors.jobTitle = 'Job title is required';
     if (formData.category === 'Select Category') newErrors.category = 'Category is required';
     if (!formData.jobDescription) newErrors.jobDescription = 'Job description is required';
-    if (!formData.payment) newErrors.payment = 'Payment information is required';
+    
+    // Validate payment
+    if (!formData.payment) {
+      newErrors.payment = 'Payment is required';
+    } else {
+      const paymentNum = parseFloat(formData.payment);
+      if (isNaN(paymentNum) || paymentNum <= 0) {
+        newErrors.payment = 'Please enter a valid positive number';
+      }
+    }
+
     if (!formData.location) newErrors.location = 'Location is required';
     if (!formData.duration) newErrors.duration = 'Duration is required';
     if (!formData.requiredSkills) newErrors.requiredSkills = 'Required skills are required';
@@ -93,14 +148,51 @@ const JobPostingPage = () => {
   };
 
   // Submit form
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      
-      console.log('Form submitted:', formData);
-      alert('Job posted successfully!');
-      // Navigate back or clear form
+      try {
+        setLoading(true);
+        
+        // Find the selected category object
+        const selectedCategory = categoryOptions.find(
+          cat => cat.label === formData.category
+        );
+        
+        if (!selectedCategory) {
+          Alert.alert('Error', 'Please select a valid category');
+          setLoading(false);
+          return;
+        }
+        
+        // Convert payment to number
+        const paymentNum = parseFloat(formData.payment);
+        
+        // Prepare job data for API
+        const jobData = {
+          ...formData,
+          jobCategory: selectedCategory.id,
+          payment: paymentNum // Convert to number
+        };
+        
+        // Call API to create job
+        const response = await jobService.createJob(jobData);
+        
+        Alert.alert(
+          'Success', 
+          'Job posted successfully!',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+      } catch (error) {
+        console.error('Error posting job:', error);
+        Alert.alert(
+          'Error',
+          error.message || 'Failed to post job. Please try again.'
+        );
+      } finally {
+        setLoading(false);
+      }
     } else {
-      alert('Please fill in all required fields');
+      Alert.alert('Error', 'Please fill in all required fields correctly');
     }
   };
 
@@ -121,7 +213,7 @@ const JobPostingPage = () => {
         onChangeText={(text) => handleChange(field, text)}
         multiline={multiline}
         numberOfLines={multiline ? 4 : 1}
-        keyboardType={keyboardType}
+        keyboardType={keyboardType === 'numeric' ? 'numeric' : keyboardType}
       />
       {errors[field] && (
         <Text style={styles.errorText}>{errors[field]}</Text>
@@ -129,6 +221,7 @@ const JobPostingPage = () => {
     </View>
   );
 
+  // Render the city selector field
   const renderCitySelector = () => (
     <View style={styles.fieldContainer}>
       <Text style={styles.fieldLabel}>
@@ -166,7 +259,7 @@ const JobPostingPage = () => {
         <Text style={styles.errorText}>{errors.category}</Text>
       )}
       
-      
+      {/* Category Dropdown Modal */}
       <Modal
         visible={showCategoryDropdown}
         transparent
@@ -202,21 +295,20 @@ const JobPostingPage = () => {
       <StatusBar backgroundColor="#8a4bff" barStyle="light-content" />
       
       {/* Header */}
-       <LinearGradient 
-              colors={["#623AA2", "#F97794"]} 
-              style={styles.header}
-            >
-              <TouchableOpacity 
-                style={styles.iconButton} 
-                onPress={() => navigation.goBack()}
-              >
-                <Icon name="arrow-back" size={24} color="white" />
-              </TouchableOpacity>
-              <View style={styles.headerCenter}>
-                <Text style={styles.headerTitle}>POST JOB</Text>
-              </View>
-            
-            </LinearGradient>
+      <LinearGradient 
+        colors={["#623AA2", "#F97794"]} 
+        style={styles.header}
+      >
+        <TouchableOpacity 
+          style={styles.iconButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>POST JOB</Text>
+        </View>
+      </LinearGradient>
       
       {/* Main Content */}
       <KeyboardAvoidingView
@@ -231,8 +323,11 @@ const JobPostingPage = () => {
             {renderField('Job Title', 'jobTitle', 'e.g., Web Designing')}
             {renderCategoryDropdown()}
             {renderField('Job Description', 'jobDescription', 'Describe the job responsibilities, requirements, and other details...', true)}
-            {renderField('Payment', 'payment', 'e.g., $50,000 - $70,000 a year')}
+            {renderField('Payment', 'payment', 'e.g., 50000', false, 'numeric')}
+            
+            {/* Replace old location field with city selector */}
             {renderCitySelector()}
+            
             {renderField('Duration', 'duration', 'e.g., Full-time, Contract')}
             {renderField('Required Skills', 'requiredSkills', 'List required skills separated by commas', true)}
             {renderField('Working Hours', 'workingHours', 'e.g., 40 hours/week')}
@@ -242,15 +337,20 @@ const JobPostingPage = () => {
             {renderField('Employer/Company Name', 'employerName', 'e.g., Facebook Inc.')}
             {renderField('Employer Email', 'employerEmail', 'e.g., careers@facebook.com', false, 'email-address')}
             {renderField('Employer Phone', 'employerPhone', 'e.g., (123) 456-7890', false, 'phone-pad')}
-            {renderField('Employer Website', 'employerWebsite', 'e.g., www.facebook.com', false, 'url')}
+            {renderField('Employer Website', 'employerWebsite', 'e.g., www.facebook.com', false, 'url', false)}
             {renderField('Application Deadline', 'applicationDeadline', 'e.g., April 30, 2025')}
             
             {/* Submit Button */}
             <TouchableOpacity 
               style={styles.submitButton}
               onPress={handleSubmit}
+              disabled={loading}
             >
-              <Text style={styles.submitButtonText}>POST JOB</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={styles.submitButtonText}>POST JOB</Text>
+              )}
             </TouchableOpacity>
             
             {/* Bottom space */}

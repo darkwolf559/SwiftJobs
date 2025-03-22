@@ -61,6 +61,38 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  profilePhoto: {
+    type: Buffer,
+    default: null
+  },
+  profilePhotoType: {
+    type: String,
+    default: ''
+  },
+  coverPhoto: {
+    type: Buffer,
+    default: null
+  },
+  coverPhotoType: {
+    type: String,
+    default: ''
+  },
+  skills: {
+    type: [String],
+    default: []
+  },
+  resume: {
+    type: Buffer,
+    default: null
+  },
+  resumeType: {
+    type: String,
+    default: ''
+  },
+  resumeName: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

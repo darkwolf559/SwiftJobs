@@ -7,7 +7,8 @@ import {
   Image, 
   TouchableOpacity, 
   ActivityIndicator,
-  Alert
+  Alert,
+  Linking
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -23,22 +24,18 @@ const UserProfile = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch user profile from API
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Get auth token from storage
       const token = await AsyncStorage.getItem('authToken');
       
       if (!token) {
-        // If no token, redirect to login
         navigation.navigate('Login');
         return;
       }
       
-      // Make API request with auth token
       const response = await axios.get(`${API_URL}/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -46,11 +43,12 @@ const UserProfile = ({ navigation }) => {
       });
       
       setUserData(response.data);
+      
+      await AsyncStorage.setItem('userData', JSON.stringify(response.data));
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError('Failed to load profile data');
       
-      // Handle expired token or unauthorized access
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         Alert.alert(
           'Session Expired', 
@@ -77,16 +75,33 @@ const UserProfile = ({ navigation }) => {
     }
   };
 
+  const handleOpenResume = async () => {
+    if (userData && userData.resumeUrl) {
+      try {
+
+        Alert.alert('Resume Available', 
+          `Resume "${userData.resumeName}" is available in your profile.`,
+          [
+            { text: 'OK' }
+          ]
+        );
+      } catch (error) {
+        console.error('Error opening resume:', error);
+        Alert.alert('Error', 'Could not open resume file');
+      }
+    } else {
+      Alert.alert('No Resume', 'No resume has been uploaded yet');
+    }
+  };
+
   // Load user profile on component mount
   useEffect(() => {
     fetchUserProfile();
     
-  
     const unsubscribe = navigation.addListener('focus', () => {
       fetchUserProfile();
     });
     
-
     return unsubscribe;
   }, [navigation]);
 
@@ -94,7 +109,6 @@ const UserProfile = ({ navigation }) => {
     navigation.navigate('EditProfile', { userData });
   };
 
-  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <View style={styles.container}>
@@ -119,7 +133,6 @@ const UserProfile = ({ navigation }) => {
     );
   }
 
-  // Show error message if data fetch failed
   if (error) {
     return (
       <View style={styles.container}>
@@ -150,7 +163,6 @@ const UserProfile = ({ navigation }) => {
     );
   }
 
-  // Show empty state if no data is available
   if (!userData) {
     return (
       <View style={styles.container}>
@@ -216,7 +228,9 @@ const UserProfile = ({ navigation }) => {
     
         <View style={styles.profileBannerContainer}>
           <Image 
-            source={require('../../assets/20943599.jpg')}
+            source={userData.coverPhotoUrl 
+              ? { uri: userData.coverPhotoUrl } 
+              : require('../../assets/20943599.jpg')}
             style={styles.profileBanner}
             resizeMode="cover"
           />
@@ -224,7 +238,9 @@ const UserProfile = ({ navigation }) => {
           <View style={styles.profileInfoCard}>
             <View style={styles.profileImageContainer}>
               <Image 
-                source={require('../../assets/20943599.jpg')}
+                source={userData.profilePhotoUrl 
+                  ? { uri: userData.profilePhotoUrl } 
+                  : require('../../assets/20943599.jpg')}
                 style={styles.profileImage}
               />
             </View>
@@ -317,6 +333,44 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
+        {/* Skills Section */}
+        {userData.skills && userData.skills.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>SKILLS</Text>
+            <View style={styles.sectionContent}>
+              <View style={styles.skillsContainer}>
+                {userData.skills.map((skill, index) => (
+                  <View key={index} style={styles.skillChip}>
+                    <Text style={styles.skillChipText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Resume Section */}
+        {userData.resumeName && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>MY RESUME</Text>
+            <View style={styles.sectionContent}>
+              <View style={styles.resumeContainer}>
+                <View style={styles.resumeIconContainer}>
+                  <Icon name="document-text" size={32} color="#623AA2" />
+                </View>
+                <View style={styles.resumeInfo}>
+                  <Text style={styles.resumeName}>{userData.resumeName}</Text>
+                  <TouchableOpacity 
+                    onPress={handleOpenResume}
+                    style={styles.viewResumeButton}
+                  >
+                    <Text style={styles.viewResumeText}>View Resume</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>ACCOUNT INFORMATION</Text>
@@ -347,191 +401,51 @@ const UserProfile = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginVertical: 15,
-  },
-  retryButton: {
-    backgroundColor: '#623AA2',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#666',
-    marginVertical: 15,
-  },
-  createProfileButton: {
-    backgroundColor: '#623AA2',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  createProfileButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  header: {
-    height: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-  },
-  menuButton: {
-    padding: 5,
-  },
-  logoutButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  emptySpace: {
-    width: 24,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  profileBannerContainer: {
-    position: 'relative',
-    marginBottom: 60,
-  },
-  profileBanner: {
-    width: '100%',
-    height: 200,
-  },
-  profileInfoCard: {
-    position: 'absolute',
-    bottom: -50,
-    left: 20,
-    right: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    flexDirection: 'row',
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  profileImageContainer: {
-    marginRight: 15,
-  },
-  profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-  },
-  profileInfo: {
-    justifyContent: 'center',
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#777',
-    marginTop: 3,
-  },
-  section: {
-    marginTop: 15,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  sectionContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2.22,
-    elevation: 3,
-  },
-  infoItem: {
-    marginBottom: 15,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#777',
-    marginBottom: 5,
-  },
-  infoValue: {
-    fontSize: 16,
-    color: '#333',
-  },
-  horizontalInfoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  horizontalInfoItem: {
-    width: '48%',
-  },
-  editButtonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginBottom: 20,
-  },
-  editButton: {
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10, fontSize: 16, color: '#666' },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  errorText: { fontSize: 16, color: '#666', textAlign: 'center', marginVertical: 15 },
+  retryButton: { backgroundColor: '#623AA2', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  retryButtonText: { color: '#fff', fontSize: 16 },
+  emptyStateContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  emptyStateText: { fontSize: 16, color: '#666', marginVertical: 15 },
+  createProfileButton: { backgroundColor: '#623AA2', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  createProfileButtonText: { color: '#fff', fontSize: 16 },
+  header: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15 },
+  menuButton: { padding: 5 },
+  logoutButton: { padding: 5 },
+  headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  emptySpace: { width: 24 },
+  scrollView: { flex: 1 },
+  profileBannerContainer: { position: 'relative', marginBottom: 60 },
+  profileBanner: { width: '100%', height: 200 },
+  profileInfoCard: { position: 'absolute', bottom: -50, left: 20, right: 20, backgroundColor: '#fff', borderRadius: 10, flexDirection: 'row', padding: 15, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84, elevation: 5 },
+  profileImageContainer: { marginRight: 15 },
+  profileImage: { width: 60, height: 60, borderRadius: 10 },
+  profileInfo: { justifyContent: 'center' },
+  profileName: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  profileEmail: { fontSize: 14, color: '#777', marginTop: 3 },
+  section: { marginTop: 15, paddingHorizontal: 20 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, color: '#333' },
+  sectionContent: { backgroundColor: '#fff', borderRadius: 10, padding: 15, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2.22, elevation: 3 },
+  infoItem: { marginBottom: 15 },
+  infoLabel: { fontSize: 14, color: '#777', marginBottom: 5 },
+  infoValue: { fontSize: 16, color: '#333' },
+  horizontalInfoContainer: { flexDirection: 'row', justifyContent: 'space-between' },
+  horizontalInfoItem: { width: '48%' },
+  skillsContainer: { flexDirection: 'row', flexWrap: 'wrap' },
+  skillChip: { backgroundColor: '#623AA2', borderRadius: 20, paddingVertical: 8, paddingHorizontal: 15, margin: 5 },
+  skillChipText: { color: 'white', fontSize: 14 },
+  resumeContainer: { flexDirection: 'row', alignItems: 'center' },
+  resumeIconContainer: { marginRight: 15 },
+  resumeInfo: { flex: 1 },
+  resumeName: { fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 5 },
+  viewResumeButton: { backgroundColor: '#f0f0f0', paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5, alignSelf: 'flex-start' },
+  viewResumeText: { color: '#623AA2', fontSize: 14 },
+  editButtonContainer: { paddingHorizontal: 20, paddingVertical: 20, marginBottom: 20 },
+  editButton: { borderRadius: 8, padding: 12, alignItems: 'center' },
+  editButtonText: { color: '#fff', fontSize: 14, fontWeight: 'bold' }
 });
 
 export default UserProfile;

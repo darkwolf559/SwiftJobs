@@ -205,7 +205,7 @@ export const bookmarkService = {
   // Add a bookmark
   addBookmark: async (jobId) => {
     try {
-      // Directly use the axios instance with interceptor that already adds token
+      
       const response = await api.post('/bookmarks', { jobId });
       
       return response.data;
@@ -218,7 +218,7 @@ export const bookmarkService = {
   // Remove a bookmark
   removeBookmark: async (jobId) => {
     try {
-      // Directly use the axios instance with interceptor that already adds token
+     
       const response = await api.delete(`/bookmarks/${jobId}`);
       
       return response.data;
@@ -231,7 +231,7 @@ export const bookmarkService = {
   // Get all bookmarks for the current user
   getUserBookmarks: async () => {
     try {
-      // Directly use the axios instance with interceptor that already adds token
+     
       const response = await api.get('/bookmarks');
       
       return response.data;
@@ -244,13 +244,13 @@ export const bookmarkService = {
   // Check if a job is bookmarked
   checkBookmarkStatus: async (jobId) => {
     try {
-      // Directly use the axios instance with interceptor that already adds token
+     
       const response = await api.get(`/bookmarks/status/${jobId}`);
       
       return response.data.bookmarked;
     } catch (error) {
       console.error('Error checking bookmark status:', error);
-      return false; // Default to not bookmarked on error
+      return false; 
     }
   }
 };

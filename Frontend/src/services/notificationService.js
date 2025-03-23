@@ -49,12 +49,12 @@ class NotificationService {
   }
 
   async setupAndroidChannel() {
-    // Create notification channels for Android
+  
     await notifee.createChannel({
       id: 'job_alerts',
       name: 'Job Alerts',
       description: 'Notifications for new job opportunities',
-      importance: 4, // High importance for job notifications
+      importance: 4, 
       vibration: true,
       sound: 'default',
     });
@@ -63,7 +63,7 @@ class NotificationService {
       id: 'general',
       name: 'General',
       description: 'General app notifications',
-      importance: 3, // Default importance
+      importance: 3, 
     });
 
     console.log('Android notification channels created');

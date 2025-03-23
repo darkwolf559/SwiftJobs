@@ -15,9 +15,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_URL} from '../../config/constants';
 
-
-const API_URL = 'http://192.168.43.152:5000/api';
 
 const UserProfile = ({ navigation }) => {
   const [userData, setUserData] = useState(null);

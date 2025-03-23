@@ -226,8 +226,8 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </LinearGradient>
 
+      <ScrollView>
       <ImageCarousel/>
-      
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
       
         {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('CategoryScreen'))}
@@ -308,7 +308,7 @@ const HomeScreen = () => {
           ))}
         </ScrollView>
       </ScrollView>
-
+      </ScrollView>
       <TabNavigation 
         activeTab={activeTab}
         onTabPress={handleTabPress}

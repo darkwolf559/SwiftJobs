@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { StatusBar } from 'react-native' ;
 import Onboarding from './src/Screens/onboardingScreen.js';
@@ -23,16 +23,23 @@ import { AuthProvider } from './src/context/AuthContext';
 import AllJobsScreen from './src/Screens/JobList/AllJobs.js';
 import TestimonialsScreen from './src/compenents/Testimonials/TestimonialsScreen.js';
 import BookmarksScreen from './src/Screens/Bookmark/BookmarksScreen.js';
-
-
+import NotificationsScreen from './src/Screens/Notifications/NotificationsScreen.js';
+import { requestUserPermission, notificationListener } from './src/utils/firebase';
+import { NotificationProvider } from './src/context/NotificationContext.js';
 
 const Stack = createNativeStackNavigator();
 
 
 export default App = () => {
+
+  useEffect(() => {
+    requestUserPermission();
+    notificationListener();
+  }, []);
   
   return (
     <AuthProvider>
+      <NotificationProvider>
     <NavigationContainer>
       <StatusBar style="auto" />
 
@@ -58,10 +65,12 @@ export default App = () => {
         <Stack.Screen name="AllJobsScreen" component={AllJobsScreen} />
         <Stack.Screen name="TestimonialsScreen" component={TestimonialsScreen} />
         <Stack.Screen name="BookmarksScreen" component={BookmarksScreen} />
+        <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
      
        
       </Stack.Navigator>
     </NavigationContainer>
+    </NotificationProvider>
     </AuthProvider>
   );
 };

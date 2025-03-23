@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -17,12 +17,56 @@ import LinearGradient from 'react-native-linear-gradient';
 import axios from 'axios';
 import GeminiAPI from '../../GeminiAPI';
 
+// Swift Jobs app knowledge
+const SWIFT_JOBS_KNOWLEDGE = `
+Swift Jobs is an app designed to reduce searching time for jobs and make the experience user-friendly. The app helps users find relevant job opportunities quickly based on their profile information.
 
-const Chatbot = ({ apiKey = GeminiAPI}) => { // Use env variable as default
+Navigation:
+- To view or edit your profile in Swift Jobs, tap the menu icon (three horizontal lines) in the top left corner of the app, then select 'View Profile' from the menu.
+- The Swift Jobs main menu is accessed by tapping the three horizontal lines (hamburger menu) in the top left corner, with options including: View Profile, Categories, Notification, Companies, Bookmark, View Jobs, Featured Jobs, Invite Friend, and Log Out.
+- To browse job categories, open the main menu and select 'Categories'.
+- To view job postings, open the main menu and select 'View Jobs' or 'Featured Jobs'.
+- To browse companies with job listings, open the main menu and select 'Companies'.
+
+Features:
+- Job recommendations are based on the skills and experience listed in your profile. For better recommendations, ensure your profile is complete.
+- Job matches compare your profile's skills, experience, and education with job requirements.
+- You can bookmark jobs by tapping the bookmark icon on any listing and access them via the 'Bookmark' menu option.
+- Enable notifications to receive alerts about matching job postings via the 'Notification' menu.
+- Update your skills by going to 'View Profile' > 'Skills' section.
+- The application process involves reviewing job details, clicking 'APPLY', reviewing your pre-filled application, and submitting.
+- Invite friends using the 'Invite Friend' option in the main menu.
+`;
+
+const Chatbot = ({ apiKey = GeminiAPI }) => { // Use env variable as default
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef(null);
+  
+  // Initialize with welcome message
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          id: Date.now(),
+          text: "Hi there! I'm the Swift Jobs assistant. How can I help you navigate the app or find job opportunities today?",
+          sender: 'bot'
+        }
+      ]);
+    }
+  }, []);
+
+  // Function to reset chat conversation
+  const resetChat = () => {
+    setMessages([
+      {
+        id: Date.now(),
+        text: "Chat has been reset. How can I help you with Swift Jobs today?",
+        sender: 'bot'
+      }
+    ]);
+  };
 
   // Function to send user message and get response directly from Gemini API
   const sendMessage = async () => {
@@ -44,17 +88,26 @@ const Chatbot = ({ apiKey = GeminiAPI}) => { // Use env variable as default
     
     // Prepare conversation history for context
     const conversationHistory = [
+      // Initial system message with app knowledge
+      { 
+        role: 'model', 
+        parts: [{ 
+          text: "I am an AI assistant for Swift Jobs. I have the following information about the app to help users:" + SWIFT_JOBS_KNOWLEDGE
+        }]
+      },
+      // Add previous conversation for context
       ...messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
       })),
+      // Add current user message
       { role: 'user', parts: [{ text: inputText }] }
     ];
 
     setIsLoading(true);
 
     try {
-      // Make a direct request to the Gemini API using Gemini 2.0 Flash model
+      // Make a direct request to the Gemini API using Gemini 1.5 Flash model
       const response = await axios.post(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
         {
@@ -64,6 +117,12 @@ const Chatbot = ({ apiKey = GeminiAPI}) => { // Use env variable as default
             topK: 40,
             topP: 0.95,
             maxOutputTokens: 1024,
+          },
+          // Add system instruction to ensure responses reference Swift Jobs app
+          systemInstruction: {
+            parts: [{
+              text: "You are a helpful assistant for Swift Jobs, an app designed to reduce searching time for jobs. When answering questions, provide clear step-by-step instructions with specific UI elements to tap or interact with. Reference the three-line menu in the top left corner for accessing main features. Be concise but thorough in your explanations. Emphasize how Swift Jobs saves time in the job search process."
+            }]
           }
         },
         {
@@ -195,15 +254,17 @@ const Chatbot = ({ apiKey = GeminiAPI}) => { // Use env variable as default
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
       >
-        {messages.length === 0 && (
-          <View style={styles.emptyStateContainer}>
-            <View style={styles.emptyStateIconContainer}>
-              <Text style={styles.emptyStateIcon}>💬</Text>
-            </View>
-            <Text style={styles.emptyStateTitle}>Start a conversation</Text>
-            <Text style={styles.emptyStateText}>Ask me anything about job applications and I'll do my best to help you.</Text>
-          </View>
-        )}
+        {/* Header with title and reset button */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Swift Jobs Assistant</Text>
+          <TouchableOpacity 
+            style={styles.resetButton} 
+            onPress={resetChat}
+            disabled={isLoading}
+          >
+            <Text style={styles.resetButtonText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
         
         {/* Chat Messages */}
         <FlatList
@@ -247,7 +308,7 @@ const Chatbot = ({ apiKey = GeminiAPI}) => { // Use env variable as default
   );
 };
 
-// Styles remain unchanged
+// Updated styles to include header styling
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
@@ -263,6 +324,30 @@ const styles = StyleSheet.create({
   },
   keyboardAvoid: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  resetButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
   messagesContainer: {
     padding: 15,
@@ -388,40 +473,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', 
     fontSize: 16, 
   },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyStateIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
-  },
-  emptyStateIcon: {
-    fontSize: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  }
 });
 
 export default Chatbot;

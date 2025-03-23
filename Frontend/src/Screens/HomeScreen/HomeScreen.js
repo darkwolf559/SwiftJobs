@@ -17,7 +17,6 @@ const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState("Home");
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [featuredJobs, setFeaturedJobs] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -310,10 +309,6 @@ const HomeScreen = () => {
         </ScrollView>
       </ScrollView>
       </ScrollView>
-      <TabNavigation 
-        activeTab={activeTab}
-        onTabPress={handleTabPress}
-      />
 
       <CustomDrawer 
         isVisible={isDrawerVisible}

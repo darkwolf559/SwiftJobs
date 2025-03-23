@@ -28,7 +28,11 @@ import { requestUserPermission, notificationListener } from './src/utils/firebas
 import { NotificationProvider } from './src/context/NotificationContext.js';
 import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
-
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log('Background notification received:', remoteMessage);
@@ -36,7 +40,72 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 });
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          height: 56,
+          borderTopWidth: 1,
+          borderTopColor: "#F0F0F0",
+          backgroundColor: "#fff",
+        },
+        tabBarActiveTintColor: "#623AA2",
+        tabBarInactiveTintColor: "#B0B0B0",
+      })}
+    >
+      <Tab.Screen 
+        name="HomeTab" 
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="home" size={22} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="BookmarksTab" 
+        component={BookmarksScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="bookmark-o" size={22} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="JobsTab" 
+        component={AllJobsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="briefcase" size={22} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="InviteTab" 
+        component={InviteFriend}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user-friends" size={22} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="ProfileTab" 
+        component={UserProfile}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user-circle" size={22} color={color} />
+          )
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default App = () => {
 
@@ -52,10 +121,10 @@ export default App = () => {
       <StatusBar style="auto" />
 
       <Stack.Navigator 
-        initialRouteName="Onboarding"
+        initialRouteName="MainTabs"
         screenOptions={{headerShown: false}}
       >
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="Onboarding" component={Onboarding} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignupScreen} />

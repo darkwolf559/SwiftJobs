@@ -11,7 +11,7 @@ const ImageCarousel = () => {
   const navigation = useNavigation();
 
   const images = [
-    require('../../assets/slider1.jpg'),
+    require('../../assets/slider1.jpeg'),
     require('../../assets/slider2.jpg'),
     require('../../assets/slider3.png'),
     require('../../assets/slider4.png'),

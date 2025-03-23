@@ -26,6 +26,14 @@ import BookmarksScreen from './src/Screens/Bookmark/BookmarksScreen.js';
 import NotificationsScreen from './src/Screens/Notifications/NotificationsScreen.js';
 import { requestUserPermission, notificationListener } from './src/utils/firebase';
 import { NotificationProvider } from './src/context/NotificationContext.js';
+import messaging from '@react-native-firebase/messaging';
+import notifee from '@notifee/react-native';
+
+
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  console.log('Background notification received:', remoteMessage);
+  return Promise.resolve();
+});
 
 const Stack = createNativeStackNavigator();
 

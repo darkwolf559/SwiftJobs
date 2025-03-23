@@ -16,7 +16,7 @@ const NextButton = ({ percentage , scrollTo }) => {
     const animateToValue = (toValue) => {
         Animated.timing(progressAnimation, {
             toValue,
-            duration: 400, // Adjust animation speed
+            duration: 400, 
             useNativeDriver: true,
         }).start();
     };

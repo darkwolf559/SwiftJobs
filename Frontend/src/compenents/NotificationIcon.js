@@ -12,7 +12,7 @@ const NotificationIcon = () => {
   return (
     <TouchableOpacity 
       style={styles.container}
-      onPress={() => navigation.navigate('Notifications')}
+      onPress={() => navigation.navigate('NotificationsScreen')}
     >
       <Icon name="notifications" size={24} color="white" />
       {unreadCount > 0 && (

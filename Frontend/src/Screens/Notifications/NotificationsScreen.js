@@ -22,15 +22,15 @@ const NotificationsScreen = () => {
     refreshing, 
     handleRefresh, 
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    handleNotificationNavigation
   } = useNotifications();
 
   const handleNotificationPress = (notification) => {
-    // Mark as read
     if (!notification.read) {
       markAsRead(notification._id);
     }
-    
+    handleNotificationNavigation(notification, navigation);
     // Navigate based on notification type
     if (notification.type === 'JOB_POSTED' && notification.relatedJob) {
       navigation.navigate('JobSingle', { 

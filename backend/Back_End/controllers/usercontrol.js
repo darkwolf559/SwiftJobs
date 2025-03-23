@@ -350,3 +350,24 @@ export const updateResume = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+export const updateFcmToken = async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { fcmToken } = req.body;
+  
+      if (!fcmToken) {
+        return res.status(400).json({ message: "FCM token is required" });
+      }
+  
+      const user = await User.findByIdAndUpdate(userId, { fcmToken }, { new: true });
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.json({ message: "FCM token updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };

@@ -7,6 +7,7 @@ import signupRoutes from "./routes/signup.js";
 import profileRoutes from "./routes/profile.js";
 import jobRoutes from "./routes/jobroutes.js"; 
 import bookmarkRoutes from "./routes/bookmarkRoutes.js"; 
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -23,6 +24,7 @@ app.use("/api/signup", signupRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/bookmarks", bookmarkRoutes); 
+app.use("/api/notifications", notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

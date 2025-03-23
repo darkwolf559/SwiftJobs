@@ -13,8 +13,8 @@ const ImageCarousel = () => {
   const images = [
     require('../../assets/slider1.jpg'),
     require('../../assets/slider2.jpg'),
-    require('../../assets/slider3.jpg'),
-    require('../../assets/slider4.jpg'),
+    require('../../assets/slider3.png'),
+    require('../../assets/slider4.png'),
   ];
   
 

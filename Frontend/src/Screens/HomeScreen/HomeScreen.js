@@ -12,7 +12,7 @@ import { jobService } from '../../services/api';
 import ImageCarousel from "./MovingImages";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import JobCard from "../../compenents/JobCard";
-
+import NotificationIcon from "../../compenents/NotificationIcon";
 const { width } = Dimensions.get("window");
 
 const HomeScreen = () => {
@@ -221,9 +221,12 @@ const HomeScreen = () => {
           <Text style={styles.headerText}>HOME</Text>
         </View>
 
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')} >
-          <FontAwesome name="sliders" size={24} color="white" />
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+       <NotificationIcon /> 
+       <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')}>
+      <FontAwesome name="sliders" size={24} color="white" />
+       </TouchableOpacity>
+       </View>
       </LinearGradient>
 
       <ScrollView>
@@ -606,7 +609,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-  } 
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  }
 });
 
 export default HomeScreen;

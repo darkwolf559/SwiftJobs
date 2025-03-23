@@ -57,6 +57,12 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                 case 'Bookmark':
                   navigation?.navigate('BookmarksScreen');
                   break;
+
+                  case 'Notification':
+                    navigation?.navigate('NotificationsScreen');
+                    break;
+
+                  
           
       
       case 'Log Out':

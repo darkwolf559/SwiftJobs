@@ -108,8 +108,6 @@ const HomeScreen = () => {
   const fetchJobs = async () => {
     try {
       setLoadingJobs(true);
-      
-      // Get all jobs from the API
       const jobsData = await jobService.getAllJobs();
       
       

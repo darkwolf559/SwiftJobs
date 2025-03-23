@@ -1,3 +1,4 @@
+// src/context/NotificationContext.js
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
@@ -16,7 +17,7 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-
+  // Request permission for push notifications
   const requestUserPermission = async () => {
     if (Platform.OS === 'ios') {
       const authStatus = await messaging().requestPermission();
@@ -39,11 +40,11 @@ export const NotificationProvider = ({ children }) => {
       const authToken = await AsyncStorage.getItem('authToken');
       if (authToken) {
         await axios.post(
-          ${API_URL}/profile/fcm-token,
+          `${API_URL}/profile/fcm-token`,
           { fcmToken: token },
           {
             headers: {
-              Authorization: Bearer ${authToken},
+              Authorization: `Bearer ${authToken}`,
             },
           }
         );
@@ -85,9 +86,9 @@ export const NotificationProvider = ({ children }) => {
       
       if (!authToken) return;
       
-      const response = await axios.get(${API_URL}/notifications, {
+      const response = await axios.get(`${API_URL}/notifications`, {
         headers: {
-          Authorization: Bearer ${authToken},
+          Authorization: `Bearer ${authToken}`,
         },
       });
       
@@ -109,11 +110,11 @@ export const NotificationProvider = ({ children }) => {
       if (!authToken) return;
       
       await axios.put(
-        ${API_URL}/notifications/${notificationId}/read,
+        `${API_URL}/notifications/${notificationId}/read`,
         {},
         {
           headers: {
-            Authorization: Bearer ${authToken},
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
@@ -142,11 +143,11 @@ export const NotificationProvider = ({ children }) => {
       if (!authToken) return;
       
       await axios.put(
-        ${API_URL}/notifications/read-all,
+        `${API_URL}/notifications/read-all`,
         {},
         {
           headers: {
-            Authorization: Bearer ${authToken},
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );

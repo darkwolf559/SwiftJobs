@@ -5,7 +5,6 @@ import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import FontAwesome from 'react-native-vector-icons/FontAwesome'; 
 import { useNavigation } from "@react-navigation/native";
-import TabNavigation from "../../compenents/TabNavigation";
 import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { jobService } from '../../services/api'; 

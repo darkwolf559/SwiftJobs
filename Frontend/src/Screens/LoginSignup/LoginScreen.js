@@ -50,7 +50,7 @@ const LoginScreen = () => {
         // Navigate to home screen
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Home' }],
+          routes: [{ name: 'MainTabs' }],
         });
       } else {
         Alert.alert('Error', 'Invalid response from server');

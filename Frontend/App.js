@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { StatusBar } from 'react-native' ;
 import Onboarding from './src/Screens/onboardingScreen.js';
@@ -23,16 +23,101 @@ import { AuthProvider } from './src/context/AuthContext';
 import AllJobsScreen from './src/Screens/JobList/AllJobs.js';
 import TestimonialsScreen from './src/compenents/Testimonials/TestimonialsScreen.js';
 import BookmarksScreen from './src/Screens/Bookmark/BookmarksScreen.js';
+import NotificationsScreen from './src/Screens/Notifications/NotificationsScreen.js';
+import { requestUserPermission, notificationListener } from './src/utils/firebase';
+import { NotificationProvider } from './src/context/NotificationContext.js';
+import messaging from '@react-native-firebase/messaging';
+import notifee from '@notifee/react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Entypo from 'react-native-vector-icons/Entypo';
+import AllReviewsScreen from './src/Screens/AllReviews/AllReviews.js';
 
-
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  console.log('Background notification received:', remoteMessage);
+  return Promise.resolve();
+});
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          height: 50,
+          borderTopWidth: 1,
+          borderTopColor: "#F0F0F0",
+          backgroundColor: "#fff",
+        },
+        tabBarActiveTintColor: "#623AA2",
+        tabBarInactiveTintColor: "#B0B0B0",
+      })}
+    >
+      <Tab.Screen 
+        name="HomeTab" 
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="home" size={26} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="BookmarksTab" 
+        component={BookmarksScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="bookmark-o" size={24} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="JobsTab" 
+        component={AllJobsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="briefcase" size={23} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="InviteTab" 
+        component={InviteFriend}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user-friends" size={23} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen 
+        name="ProfileTab" 
+        component={UserProfile}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user-circle" size={24} color={color} />
+          )
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default App = () => {
+
+  useEffect(() => {
+    requestUserPermission();
+    notificationListener();
+  }, []);
   
   return (
     <AuthProvider>
+      <NotificationProvider>
     <NavigationContainer>
       <StatusBar style="auto" />
 
@@ -40,7 +125,7 @@ export default App = () => {
         initialRouteName="Onboarding"
         screenOptions={{headerShown: false}}
       >
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="Onboarding" component={Onboarding} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignupScreen} />
@@ -58,10 +143,13 @@ export default App = () => {
         <Stack.Screen name="AllJobsScreen" component={AllJobsScreen} />
         <Stack.Screen name="TestimonialsScreen" component={TestimonialsScreen} />
         <Stack.Screen name="BookmarksScreen" component={BookmarksScreen} />
+        <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+        <Stack.Screen name="AllReviewsScreen" component={AllReviewsScreen} />
      
        
       </Stack.Navigator>
     </NavigationContainer>
+    </NotificationProvider>
     </AuthProvider>
   );
 };

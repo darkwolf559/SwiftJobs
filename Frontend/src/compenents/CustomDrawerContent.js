@@ -21,7 +21,6 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
     { id: 1, title: 'View Profile', icon: 'person-outline', type: 'Ionicons' },
     { id: 2, title: 'Categories', icon: 'sitemap', type: 'FontAwesome' },
     { id: 3, title: 'Notification', icon: 'notifications-outline', type: 'Ionicons' },
-    { id: 4, title: 'Companies', icon: 'building-o', type: 'FontAwesome' },
     { id: 5, title: 'Bookmark', icon: 'bookmark-outline', type: 'Ionicons' },
     { id: 6, title: 'View Jobs', icon: 'briefcase-outline', type: 'Ionicons' },
     { id: 10, title: 'Post a Job', icon: 'briefcase-outline', type: 'Ionicons' },
@@ -38,9 +37,6 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
       case 'Categories':
         navigation?.navigate('CategoryScreen');
         break;
-        case 'Companies':
-          navigation?.navigate('CompanyScreen');
-          break;
           
           case 'Invite Friend':
             navigation?.navigate('InviteFriend');
@@ -57,6 +53,12 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                 case 'Bookmark':
                   navigation?.navigate('BookmarksScreen');
                   break;
+
+                  case 'Notification':
+                    navigation?.navigate('NotificationsScreen');
+                    break;
+
+                  
           
       
       case 'Log Out':

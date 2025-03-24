@@ -1,9 +1,7 @@
 
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_URL = 'http://192.168.43.152:5000/api';
-
+import {API_URL} from '../config/constants';
 
 
 const api = axios.create({
@@ -254,11 +252,66 @@ export const bookmarkService = {
     }
   }
 };
+export const reviewService = {
+  
+  addReview: async (jobId, rating, comment) => {
+    try {
+      const response = await api.post('/reviews', {
+        jobId,
+        rating,
+        comment
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
 
+  // Get all reviews for a job
+  getJobReviews: async (jobId) => {
+    try {
+      const response = await api.get(`/reviews/job/${jobId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Get random testimonials for the homepage
+  getRandomTestimonials: async () => {
+    try {
+      const response = await api.get('/reviews/testimonials');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting testimonials:', error);
+      throw { message: 'Failed to load testimonials' };
+    }
+  },
+  
+  // Get all reviews (new function)
+  getAllReviews: async () => {
+    try {
+      const response = await api.get('/reviews');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting all reviews:', error);
+      throw { message: 'Failed to load all reviews' };
+    }
+  }
+};
 
 export default {
   authService,
   userService,
   jobService,
-  bookmarkService
+  bookmarkService,
+  reviewService
 };

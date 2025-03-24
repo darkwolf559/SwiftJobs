@@ -7,9 +7,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-const API_URL = 'http://192.168.43.152:5000/api'; 
+import {API_URL} from '../../config/constants';
 
 
 const LoginScreen = () => {
@@ -52,7 +50,7 @@ const LoginScreen = () => {
         // Navigate to home screen
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Home' }],
+          routes: [{ name: 'MainTabs' }],
         });
       } else {
         Alert.alert('Error', 'Invalid response from server');

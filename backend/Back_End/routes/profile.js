@@ -8,7 +8,8 @@ import {
   uploadProfilePhoto, 
   uploadCoverPhoto, 
   uploadResume, 
-  uploadBothPhotos 
+  uploadBothPhotos,
+  updateFcmToken
 } from "../controllers/usercontrol.js";
 import authMiddleware from "../middleware/authmiddleware.js";
 
@@ -27,5 +28,5 @@ router.put("/upload/profile-photo", authMiddleware, uploadProfilePhoto, updateUs
 router.put("/upload/cover-photo", authMiddleware, uploadCoverPhoto, updateUserProfile);
 router.put("/upload/resume", authMiddleware, uploadResume, updateUserProfile);
 router.put("/upload/photos", authMiddleware, uploadBothPhotos, updateUserProfile);
-
+router.post("/fcm-token", authMiddleware, updateFcmToken);
 export default router;

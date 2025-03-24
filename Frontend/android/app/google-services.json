@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "511309861932",
+    "project_id": "swiftjobs-d2bae",
+    "storage_bucket": "swiftjobs-d2bae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:511309861932:android:5a0461e08cb126cf4fed89",
+        "android_client_info": {
+          "package_name": "com.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD6ItvAsbnDZVaxUh0fK5bGUTKKK6NeAQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

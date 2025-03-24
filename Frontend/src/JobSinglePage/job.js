@@ -1,12 +1,11 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator,ToastAndroid } from 'react-native';
-import React, { useState, useEffect,useRef } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, ToastAndroid, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { jobService } from '../services/api';
+import { jobService, reviewService } from '../services/api';
 import { bookmarkService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const JobSingle = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('Description');
@@ -16,21 +15,23 @@ const JobSingle = ({ route, navigation }) => {
   const [userRating, setUserRating] = useState(0);
   const [userComment, setUserComment] = useState('');
   const [reviews, setReviews] = useState([]);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState(null);
   const { jobId } = route.params || { jobId: null };
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const isMounted = useRef(true);
   const [ratingStats, setRatingStats] = useState({
-    5: 150,
-    4: 63,
-    3: 15,
-    2: 6,
-    1: 20
+    5: 0,
+    4: 0,
+    3: 0,
+    2: 0,
+    1: 0
   });
+  
   const checkBookmarkStatus = async () => {
     try {
       if (!jobId) return;
-      
       
       const token = await AsyncStorage.getItem('authToken');
       if (!token) return;
@@ -44,7 +45,42 @@ const JobSingle = ({ route, navigation }) => {
     }
   };
   
-  
+  const fetchJobReviews = async () => {
+    try {
+      if (!jobId) return;
+      
+      const reviewsData = await reviewService.getJobReviews(jobId);
+      
+      // Format the reviews for display
+      const formattedReviews = reviewsData.map(review => ({
+        id: review._id,
+        name: review.userId ? (review.userId.fullName || review.userId.username) : 'Anonymous User',
+        rating: review.rating,
+        comment: review.comment,
+        date: new Date(review.createdAt).toLocaleDateString(),
+        avatar: review.userId && review.userId.profilePhotoUrl ? review.userId.profilePhotoUrl : null
+      }));
+      
+      setReviews(formattedReviews);
+      
+      // Recalculate rating stats
+      const stats = {
+        5: 0,
+        4: 0,
+        3: 0,
+        2: 0,
+        1: 0
+      };
+      
+      reviewsData.forEach(review => {
+        stats[review.rating] = (stats[review.rating] || 0) + 1;
+      });
+      
+      setRatingStats(stats);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -56,7 +92,6 @@ const JobSingle = ({ route, navigation }) => {
           console.log('Fetching job with ID:', jobId);
           const data = await jobService.getJobById(jobId);
           
-         
           const formattedJob = {
             title: data.jobTitle,
             salary: data.payment,
@@ -74,7 +109,6 @@ const JobSingle = ({ route, navigation }) => {
           
           setJobData(formattedJob);
         } else {
-          
           setJobData(getSampleJobData());
         }
       } catch (error) {
@@ -88,6 +122,7 @@ const JobSingle = ({ route, navigation }) => {
     
     fetchJobData();
     checkBookmarkStatus();
+    fetchJobReviews();
   }, [jobId]);
 
   useEffect(() => {
@@ -98,10 +133,8 @@ const JobSingle = ({ route, navigation }) => {
   
   const toggleBookmark = async () => {
     try {
-      
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
-       
         navigation.navigate('Login');
         return;
       }
@@ -134,6 +167,7 @@ const JobSingle = ({ route, navigation }) => {
       }
     }
   };
+  
   const getSampleJobData = () => {
     return {
       title: "Driving Vacancy",
@@ -157,39 +191,52 @@ const JobSingle = ({ route, navigation }) => {
       return;
     }
     
- 
     const fullUrl = url.startsWith('http') ? url : `https://${url}`;
     Linking.openURL(fullUrl).catch(() => Alert.alert('Error', 'Failed to open link'));
   };
   
-  const submitReview = () => {
+  const submitReview = async () => {
     if (userRating === 0) {
       Alert.alert('Error', 'Please select a rating');
       return;
     }
-
-    const newReview = {
-      id: Date.now().toString(),
-      name: 'User',
-      rating: userRating,
-      comment: userComment,
-      date: new Date().toLocaleDateString(),
-      avatar: null
-    };
-
-    setReviews((prevReviews) => [newReview, ...prevReviews]);
     
-    setRatingStats((prevStats) => ({
-      ...prevStats,
-      [userRating]: (prevStats[userRating] || 0) + 1,
-    }));
-    
-    setUserRating(0);
-    setUserComment('');
-    
-    Alert.alert('Success', 'Your review has been submitted!');
+    try {
+      // Check if user is logged in
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        Alert.alert(
+          'Login Required', 
+          'You need to login to submit a review',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login', onPress: () => navigation.navigate('Login') }
+          ]
+        );
+        return;
+      }
+      
+      setSubmittingReview(true);
+      setReviewError(null);
+      
+      await reviewService.addReview(jobId, userRating, userComment);
+      
+      // Refresh reviews
+      await fetchJobReviews();
+      
+      // Reset form
+      setUserRating(0);
+      setUserComment('');
+      
+      Alert.alert('Success', 'Your review has been submitted!');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      setReviewError('Failed to submit review. Please try again.');
+      Alert.alert('Error', 'Failed to submit review. Please try again.');
+    } finally {
+      setSubmittingReview(false);
+    }
   };
-
 
   if (loading) {
     return (
@@ -217,7 +264,6 @@ const JobSingle = ({ route, navigation }) => {
       </>
     );
   }
-
 
   if (error && !jobData) {
     return (
@@ -345,7 +391,7 @@ const JobSingle = ({ route, navigation }) => {
                       style={[
                         styles.progressBar, 
                         { 
-                          width: `${(ratingStats[rating] / Object.values(ratingStats).reduce((a, b) => a + b, 0)) * 100}%`,
+                          width: `${(ratingStats[rating] / Object.values(ratingStats).reduce((a, b) => a + b, 0) || 0) * 100}%`,
                           backgroundColor: '#9370DB' 
                         }
                       ]} 
@@ -381,11 +427,18 @@ const JobSingle = ({ route, navigation }) => {
               />
               
               <TouchableOpacity 
-                style={styles.submitButton}
+                style={[styles.submitButton, submittingReview && styles.disabledButton]}
                 onPress={submitReview}
+                disabled={submittingReview}
               >
-                <Text style={styles.submitButtonText}>SUBMIT</Text>
+                {submittingReview ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.submitButtonText}>SUBMIT</Text>
+                )}
               </TouchableOpacity>
+              
+              {reviewError && <Text style={styles.errorText}>{reviewError}</Text>}
             </View>
 
             <View style={styles.reviewsList}>
@@ -395,7 +448,11 @@ const JobSingle = ({ route, navigation }) => {
                     <View style={styles.reviewHeader}>
                       <View style={styles.reviewerInfo}>
                         <View style={styles.avatarContainer}>
-                          <Icon name="person-circle" size={30} color="#fff" />
+                          {review.avatar ? (
+                            <Image source={{ uri: review.avatar }} style={styles.reviewerAvatar} />
+                          ) : (
+                            <Icon name="person-circle" size={30} color="#fff" />
+                          )}
                         </View>
                         <View>
                           <Text style={styles.reviewerName}>{review.name}</Text>
@@ -493,17 +550,17 @@ const JobSingle = ({ route, navigation }) => {
         style={styles.bookmarkButton}
         onPress={toggleBookmark}
         disabled={bookmarkLoading}
->
+      >
       {bookmarkLoading ? (
-      <ActivityIndicator size="small" color="#601cd6" />
-  ) : (
+        <ActivityIndicator size="small" color="#601cd6" />
+      ) : (
         <Icon 
           name={isBookmarked ? "bookmark" : "bookmark-outline"} 
           size={40} 
           color="#601cd6" 
-    />
-  )}
-</TouchableOpacity>
+        />
+      )}
+      </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.applyButton}
@@ -834,6 +891,10 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
   },
+  disabledButton: {
+    backgroundColor: '#CCC',
+    opacity: 0.8,
+  },
   submitButtonText: {
     color: '#fff',
     fontWeight: 'bold',
@@ -870,6 +931,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
+  reviewerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   reviewerName: {
     fontWeight: 'bold',
     fontSize: 16,
@@ -892,6 +958,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 20,
   },
+  errorText: {
+    color: '#f44336',
+    marginTop: 10,
+    textAlign: 'center',
+  }
 });
 
 export default JobSingle;

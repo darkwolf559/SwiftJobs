@@ -10,8 +10,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
+import {API_URL} from '../../config/constants';
 
-const API_URL = 'http://192.168.43.152:5000/api';
 
 const EditProfile = ({ navigation, route }) => {
   const [userData, setUserData] = useState(route.params?.userData || {});

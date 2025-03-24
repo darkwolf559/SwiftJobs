@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import {API_URL} from '../config/constants';
 
 import { 
   View, 
@@ -58,10 +59,10 @@ const Company = ({navigation}) => {
   useEffect(() => {
     const fetchCompanyData = async () => {
       try {
-        const companyResponse = await axios.get('http://192.168.43.152:5000/api/company');
+        const companyResponse = await axios.get(`${API_URL}/companies`);
         setCompanyInfo(companyResponse.data || defaultCompanyInfo);
 
-        const jobsResponse = await axios.get('http://192.168.43.152:5000/api/jobs');
+        const jobsResponse = await axios.get(`${API_URL}/jobs`);
         setJobVacancies(jobsResponse.data || defaultJobVacancies);
       } catch (error) {
         console.error('Error fetching data:', error);

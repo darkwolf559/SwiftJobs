@@ -16,16 +16,46 @@ export const addBookmark = async (req, res) => {
       });
     }
 
-    // Rest of the function...
+    // Check if bookmark already exists
+    const existingBookmark = await Bookmark.findOne({ 
+      user: userId, 
+      job: jobId 
+    });
+
+    if (existingBookmark) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "You have already bookmarked this job" 
+      });
+    }
+
+    // Create new bookmark
+    const newBookmark = new Bookmark({
+      user: userId,
+      job: jobId
+    });
+
+    await newBookmark.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Job bookmarked successfully",
+      data: newBookmark
+    });
   } catch (error) {
-    // Error handling...
+    console.error("Add bookmark error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to bookmark job",
+      error: error.message
+    });
   }
 };
 
 export const removeBookmark = async (req, res) => {
   try {
-    const userId = req.user.id; // Get userId from authenticated user
-    const { jobId } = req.params; // Get jobId from URL parameter
+    const userId = req.user.id; 
+    const { jobId } = req.params; 
 
     // Validate ObjectId format
     if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(jobId)) {
@@ -64,9 +94,8 @@ export const removeBookmark = async (req, res) => {
 // Get all bookmarks for a user
 export const getUserBookmarks = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id; // Changed to get from auth token
 
-    // Validate ObjectId format
     if (!mongoose.isValidObjectId(userId)) {
       return res.status(400).json({ 
         success: false, 
@@ -96,9 +125,9 @@ export const getUserBookmarks = async (req, res) => {
 // Check if a job is bookmarked by a user
 export const checkBookmarkStatus = async (req, res) => {
   try {
-    const { userId, jobId } = req.params;
+    const userId = req.user.id; // Changed to get from auth token
+    const { jobId } = req.params;
 
-    // Validate that both IDs are valid ObjectIds
     if (!mongoose.isValidObjectId(userId)) {
       return res.status(200).json({
         success: true,
@@ -126,39 +155,10 @@ export const checkBookmarkStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Check bookmark error:", error);
-    // Don't fail the request, just return not bookmarked
+
     res.status(200).json({
       success: true,
       isBookmarked: false,
-      error: error.message
-    });
-  }
-};
-
-// Get total bookmark count for a job
-export const getJobBookmarkCount = async (req, res) => {
-  try {
-    const { jobId } = req.params;
-
-    // Validate ObjectId format
-    if (!mongoose.isValidObjectId(jobId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid job ID format" 
-      });
-    }
-
-    const count = await Bookmark.countDocuments({ job: jobId });
-
-    res.status(200).json({
-      success: true,
-      count
-    });
-  } catch (error) {
-    console.error("Get job bookmark count error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to get bookmark count",
       error: error.message
     });
   }

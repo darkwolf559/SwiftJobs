@@ -8,20 +8,18 @@ const ApplySuccessPopup = ({ visible, onClose }) => {
 
   useEffect(() => {
     if (visible) {
-      // Reset animations
+
       scaleAnim.setValue(0);
       fadeAnim.setValue(0);
       
-      // Start animations
       Animated.sequence([
-        // Animate the checkmark first
         Animated.timing(scaleAnim, {
           toValue: 1,
           duration: 400,
           easing: Easing.elastic(1),
           useNativeDriver: true,
         }),
-        // Then fade in the text
+        
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
@@ -29,7 +27,7 @@ const ApplySuccessPopup = ({ visible, onClose }) => {
         })
       ]).start();
       
-      // Auto-close after 2 seconds
+
       const timer = setTimeout(() => {
         onClose();
       }, 2000);

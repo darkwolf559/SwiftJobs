@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Alert,
   ToastAndroid
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -58,14 +57,14 @@ const JobCard = ({ job, onPress, navigation }) => {
       
       if (isBookmarked) {
         // Call the API to remove bookmark
-        const result = await bookmarkService.removeBookmark(job.id);
+        await bookmarkService.removeBookmark(job.id);
         if (isMounted.current) {
           setIsBookmarked(false);
           ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
         }
       } else {
         // Call the API to add bookmark
-        const result = await bookmarkService.addBookmark(job.id);
+        await bookmarkService.addBookmark(job.id);
         if (isMounted.current) {
           setIsBookmarked(true);
           ToastAndroid.show("Job added to bookmarks", ToastAndroid.SHORT);
@@ -93,8 +92,8 @@ const JobCard = ({ job, onPress, navigation }) => {
   };
 
   const handleApply = (e) => {
-    e.stopPropagation(); // Prevent triggering the card's onPress
-    setShowSuccessPopup(true); // Show success animation
+    e.stopPropagation(); 
+    setShowSuccessPopup(true); 
   };
   
   return (
@@ -151,6 +150,7 @@ const JobCard = ({ job, onPress, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // Styles remain unchanged
   jobCard: {
     backgroundColor: '#fff',
     borderRadius: 12,

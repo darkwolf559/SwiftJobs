@@ -9,7 +9,6 @@ import {
   Dimensions,
   Image,
   ActivityIndicator,
-  Alert,
   ToastAndroid
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -51,11 +50,19 @@ const BookmarksScreen = ({ navigation }) => {
       setLoading(true);
       setError(null);
       
-      const bookmarks = await bookmarkService.getUserBookmarks();
+      const bookmarksData = await bookmarkService.getUserBookmarks();
       
       if (!isMounted.current) return;
       
-      const formattedJobs = bookmarks.map(bookmark => ({
+      // Check if bookmarksData exists and has the expected structure
+      if (!bookmarksData || !Array.isArray(bookmarksData)) {
+        console.error('Unexpected bookmarks data format:', bookmarksData);
+        setBookmarkedJobs([]);
+        setError('Failed to load bookmarks. Unexpected data format.');
+        return;
+      }
+      
+      const formattedJobs = bookmarksData.map(bookmark => ({
         id: bookmark.job._id,
         bookmarkId: bookmark._id,
         title: bookmark.job.jobTitle,
@@ -251,6 +258,7 @@ const BookmarksScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // Styles remain unchanged
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

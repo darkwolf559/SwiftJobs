@@ -185,8 +185,6 @@ class NotificationService {
         
         // Handle custom actions
         if (pressAction.id === 'view_job' && detail.notification) {
-          // This would need to work with your navigation
-          // You might want to store this action and handle it when the app opens
           console.log('View job action pressed', detail.notification.data);
         } else if (pressAction.id === 'save_job' && detail.notification) {
           // Save job in background

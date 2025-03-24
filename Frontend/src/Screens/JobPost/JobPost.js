@@ -15,7 +15,7 @@ const JobPostingPage = () => {
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
   
-  // Form data state
+
   const [formData, setFormData] = useState({
     jobTitle: '',
     category: 'Select Category',
@@ -32,7 +32,6 @@ const JobPostingPage = () => {
     applicationDeadline: ''
   });
   
-  // Category options - make sure category IDs match your backend
   const categoryOptions = [
     { id: '1', label: 'TECHNOLOGY' },
     { id: '2', label: 'HEALTHCARE' },
@@ -44,12 +43,11 @@ const JobPostingPage = () => {
     { id: '8', label: 'DOMESTIC WORKS' },
     { id: '9', label: 'OTHERS' }
   ];
-  
-  // Validation state
+
   const [errors, setErrors] = useState({});
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
-  // Load user data on component mount
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -58,7 +56,7 @@ const JobPostingPage = () => {
           const parsedUserData = JSON.parse(userDataString);
           setUserData(parsedUserData);
           
-          // Pre-fill employer info if available
+ 
           setFormData(prevData => ({
             ...prevData,
             employerName: parsedUserData.fullName || '',
@@ -75,7 +73,7 @@ const JobPostingPage = () => {
 
   const handleChange = (field, value) => {
     if (field === 'payment') {
-      // Remove non-numeric characters except decimal point
+
       const numericValue = value.replace(/[^0-9.]/g, '');
       setFormData({
         ...formData,

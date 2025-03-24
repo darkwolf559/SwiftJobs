@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authToken, setAuthToken] = useState(null);
 
-  // Check for existing session on initial load
+
   useEffect(() => {
     const loadStoredData = async () => {
       try {
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.login(credentials);
       
-      // Store the token and user data in state
+
       setAuthToken(response.token);
       setCurrentUser(response.user);
       
@@ -75,12 +75,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Check if user is authenticated
   const isAuthenticated = () => {
     return !!authToken;
   };
 
-  // Context value
+
   const value = {
     currentUser,
     authToken,

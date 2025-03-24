@@ -83,7 +83,7 @@ const AllJobsScreen = ({ route, navigation }) => {
     }
     
     const filteredJobs = jobsList.filter(job => {
-      //Salary Filter
+
       let salaryInRange = true;
       if (lenientFilters.salaryRange && 
           (lenientFilters.salaryRange.min > 0 || lenientFilters.salaryRange.max < 1000000)) {
@@ -102,7 +102,7 @@ const AllJobsScreen = ({ route, navigation }) => {
         }
       }
 
-      //Location Filter
+
       let locationMatch = true;
       if (lenientFilters.location && lenientFilters.location.trim() !== '') {
         
@@ -117,7 +117,6 @@ const AllJobsScreen = ({ route, navigation }) => {
         }
       }
 
-      //Category Filter
       let categoryMatch = true;
       if (lenientFilters.categories && lenientFilters.categories.length > 0) {
         if (!job.category) {
@@ -154,7 +153,7 @@ const AllJobsScreen = ({ route, navigation }) => {
     return filteredJobs;
   };
 
-  // Fetch jobs and apply filters
+
   useEffect(() => {
     const fetchJobsAndApplyFilters = async () => {
       try {
@@ -245,7 +244,7 @@ const AllJobsScreen = ({ route, navigation }) => {
     fetchJobsAndApplyFilters();
   }, [route.params]);
 
-  // Navigate to Job details screen
+
   const navigateToJobDetails = (job) => {
     navigation.navigate('JobSingle', { 
       jobId: job.id,
@@ -256,7 +255,7 @@ const AllJobsScreen = ({ route, navigation }) => {
     });
   };
 
-  // Clear filters
+
   const clearFilters = () => {
     navigation.setParams({ filters: null });
   };

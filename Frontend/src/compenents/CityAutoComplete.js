@@ -28,13 +28,13 @@ const CityAutocomplete = ({ onCitySelect, initialValue = '', error }) => {
     }
   }, [searchText]);
 
-  // Handle city selection
+
   const handleCitySelect = (city) => {
     setSearchText(city);
     setShowDropdown(false);
     onCitySelect(city);
     
-    // Blur the input to hide keyboard
+
     if (inputRef.current) {
       inputRef.current.blur();
     }
@@ -55,7 +55,7 @@ const CityAutocomplete = ({ onCitySelect, initialValue = '', error }) => {
         }}
       />
 
-      {/* Dropdown menu with absolute positioning */}
+     
       {showDropdown && (
         <View style={styles.dropdown}>
           <ScrollView 
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: 'absolute',
-    top: 50, // Position below input
+    top: 50, 
     left: 0,
     right: 0,
     maxHeight: 200,

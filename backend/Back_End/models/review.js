@@ -21,14 +21,14 @@ const reviewSchema = new mongoose.Schema({
     type: String, 
     required: true
   },
-  // Field to track if this review should be shown in testimonials
+
   showInTestimonials: {
     type: Boolean,
     default: true
   }
 }, { timestamps: true });
 
-// Prevent multiple reviews from the same user for the same job
+
 reviewSchema.index({ jobId: 1, userId: 1 }, { unique: true });
 
 const Review = mongoose.model('Review', reviewSchema);

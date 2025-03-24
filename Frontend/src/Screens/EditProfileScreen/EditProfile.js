@@ -58,7 +58,6 @@ const EditProfile = ({ navigation, route }) => {
     }
   };
 
-  // Function to convert image to base64
   const convertImageToBase64 = async (uri) => {
     try {
       const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
@@ -286,7 +285,6 @@ const EditProfile = ({ navigation, route }) => {
       
       Alert.alert('Success', 'Profile updated successfully');
       
-      // Navigate back to profile screen
       navigation.goBack();
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -333,7 +331,6 @@ const EditProfile = ({ navigation, route }) => {
       </LinearGradient>
 
       <ScrollView style={styles.scrollView}>
-        {/* Cover Photo Section */}
         <View style={styles.coverPhotoContainer}>
           <Image 
             source={coverImage 
@@ -355,7 +352,6 @@ const EditProfile = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Profile Info Card */}
         <View style={styles.profileInfoCard}>
           <TouchableOpacity 
             style={styles.profileImageContainer}
@@ -422,7 +418,6 @@ const EditProfile = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Date of Birth */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Date of Birth</Text>
             <TouchableOpacity
@@ -468,7 +463,6 @@ const EditProfile = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Location */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>LOCATION</Text>
           <View style={styles.inputContainer}>
@@ -504,7 +498,6 @@ const EditProfile = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Education */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>EDUCATION</Text>
           <View style={styles.inputContainer}>
@@ -575,7 +568,6 @@ const EditProfile = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Resume */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>MY RESUME</Text>
           <TouchableOpacity 
@@ -600,7 +592,6 @@ const EditProfile = ({ navigation, route }) => {
           )}
         </View>
 
-        {/* Save Button */}
         <TouchableOpacity 
            style={styles.saveButton}
            onPress={handleSave}

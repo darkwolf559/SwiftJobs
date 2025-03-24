@@ -4,7 +4,7 @@ import {
   markNotificationAsRead, 
   markAllNotificationsAsRead 
 } from "../controllers/notificationController.js";
-import authMiddleware from "../middleware/authmiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

@@ -153,7 +153,6 @@ const JobPostingPage = () => {
       try {
         setLoading(true);
         
-        // Find the selected category object
         const selectedCategory = categoryOptions.find(
           cat => cat.label === formData.category
         );
@@ -164,17 +163,14 @@ const JobPostingPage = () => {
           return;
         }
         
-        // Convert payment to number
         const paymentNum = parseFloat(formData.payment);
-        
-        // Prepare job data for API
+
         const jobData = {
           ...formData,
           jobCategory: selectedCategory.id,
-          payment: paymentNum // Convert to number
+          payment: paymentNum 
         };
         
-        // Call API to create job
         const response = await jobService.createJob(jobData);
         
         Alert.alert(
@@ -196,7 +192,7 @@ const JobPostingPage = () => {
     }
   };
 
-  // Render input field
+
   const renderField = (label, field, placeholder, multiline = false, keyboardType = 'default', required = true) => (
     <View style={styles.fieldContainer}>
       <Text style={styles.fieldLabel}>
@@ -221,7 +217,6 @@ const JobPostingPage = () => {
     </View>
   );
 
-  // Render the city selector field
   const renderCitySelector = () => (
     <View style={styles.fieldContainer}>
       <Text style={styles.fieldLabel}>
@@ -259,7 +254,6 @@ const JobPostingPage = () => {
         <Text style={styles.errorText}>{errors.category}</Text>
       )}
       
-      {/* Category Dropdown Modal */}
       <Modal
         visible={showCategoryDropdown}
         transparent
@@ -310,7 +304,6 @@ const JobPostingPage = () => {
         </View>
       </LinearGradient>
       
-      {/* Main Content */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
@@ -319,13 +312,11 @@ const JobPostingPage = () => {
           <View style={styles.content}>
             <Text style={styles.sectionTitle}>Job Details</Text>
             
-            {/* Form Fields */}
             {renderField('Job Title', 'jobTitle', 'e.g., Web Designing')}
             {renderCategoryDropdown()}
             {renderField('Job Description', 'jobDescription', 'Describe the job responsibilities, requirements, and other details...', true)}
             {renderField('Payment', 'payment', 'e.g., 50000', false, 'numeric')}
             
-            {/* Replace old location field with city selector */}
             {renderCitySelector()}
             
             {renderField('Duration', 'duration', 'e.g., Full-time, Contract')}
@@ -340,7 +331,7 @@ const JobPostingPage = () => {
             {renderField('Employer Website', 'employerWebsite', 'e.g., www.facebook.com', false, 'url', false)}
             {renderField('Application Deadline', 'applicationDeadline', 'e.g., April 30, 2025')}
             
-            {/* Submit Button */}
+
             <TouchableOpacity 
               style={styles.submitButton}
               onPress={handleSubmit}
@@ -353,7 +344,6 @@ const JobPostingPage = () => {
               )}
             </TouchableOpacity>
             
-            {/* Bottom space */}
             <View style={styles.bottomSpace} />
           </View>
         </ScrollView>

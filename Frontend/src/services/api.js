@@ -45,7 +45,6 @@ api.interceptors.response.use(
   }
 );
 
-// Authentication Services
 export const authService = {
   // Register new user
   register: async (userData) => {
@@ -71,7 +70,6 @@ export const authService = {
     try {
       console.log('Logging in user:', credentials.email);
       const response = await api.post('/login', credentials);
-      // Store token and user data
       if (response.data.token) {
         await AsyncStorage.setItem('authToken', response.data.token);
         await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
@@ -111,7 +109,6 @@ export const authService = {
 
 // User Profile Services
 export const userService = {
-  // Get user profile
   getProfile: async () => {
     try {
       const response = await api.get('/profile');
@@ -140,9 +137,8 @@ export const userService = {
   }
 };
 
-// Job Services
+
 export const jobService = {
-  // Create a new job
   createJob: async (jobData) => {
     try {
       const response = await api.post('/jobs/create', jobData);
@@ -214,7 +210,6 @@ export const bookmarkService = {
   // Remove a bookmark
   removeBookmark: async (jobId) => {
     try {
-      // Changed to use URL parameter instead of request body
       const response = await api.delete(`/bookmarks/${jobId}`);
       return response.data;
     } catch (error) {
@@ -223,22 +218,21 @@ export const bookmarkService = {
     }
   },
   
-  // Get all bookmarks for the current user
+
   getUserBookmarks: async () => {
     try {
       const response = await api.get('/bookmarks');
-      return response.data.data; // Assuming your backend returns {data: [...bookmarks]}
+      return response.data.data; 
     } catch (error) {
       console.error('Error getting bookmarks:', error);
       throw error;
     }
   },
   
-  // Check if a job is bookmarked
   checkBookmarkStatus: async (jobId) => {
     try {
       const response = await api.get(`/bookmarks/status/${jobId}`);
-      return response.data.isBookmarked; // Changed from bookmarked to isBookmarked
+      return response.data.isBookmarked; 
     } catch (error) {
       console.error('Error checking bookmark status:', error);
       return false; 
@@ -264,7 +258,6 @@ export const reviewService = {
     }
   },
 
-  // Get all reviews for a job
   getJobReviews: async (jobId) => {
     try {
       const response = await api.get(`/reviews/job/${jobId}`);
@@ -278,7 +271,6 @@ export const reviewService = {
     }
   },
 
-  // Get random testimonials for the homepage
   getRandomTestimonials: async () => {
     try {
       const response = await api.get('/reviews/testimonials');
@@ -289,7 +281,6 @@ export const reviewService = {
     }
   },
   
-  // Get all reviews (new function)
   getAllReviews: async () => {
     try {
       const response = await api.get('/reviews');

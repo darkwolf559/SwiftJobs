@@ -22,9 +22,8 @@ const LoginScreen = () => {
     navigation.navigate("SignUp");  
   };
 
-  // Handle login function
   const handleLogin = async () => {
-    // Basic validation
+
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password');
       return;
@@ -32,22 +31,21 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      // Call the login API
+
       const response = await axios.post(`${API_URL}/login`, {
         email,
         password
       });
       
-      // Store token in AsyncStorage
       if (response.data && response.data.token) {
         await AsyncStorage.setItem('authToken', response.data.token);
         
-        // Store user data if available
+
         if (response.data.user) {
           await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
         }
         
-        // Navigate to home screen
+
         navigation.reset({
           index: 0,
           routes: [{ name: 'MainTabs' }],

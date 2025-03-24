@@ -90,10 +90,10 @@ const styles = StyleSheet.create({
     },
     button: {
         position: 'absolute',
-        backgroundColor: '#F4338F', // Pink color
-        width: 80,  // Ensuring equal width and height for a perfect circle
+        backgroundColor: '#F4338F', 
+        width: 80,  
         height: 80,
-        borderRadius: 128 / 2,  // Half the width/height for a full circle
+        borderRadius: 128 / 2, 
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,

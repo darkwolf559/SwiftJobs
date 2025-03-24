@@ -16,7 +16,6 @@ const InviteFriend = ({ navigation }) => {
     <View style={styles.container}>
       
       
-      {/* Header - Updated to match UserProfile header */}
       <LinearGradient 
         colors={["#623AA2", "#F97794"]} 
         style={styles.header}

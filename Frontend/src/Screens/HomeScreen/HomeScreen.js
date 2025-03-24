@@ -78,18 +78,16 @@ const HomeScreen = () => {
     }
   ];
 
-  // Fetch job reviews for homepage
+
   const fetchJobReviews = async () => {
     try {
       setLoadingReviews(true);
       
-      // Fetch random reviews from the API
       const reviewsData = await reviewService.getRandomTestimonials();
       
       if (reviewsData && reviewsData.length > 0) {
         setJobReviews(reviewsData);
       } else {
-        // Set empty array if no reviews available
         setJobReviews([]);
       }
     } catch (error) {
@@ -161,7 +159,6 @@ const HomeScreen = () => {
       
       const jobsData = await jobService.getAllJobs();
       
-      // Calculate job counts for each category
       const counts = {};
       jobsData.forEach(job => {
         const categoryId = job.jobCategory;

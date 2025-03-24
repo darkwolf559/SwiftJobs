@@ -7,7 +7,8 @@ import { jobService, reviewService } from '../services/api';
 import { bookmarkService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApplySuccessPopup from '../Screens/ApplySuccess/ApplySuccessPopup';
-
+import { API_URL } from '../config/constants';
+import axios from 'axios';
 const JobSingle = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('Description');
   const [jobData, setJobData] = useState(null);
@@ -53,7 +54,7 @@ const JobSingle = ({ route, navigation }) => {
       
       const reviewsData = await reviewService.getJobReviews(jobId);
       
-      // Format the reviews for display
+
       const formattedReviews = reviewsData.map(review => ({
         id: review._id,
         name: review.userId ? (review.userId.fullName || review.userId.username) : 'Anonymous User',
@@ -65,7 +66,7 @@ const JobSingle = ({ route, navigation }) => {
       
       setReviews(formattedReviews);
       
-      // Recalculate rating stats
+
       const stats = {
         5: 0,
         4: 0,
@@ -146,14 +147,12 @@ const JobSingle = ({ route, navigation }) => {
       }
       
       if (isBookmarked) {
-        // Remove bookmark - now the API expects jobId as a URL parameter
         await bookmarkService.removeBookmark(jobId);
         if (isMounted.current) {
           setIsBookmarked(false);
           ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
         }
       } else {
-        // Add bookmark - the API expects jobId in the request body
         await bookmarkService.addBookmark(jobId);
         if (isMounted.current) {
           setIsBookmarked(true);
@@ -165,7 +164,6 @@ const JobSingle = ({ route, navigation }) => {
       if (isMounted.current) {
         let errorMessage = "Failed to update bookmark";
         
-        // Extract a meaningful error message if possible
         if (error?.response?.data?.message) {
           errorMessage = error.response.data.message;
         } else if (error.message) {
@@ -215,7 +213,6 @@ const JobSingle = ({ route, navigation }) => {
     }
     
     try {
-      // Check if user is logged in
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
         Alert.alert(
@@ -234,10 +231,9 @@ const JobSingle = ({ route, navigation }) => {
       
       await reviewService.addReview(jobId, userRating, userComment);
       
-      // Refresh reviews
+
       await fetchJobReviews();
       
-      // Reset form
       setUserRating(0);
       setUserComment('');
       
@@ -248,6 +244,42 @@ const JobSingle = ({ route, navigation }) => {
       Alert.alert('Error', 'Failed to submit review. Please try again.');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleApply = async (e) => {
+    if (e) e.stopPropagation(); 
+    try {
+      setShowSuccessPopup(true);
+      
+      const userInfo = await AsyncStorage.getItem('userInfo');
+      let parsedUserInfo = {};
+      
+      if (userInfo) {
+        parsedUserInfo = JSON.parse(userInfo);
+      }
+      
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (!authToken) return;
+   
+      const response = await axios.post(
+        `${API_URL}/jobs/${jobId}/apply`,
+        {
+          jobId: jobId,
+          userName: parsedUserInfo.fullName || 'User',
+          userEmail: parsedUserInfo.email || '',
+          userPhone: parsedUserInfo.phone || '',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          }
+        }
+      );
+      
+      console.log('Job application sent:', response.data);
+    } catch (error) {
+      console.error('Error applying for job:', error);
     }
   };
 
@@ -577,9 +609,7 @@ const JobSingle = ({ route, navigation }) => {
         
       <TouchableOpacity 
         style={styles.applyButton}
-        onPress={() => {
-         setShowSuccessPopup(true);
-  }}
+        onPress={handleApply}
 >
        <Text style={styles.applyButtonText}>APPLY</Text>
       </TouchableOpacity>

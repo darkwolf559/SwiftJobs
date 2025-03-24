@@ -14,7 +14,7 @@ import UserProfile from './UserProfile/UserProfile';
 
 
 const CustomDrawer = ({ isVisible, onClose, navigation }) => {
-  // If drawer is not visible, don't render anything
+
   if (!isVisible) return null;
 
   const menuItems = [
@@ -29,7 +29,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
   ];
 
   const handleMenuItemPress = (title) => {
-    // Handle navigation
+ 
     switch(title) {
       case 'View Profile':
         navigation?.navigate('UserProfile');
@@ -62,19 +62,19 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
           
       
       case 'Log Out':
-        // Handle logout logic
+
         console.log('Logging out...');
         navigation?.navigate('Login');
         break;
       default:
         navigation?.navigate(title);
     }
-    onClose(); // Close drawer after selection
+    onClose();
   };
 
   return (
     <View style={styles.container}>
-      {/* Drawer content - positioned first for left-side opening */}
+
       <View style={styles.drawer}>
         <View style={styles.closeButtonContainer}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -105,7 +105,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
         </ScrollView>
       </View>
       
-      {/* Semi-transparent overlay */}
+
       <TouchableOpacity 
         style={styles.overlay} 
         activeOpacity={1} 
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   drawer: {
-    width: width * 0.75, // 75% of screen width
+    width: width * 0.75, 
     height: height,
     backgroundColor: '#fff',
   },

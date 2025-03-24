@@ -21,20 +21,16 @@ const BookmarksScreen = ({ navigation }) => {
   const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Add this ref to track component mounting state
   const isMounted = useRef(true);
 
-  // Initial loading of bookmarks
   useEffect(() => {
     fetchBookmarks();
     
-    // Cleanup function to handle component unmounting
     return () => {
       isMounted.current = false;
     };
   }, []);
 
-  // Refresh when screen is focused
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchBookmarks();
@@ -54,7 +50,6 @@ const BookmarksScreen = ({ navigation }) => {
       
       if (!isMounted.current) return;
       
-      // Check if bookmarksData exists and has the expected structure
       if (!bookmarksData || !Array.isArray(bookmarksData)) {
         console.error('Unexpected bookmarks data format:', bookmarksData);
         setBookmarkedJobs([]);
@@ -89,7 +84,7 @@ const BookmarksScreen = ({ navigation }) => {
     }
   };
 
-  // Navigate to Job details screen
+
   const navigateToJobDetails = (job) => {
     navigation.navigate('JobSingle', { 
       jobId: job.id,
@@ -100,22 +95,19 @@ const BookmarksScreen = ({ navigation }) => {
     });
   };
 
-  // Remove bookmark with safe alert handling
+
   const removeBookmark = async (jobId) => {
     try {
       await bookmarkService.removeBookmark(jobId);
       
       if (isMounted.current) {
-        // Update the local state to remove the job from the list
         setBookmarkedJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
         
-        // Use ToastAndroid instead of Alert for safer notification
         ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
       }
     } catch (error) {
       console.error('Error removing bookmark:', error);
       if (isMounted.current) {
-        // Use ToastAndroid instead of Alert for safer notification
         ToastAndroid.show("Failed to remove bookmark", ToastAndroid.SHORT);
       }
     }
@@ -188,7 +180,6 @@ const BookmarksScreen = ({ navigation }) => {
         </View>
       )}
 
-      {/* Jobs List or No Jobs View */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.jobsContainer}
@@ -258,7 +249,6 @@ const BookmarksScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Styles remain unchanged
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

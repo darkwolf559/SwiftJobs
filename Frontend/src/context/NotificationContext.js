@@ -16,7 +16,6 @@ export const NotificationProvider = ({ children }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Fetch notifications with better error handling
   const fetchNotifications = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
@@ -32,7 +31,7 @@ export const NotificationProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
-        timeout: 10000, // 10 second timeout
+        timeout: 10000, 
       });
       
       setNotifications(response.data);
@@ -40,7 +39,7 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount(unread);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      // Don't clear existing notifications on error
+
     } finally {
       if (showLoading) setLoading(false);
       setRefreshing(false);
@@ -53,7 +52,7 @@ export const NotificationProvider = ({ children }) => {
       const authToken = await AsyncStorage.getItem('authToken');
       if (!authToken) return;
       
-      // Optimistic update
+
       setNotifications(prevNotifications => {
         return prevNotifications.map(notif => {
           if (notif._id === notificationId && !notif.read) {
@@ -64,7 +63,7 @@ export const NotificationProvider = ({ children }) => {
         });
       });
       
-      // Server update
+
       await axios.put(
         `${API_URL}/notifications/${notificationId}/read`,
         {},
@@ -76,24 +75,24 @@ export const NotificationProvider = ({ children }) => {
       );
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      // Revert optimistic update on failure
+
       fetchNotifications(false);
     }
   };
 
-  // Mark all as read
+
   const markAllAsRead = async () => {
     try {
       const authToken = await AsyncStorage.getItem('authToken');
       if (!authToken) return;
       
-      // Optimistic update
+
       setNotifications(prevNotifications => {
         return prevNotifications.map(notif => ({ ...notif, read: true }));
       });
       setUnreadCount(0);
       
-      // Server update
+
       await axios.put(
         `${API_URL}/notifications/read-all`,
         {},
@@ -105,48 +104,43 @@ export const NotificationProvider = ({ children }) => {
       );
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-      // Revert optimistic update on failure
+  
       fetchNotifications(false);
     }
   };
 
-  // Handle refresh
   const handleRefresh = () => {
     setRefreshing(true);
     fetchNotifications(false);
   };
 
-  // Initialize notifications
   useEffect(() => {
     const initializeNotifications = async () => {
       if (isInitialized) return;
       
       try {
-        // Request permission
         const hasPermission = await notificationService.requestPermission();
         if (!hasPermission) {
           console.log('Notification permission denied');
           return;
         }
         
-        // Get and register token
         const token = await notificationService.getToken();
         if (token) {
           await notificationService.registerTokenWithServer(token);
         }
         
-        // Setup message handlers
-        const unsubscribe = notificationService.setupMessageHandlers(() => {
-          // Refresh notifications when a new one is received
+
+        const unsubscribe = notificationService.setupMessageHandlers(() => {  
           fetchNotifications(false);
         });
         
-        // Fetch initial notifications
+       
         fetchNotifications();
         
         setIsInitialized(true);
         
-        // Cleanup
+        
         return () => {
           if (unsubscribe) unsubscribe();
         };
@@ -158,13 +152,13 @@ export const NotificationProvider = ({ children }) => {
     initializeNotifications();
   }, [fetchNotifications, isInitialized]);
 
-  // Refresh notifications periodically when app is active
+
   useEffect(() => {
     if (!isInitialized) return;
     
     const intervalId = setInterval(() => {
       fetchNotifications(false);
-    }, 60000); // Every minute
+    }, 60000);
     
     return () => clearInterval(intervalId);
   }, [fetchNotifications, isInitialized]);

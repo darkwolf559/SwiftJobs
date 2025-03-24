@@ -11,7 +11,6 @@ import { authService } from '../../services/api';
 const SignupScreen = () => {
   const navigation = useNavigation();  
   
-  // State for form fields
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
@@ -24,18 +23,17 @@ const SignupScreen = () => {
     navigation.navigate("Login");  
   };
 
-  // Email validation function
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Handle signup function
+
   const handleSignup = async () => {
-    // Reset error message
+
     setErrorMessage('');
     
-    // Validate inputs
+
     if (!username || !fullName || !password || !email || !mobile) {
       setErrorMessage('All fields are required');
       Alert.alert('Error', 'All fields are required');
@@ -62,7 +60,6 @@ const SignupScreen = () => {
         mobileNumber: mobile,
       });
       
-      // Call the registration API
       const response = await authService.register({
         username,
         password,
@@ -73,7 +70,6 @@ const SignupScreen = () => {
       
       setLoading(false);
       
-      // Show success message and navigate to login
       Alert.alert(
         'Registration Successful',
         'Your account has been created successfully. Please log in.',
@@ -84,11 +80,9 @@ const SignupScreen = () => {
       
       console.error('Registration error details:', error);
       
-      // Set error message for display
       const errorMsg = error?.message || 'Could not create account. Please try again.';
       setErrorMessage(errorMsg);
       
-      // Handle registration errors
       Alert.alert(
         'Registration Failed', 
         errorMsg
@@ -116,7 +110,6 @@ const SignupScreen = () => {
             <Text style={styles.createAccountText}>Create Account </Text>
           </View>
 
-          {/* Display error message if any */}
           {errorMessage ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{errorMessage}</Text>

@@ -29,7 +29,16 @@ class NotificationService {
     try {
       const authToken = await AsyncStorage.getItem('authToken');
       
-      if (!authToken || !fcmToken) return false;
+      if (!authToken || !fcmToken) {
+        console.log('Missing auth token or FCM token');
+        return false;
+      }
+
+      const isConnected = await this.checkNetworkConnection();
+      if (!isConnected) {
+        console.log('No network connection available');
+        return false;
+      }
       
       await axios.post(
         `${API_URL}/profile/fcm-token`,
@@ -38,18 +47,32 @@ class NotificationService {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
+          timeout: 10000 
         }
       );
       
       return true;
     } catch (error) {
-      console.error('Error registering token with server:', error);
+      console.log('Error registering token with server:');
+      console.log(error.message || 'Unknown error');
+      await AsyncStorage.setItem('pendingFcmRegistration', fcmToken);
+      return false;
+    }
+  }
+  
+  async checkNetworkConnection() {
+    try {
+      const response = await fetch('https://www.google.com', { 
+        method: 'HEAD',
+        timeout: 5000
+      });
+      return response.ok;
+    } catch (error) {
       return false;
     }
   }
 
   async setupAndroidChannel() {
-  
     await notifee.createChannel({
       id: 'job_alerts',
       name: 'Job Alerts',
@@ -70,19 +93,17 @@ class NotificationService {
   }
 
   async displayLocalNotification(title, body, data = {}) {
-    // Determine channel based on notification type
     const channelId = data.type === 'JOB_POSTED' ? 'job_alerts' : 'general';
 
-    // Display notification
     await notifee.displayNotification({
       title,
       body,
       data,
       android: {
         channelId,
-        smallIcon: 'ic_notification', // Make sure this exists in your drawable folder
+        smallIcon: 'ic_notification',
         largeIcon: data.largeIcon || undefined,
-        color: '#623AA2', // Brand color for notification
+        color: '#623AA2', 
         pressAction: {
           id: 'default',
         },
@@ -93,7 +114,6 @@ class NotificationService {
 
   async requestPermission() {
     try {
-    
       const authStatus = await messaging().hasPermission();
       const enabled = 
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -104,18 +124,56 @@ class NotificationService {
         return true;
       }
       
-      // If not enabled, we can request it (usually only needed for special features)
       const requestStatus = await messaging().requestPermission();
       return requestStatus === messaging.AuthorizationStatus.AUTHORIZED || 
              requestStatus === messaging.AuthorizationStatus.PROVISIONAL;
     } catch (error) {
       console.error('Permission request error:', error);
-      // Return true anyway since Android typically doesn't block notifications
       return true;
     }
   }
 
-  // Add quick actions to notifications based on type
+  async registerTokenWithServerWithRetry(fcmToken, maxRetries = 3) {
+    let retries = 0;
+    
+    const attemptRegistration = async () => {
+      try {
+        const result = await this.registerTokenWithServer(fcmToken);
+        return result;
+      } catch (error) {
+        if (retries < maxRetries) {
+          retries++;
+          console.log(`Retrying token registration (${retries}/${maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, 2000 * Math.pow(2, retries - 1)));
+          return attemptRegistration();
+        } else {
+          console.error('Max retries reached for token registration');
+          return false;
+        }
+      }
+    };
+    
+    return attemptRegistration();
+  }
+
+  setupPeriodicTokenRefresh() {
+    setInterval(async () => {
+      try {
+        const pendingToken = await AsyncStorage.getItem('pendingFcmRegistration');
+        if (pendingToken) {
+          console.log('Attempting to register pending FCM token');
+          const success = await this.registerTokenWithServer(pendingToken);
+          if (success) {
+            await AsyncStorage.removeItem('pendingFcmRegistration');
+            console.log('Successfully registered pending FCM token');
+          }
+        }
+      } catch (error) {
+        console.log('Error in periodic token refresh:', error);
+      }
+    }, 3600000); 
+  }
+
   getAndroidActions(data) {
     if (data.type === 'JOB_POSTED') {
       return [
@@ -137,10 +195,19 @@ class NotificationService {
   }
 
   setupMessageHandlers(onNotificationReceived) {
-    // Set up the notification channel first
-    this.setupAndroidChannel();
 
-    // Foreground handler
+    this.setupAndroidChannel();
+    
+
+    this.setupPeriodicTokenRefresh();
+    
+
+    this.getToken().then(token => {
+      if (token) {
+        this.registerTokenWithServerWithRetry(token);
+      }
+    });
+
     const unsubscribeForeground = messaging().onMessage(async remoteMessage => {
       console.log('Foreground notification:', remoteMessage);
       
@@ -157,44 +224,39 @@ class NotificationService {
       }
     });
 
-    // Background handler - no need to display notifications manually
-    // as Android does this automatically for background messages
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       console.log('Background notification:', remoteMessage);
       return Promise.resolve();
     });
 
-    // Background notification tap handler
     messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('App opened from background notification:', remoteMessage);
     });
 
-    // App closed notification tap handler
     messaging().getInitialNotification().then(remoteMessage => {
       if (remoteMessage) {
         console.log('App opened from quit state notification:', remoteMessage);
       }
     });
 
-    // Handle notification actions
+
     notifee.onBackgroundEvent(async ({ type, detail }) => {
       if (type === notifee.BackgroundEventType.PRESS) {
         console.log('User pressed notification from background', detail.notification);
       } else if (type === notifee.BackgroundEventType.ACTION_PRESS) {
         const { pressAction } = detail;
         
-        // Handle custom actions
+
         if (pressAction.id === 'view_job' && detail.notification) {
           console.log('View job action pressed', detail.notification.data);
         } else if (pressAction.id === 'save_job' && detail.notification) {
-          // Save job in background
+
           console.log('Save job action pressed', detail.notification.data);
-          // You could call an API here to save the job
         }
       }
     });
 
-    // Handle foreground events
+
     notifee.onForegroundEvent(({ type, detail }) => {
       if (type === notifee.ForegroundEventType.PRESS) {
         console.log('User pressed notification', detail.notification);
@@ -203,10 +265,8 @@ class NotificationService {
         
         if (pressAction.id === 'view_job' && detail.notification) {
           console.log('View job action pressed', detail.notification.data);
-          // You would need to use a navigation ref to navigate here
         } else if (pressAction.id === 'save_job' && detail.notification) {
           console.log('Save job action pressed', detail.notification.data);
-          // Save job logic
         }
       }
     });
@@ -214,11 +274,9 @@ class NotificationService {
     return unsubscribeForeground;
   }
 
-  // Navigate based on notification
   handleNotificationNavigation(notification, navigation) {
     if (!notification) return;
     
-    // Handle different notification types
     switch(notification.type) {
       case 'JOB_POSTED':
         if (notification.relatedJob && notification.relatedJob._id) {
@@ -231,6 +289,11 @@ class NotificationService {
           });
         }
         break;
+      case 'JOB_APPLICATION':
+        navigation.navigate('ApplicationsReceived', { 
+          jobId: notification.relatedJob && notification.relatedJob._id 
+        });
+        break;
       case 'APPLICATION_STATUS':
         navigation.navigate('UserProfile', { tab: 'applications' });
         break;
@@ -238,7 +301,6 @@ class NotificationService {
         navigation.navigate('Messages');
         break;
       default:
-        // Default navigation or do nothing
         break;
     }
   }

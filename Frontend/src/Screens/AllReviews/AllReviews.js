@@ -20,7 +20,6 @@ const AllReviewsScreen = () => {
       setLoading(true);
       setError(null);
       
-      // Get all reviews from the API
       const reviewsData = await reviewService.getAllReviews();
       setReviews(reviewsData);
     } catch (error) {

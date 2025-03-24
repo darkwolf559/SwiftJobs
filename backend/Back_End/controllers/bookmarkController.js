@@ -5,10 +5,10 @@ const { ObjectId } = mongoose.Types;
 // Add a bookmark
 export const addBookmark = async (req, res) => {
   try {
-    const userId = req.user.id; // Get userId from authenticated user
+    const userId = req.user.id; 
     const { jobId } = req.body;
 
-    // Validate ObjectId format
+
     if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(jobId)) {
       return res.status(400).json({ 
         success: false, 
@@ -57,7 +57,7 @@ export const removeBookmark = async (req, res) => {
     const userId = req.user.id; 
     const { jobId } = req.params; 
 
-    // Validate ObjectId format
+
     if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(jobId)) {
       return res.status(400).json({ 
         success: false, 
@@ -94,7 +94,7 @@ export const removeBookmark = async (req, res) => {
 // Get all bookmarks for a user
 export const getUserBookmarks = async (req, res) => {
   try {
-    const userId = req.user.id; // Changed to get from auth token
+    const userId = req.user.id;
 
     if (!mongoose.isValidObjectId(userId)) {
       return res.status(400).json({ 
@@ -125,7 +125,7 @@ export const getUserBookmarks = async (req, res) => {
 // Check if a job is bookmarked by a user
 export const checkBookmarkStatus = async (req, res) => {
   try {
-    const userId = req.user.id; // Changed to get from auth token
+    const userId = req.user.id; 
     const { jobId } = req.params;
 
     if (!mongoose.isValidObjectId(userId)) {

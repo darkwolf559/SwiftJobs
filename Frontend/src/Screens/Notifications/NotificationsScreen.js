@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
-    paddingBottom: 80, // Extra padding at the bottom
+    paddingBottom: 80, 
   },
   notificationItem: {
     backgroundColor: 'white',

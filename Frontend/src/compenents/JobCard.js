@@ -8,11 +8,12 @@ import {
   ActivityIndicator,
   ToastAndroid
 } from 'react-native';
+import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { bookmarkService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApplySuccessPopup from '../Screens/ApplySuccess/ApplySuccessPopup';
-
+import { API_URL } from '../config/constants';
 const JobCard = ({ job, onPress, navigation }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -22,7 +23,7 @@ const JobCard = ({ job, onPress, navigation }) => {
   useEffect(() => {
     checkBookmarkStatus();
     
-    // Clean up function to set isMounted to false when component unmounts
+
     return () => {
       isMounted.current = false;
     };
@@ -30,7 +31,7 @@ const JobCard = ({ job, onPress, navigation }) => {
   
   const checkBookmarkStatus = async () => {
     try {
-      // Check if user is logged in
+  
       const token = await AsyncStorage.getItem('authToken');
       if (!token) return;
       
@@ -45,25 +46,23 @@ const JobCard = ({ job, onPress, navigation }) => {
   
   const toggleBookmark = async () => {
     try {
-      // Check if user is logged in
+
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
-        // Navigate to login instead of showing Alert
+
         navigation.navigate('Login');
         return;
       }
       
       setBookmarkLoading(true);
       
-      if (isBookmarked) {
-        // Call the API to remove bookmark
-        await bookmarkService.removeBookmark(job.id);
+      if (isBookmarked) {        await bookmarkService.removeBookmark(job.id);
         if (isMounted.current) {
           setIsBookmarked(false);
           ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
         }
       } else {
-        // Call the API to add bookmark
+
         await bookmarkService.addBookmark(job.id);
         if (isMounted.current) {
           setIsBookmarked(true);
@@ -74,8 +73,7 @@ const JobCard = ({ job, onPress, navigation }) => {
       console.error('Error toggling bookmark:', error);
       if (isMounted.current) {
         let errorMessage = "Failed to update bookmark";
-        
-        // Extract a meaningful error message if possible
+ 
         if (error?.response?.data?.message) {
           errorMessage = error.response.data.message;
         } else if (error.message) {
@@ -91,9 +89,41 @@ const JobCard = ({ job, onPress, navigation }) => {
     }
   };
 
-  const handleApply = (e) => {
+
+  const handleApply = async (e) => {
     e.stopPropagation(); 
-    setShowSuccessPopup(true); 
+    try {
+      setShowSuccessPopup(true);
+      
+      const userInfo = await AsyncStorage.getItem('userInfo');
+      let parsedUserInfo = {};
+      
+      if (userInfo) {
+        parsedUserInfo = JSON.parse(userInfo);
+      }
+      
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (!authToken) return;
+   
+      const response = await axios.post(
+        `${API_URL}/jobs/${job.id}/apply`,
+        {
+          jobId: job.id,  
+          userName: parsedUserInfo.fullName || 'User',
+          userEmail: parsedUserInfo.email || '',
+          userPhone: parsedUserInfo.phone || '',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          }
+        }
+      );
+      
+      console.log('Job application sent:', response.data);
+    } catch (error) {
+      console.error('Error applying for job:', error);
+    }
   };
   
   return (
@@ -136,7 +166,7 @@ const JobCard = ({ job, onPress, navigation }) => {
         <Text style={styles.salary}>{job.salary}</Text>
         <TouchableOpacity 
           style={styles.applyButton}
-          onPress={onPress}
+          onPress={handleApply}
         >
           <Text style={styles.applyButtonText}>APPLY</Text>
         </TouchableOpacity>
@@ -150,7 +180,6 @@ const JobCard = ({ job, onPress, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Styles remain unchanged
   jobCard: {
     backgroundColor: '#fff',
     borderRadius: 12,

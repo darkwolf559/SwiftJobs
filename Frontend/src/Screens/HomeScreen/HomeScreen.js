@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image, ActivityIndicator,Alert } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from "react-native-linear-gradient";
@@ -7,7 +7,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from "@react-navigation/native";
 import CustomDrawer from "../../compenents/CustomDrawerContent";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { jobService } from '../../services/api'; 
+import { jobService, reviewService } from '../../services/api'; 
 import ImageCarousel from "./MovingImages";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import JobCard from "../../compenents/JobCard";
@@ -21,8 +21,9 @@ const HomeScreen = () => {
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [categoryCounts, setCategoryCounts] = useState({});
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [jobReviews, setJobReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
-  
   const categories = [
     {
       id: '1',
@@ -77,42 +78,44 @@ const HomeScreen = () => {
     }
   ];
 
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Michael Linville',
-      role: 'Support Manager',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
-      text: 'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form.',
-    },
-    {
-      id: 2,
-      name: 'David Cooper',
-      role: 'UI Designer',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
-      text: 'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form.',
-    },
-  ];
+  // Fetch job reviews for homepage
+  const fetchJobReviews = async () => {
+    try {
+      setLoadingReviews(true);
+      
+      // Fetch random reviews from the API
+      const reviewsData = await reviewService.getRandomTestimonials();
+      
+      if (reviewsData && reviewsData.length > 0) {
+        setJobReviews(reviewsData);
+      } else {
+        // Set empty array if no reviews available
+        setJobReviews([]);
+      }
+    } catch (error) {
+      console.error('Error fetching job reviews:', error);
+      setJobReviews([]);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
 
-  
   useFocusEffect(
     React.useCallback(() => {
       fetchJobs();
       fetchCategoryCounts();
+      fetchJobReviews();
     }, [])
   );
 
-  
   const fetchJobs = async () => {
     try {
       setLoadingJobs(true);
       const jobsData = await jobService.getAllJobs();
       
-      
       const randomizedJobs = jobsData
         .sort(() => 0.5 - Math.random()) 
         .slice(0, 2); 
-      
       
       const formattedJobs = randomizedJobs.map(job => ({
         id: job._id,
@@ -128,7 +131,6 @@ const HomeScreen = () => {
       setFeaturedJobs(formattedJobs);
     } catch (error) {
       console.error('Error fetching jobs:', error);
-      
       
       setFeaturedJobs([
         {
@@ -153,11 +155,9 @@ const HomeScreen = () => {
     }
   };
 
-  
   const fetchCategoryCounts = async () => {
     try {
       setLoadingCategories(true);
-      
       
       const jobsData = await jobService.getAllJobs();
       
@@ -195,7 +195,6 @@ const HomeScreen = () => {
     </View>
   );
   
-  
   const navigateToJobDetails = (job) => {
     navigation.navigate('JobSingle', { 
       jobId: job.id,
@@ -218,95 +217,143 @@ const HomeScreen = () => {
         </View>
 
         <View style={styles.headerRight}>
-       <NotificationIcon /> 
-       <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')}>
-      <FontAwesome name="sliders" size={24} color="white" />
-       </TouchableOpacity>
-       </View>
+          <NotificationIcon /> 
+          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')}>
+            <FontAwesome name="sliders" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       <ScrollView>
-      <ImageCarousel/>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ImageCarousel/>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
       
-        {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('CategoryScreen'))}
-        {loadingCategories ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#623AA2" />
-          </View>
-        ) : (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesContainer}
-          >
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryCard}
-                onPress={() => navigation.navigate('JobsList', { category })}
-              >
-                <View style={styles.categoryIcon}>
-                  {category.Icon()}
-                </View>
-                <Text style={styles.categoryTitle}>{category.title}</Text>
-                <Text style={styles.jobCount}>({categoryCounts[category.id] || 0} jobs)</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-{renderSectionHeader("JOBS", () => navigation.navigate('AllJobsScreen'))}
-  {loadingJobs ? (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="small" color="#623AA2" />
-    </View>
-  ) : (
-    <View style={styles.jobsContainer}>
-      {featuredJobs.length > 0 ? (
-        featuredJobs.map((job) => (
-          <JobCard
-            key={job.id}
-            job={job}
-            onPress={() => navigateToJobDetails(job)}
-            navigation={navigation}
-          />
-        ))
-      ) : (
-        <View style={styles.noJobsContainer}>
-          <Text style={styles.noJobsText}>No jobs available yet</Text>
-          <TouchableOpacity 
-            style={styles.postJobButton}
-            onPress={() => navigation.navigate('JobPosting')}
-          >
-            <Text style={styles.postJobButtonText}>Post a Job</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  )}
-
-
-
-       {renderSectionHeader("OUR TESTIMONIALS", () => navigation.navigate('TestimonialsScreen'))}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.testimonialsContainer}
-        >
-          {testimonials.map((testimonial) => (
-            <View key={testimonial.id} style={styles.testimonialCard}>
-              <Image 
-                source={{ uri: testimonial.image }}
-                style={styles.testimonialImage}
-              />
-              <Text style={styles.testimonialName}>{testimonial.name}</Text>
-              <Text style={styles.testimonialRole}>{testimonial.role}</Text>
-              <Text style={styles.testimonialText}>{testimonial.text}</Text>
+          {renderSectionHeader("ALL CATEGORY", () => navigation.navigate('CategoryScreen'))}
+          {loadingCategories ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#623AA2" />
             </View>
-          ))}
+          ) : (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoriesContainer}
+            >
+              {categories.map((category) => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={styles.categoryCard}
+                  onPress={() => navigation.navigate('JobsList', { category })}
+                >
+                  <View style={styles.categoryIcon}>
+                    {category.Icon()}
+                  </View>
+                  <Text style={styles.categoryTitle}>{category.title}</Text>
+                  <Text style={styles.jobCount}>({categoryCounts[category.id] || 0} jobs)</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {renderSectionHeader("JOBS", () => navigation.navigate('AllJobsScreen'))}
+          {loadingJobs ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#623AA2" />
+            </View>
+          ) : (
+            <View style={styles.jobsContainer}>
+              {featuredJobs.length > 0 ? (
+                featuredJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onPress={() => navigateToJobDetails(job)}
+                    navigation={navigation}
+                  />
+                ))
+              ) : (
+                <View style={styles.noJobsContainer}>
+                  <Text style={styles.noJobsText}>No jobs available yet</Text>
+                  <TouchableOpacity 
+                    style={styles.postJobButton}
+                    onPress={() => navigation.navigate('JobPosting')}
+                  >
+                    <Text style={styles.postJobButtonText}>Post a Job</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+
+          {renderSectionHeader("JOB REVIEWS", () => navigation.navigate('AllReviewsScreen'))}
+          {loadingReviews ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#623AA2" />
+            </View>
+          ) : (
+            jobReviews.length > 0 ? (
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.reviewsContainer}
+              >
+                {jobReviews.map((review) => (
+                  <TouchableOpacity 
+                    key={review.id} 
+                    style={styles.reviewCard}
+                    onPress={() => {
+                      
+                      if (review.jobId) {
+                        navigation.navigate('JobSingle', { jobId: review.jobId });
+                      }
+                    }}
+                  >
+                    <View style={styles.reviewHeader}>
+                      {review.image ? (
+                        <Image 
+                          source={{ uri: review.image }}
+                          style={styles.reviewerImage}
+                        />
+                      ) : (
+                        <View style={styles.reviewerAvatarPlaceholder}>
+                          <Icon name="person" size={24} color="#fff" />
+                        </View>
+                      )}
+                      <View style={styles.reviewerInfo}>
+                        <Text style={styles.reviewerName}>{review.name}</Text>
+                        <Text style={styles.jobTitle}>{review.role}</Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.reviewRating}>
+                      {[...Array(5)].map((_, i) => (
+                        <Text key={i} style={styles.starIcon}>
+                          {i < review.rating ? '★' : '☆'}
+                        </Text>
+                      ))}
+                    </View>
+                    
+                    <Text style={styles.reviewText}>
+                      {review.text.length > 120 
+                        ? review.text.substring(0, 120) + '...' 
+                        : review.text}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (
+              <View style={styles.noReviewsContainer}>
+                <Text style={styles.noReviewsText}>No job reviews available yet</Text>
+                <TouchableOpacity 
+                  style={styles.exploreJobsButton}
+                  onPress={() => navigation.navigate('AllJobsScreen')}
+                >
+                  <Text style={styles.exploreJobsText}>Explore Jobs</Text>
+                </TouchableOpacity>
+              </View>
+            )
+          )}
         </ScrollView>
-      </ScrollView>
       </ScrollView>
 
       <CustomDrawer 
@@ -414,158 +461,11 @@ const styles = StyleSheet.create({
   jobsContainer: {
     marginBottom: 24,
   },
-  jobCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  jobHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  companyLogo: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
-  },
-  jobInfo: {
-    flex: 1,
-  },
-  jobTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  companyName: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
-  },
-  location: {
-    fontSize: 12,
-    color: '#999',
-  },
-  jobDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  jobFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  salary: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#623AA2',
-  },
-  applyButton: {
-    backgroundColor: '#623AA2',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  applyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  companiesContainer: {
-    marginBottom: 24,
-  },
-  companyCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginRight: 12,
-    width: 140,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  companyLogo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginBottom: 8,
-  },
-  companyName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  companyJobs: {
-    fontSize: 12,
-    color: '#666',
-  },
-  testimonialsContainer: {
-    marginBottom: 24,
-  },
-  testimonialCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginRight: 12,
-    width: 280,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  avatar: {
-    position: 'absolute',
-    right: 30,
-    bottom: 80, 
-    zIndex: 999, 
-    elevation: 1000,  
-    width: 70,
-    height: 70,
-    borderRadius: 35, 
-    backgroundColor: '#fff',
+  loadingContainer: {
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
-  testimonialImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginBottom: 12,
-  },
-  testimonialName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  testimonialRole: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  testimonialText: {
-    fontSize: 14,
-    color: '#444',
-    lineHeight: 20,
-  },
-
   noJobsContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -597,7 +497,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
-  postJobText: {
+  postJobButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
@@ -605,6 +505,119 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  avatar: {
+    position: 'absolute',
+    right: 30,
+    bottom: 80, 
+    zIndex: 999, 
+    elevation: 1000,  
+    width: 70,
+    height: 70,
+    borderRadius: 35, 
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  reviewsContainer: {
+    marginBottom: 24,
+  },
+  reviewCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    marginRight: 12,
+    width: 280,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  reviewerImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
+  },
+  reviewerAvatarPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#623AA2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  reviewerInfo: {
+    flex: 1,
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  jobTitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  reviewRating: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  starIcon: {
+    fontSize: 16,
+    color: '#FFD700',
+    marginRight: 2,
+  },
+  reviewText: {
+    fontSize: 14,
+    color: '#444',
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  viewJobText: {
+    fontSize: 12,
+    color: '#623AA2',
+    textAlign: 'right',
+    fontStyle: 'italic',
+  },
+  noReviewsContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 15,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  exploreJobsButton: {
+    backgroundColor: '#623AA2',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  exploreJobsText: {
+    color: '#fff',
+    fontWeight: 'bold',
   }
 });
 

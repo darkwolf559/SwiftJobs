@@ -33,6 +33,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
+import AllReviewsScreen from './src/Screens/AllReviews/AllReviews.js';
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log('Background notification received:', remoteMessage);
@@ -49,7 +50,7 @@ function MainTabs() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          height: 56,
+          height: 50,
           borderTopWidth: 1,
           borderTopColor: "#F0F0F0",
           backgroundColor: "#fff",
@@ -63,7 +64,7 @@ function MainTabs() {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="home" size={22} color={color} />
+            <FontAwesome name="home" size={26} color={color} />
           )
         }}
       />
@@ -72,7 +73,7 @@ function MainTabs() {
         component={BookmarksScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="bookmark-o" size={22} color={color} />
+            <FontAwesome name="bookmark-o" size={24} color={color} />
           )
         }}
       />
@@ -81,7 +82,7 @@ function MainTabs() {
         component={AllJobsScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="briefcase" size={22} color={color} />
+            <FontAwesome name="briefcase" size={23} color={color} />
           )
         }}
       />
@@ -90,7 +91,7 @@ function MainTabs() {
         component={InviteFriend}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="user-friends" size={22} color={color} />
+            <FontAwesome5 name="user-friends" size={23} color={color} />
           )
         }}
       />
@@ -99,7 +100,7 @@ function MainTabs() {
         component={UserProfile}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="user-circle" size={22} color={color} />
+            <FontAwesome5 name="user-circle" size={24} color={color} />
           )
         }}
       />
@@ -121,7 +122,7 @@ export default App = () => {
       <StatusBar style="auto" />
 
       <Stack.Navigator 
-        initialRouteName="MainTabs"
+        initialRouteName="Onboarding"
         screenOptions={{headerShown: false}}
       >
         <Stack.Screen name="MainTabs" component={MainTabs} />
@@ -143,6 +144,7 @@ export default App = () => {
         <Stack.Screen name="TestimonialsScreen" component={TestimonialsScreen} />
         <Stack.Screen name="BookmarksScreen" component={BookmarksScreen} />
         <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+        <Stack.Screen name="AllReviewsScreen" component={AllReviewsScreen} />
      
        
       </Stack.Navigator>

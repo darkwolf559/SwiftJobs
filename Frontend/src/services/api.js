@@ -203,8 +203,15 @@ export const bookmarkService = {
   // Add a bookmark
   addBookmark: async (jobId) => {
     try {
+      // Get the user data from AsyncStorage
+      const userData = await AsyncStorage.getItem('userData');
+      const user = userData ? JSON.parse(userData) : null;
+      if (!user) throw new Error('User data not found');
       
-      const response = await api.post('/bookmarks', { jobId });
+      const response = await api.post('/bookmarks', { 
+        userId: user._id,  // Include userId in the request
+        jobId 
+      });
       
       return response.data;
     } catch (error) {
@@ -216,8 +223,16 @@ export const bookmarkService = {
   // Remove a bookmark
   removeBookmark: async (jobId) => {
     try {
-     
-      const response = await api.delete(`/bookmarks/${jobId}`);
+      // Get the user data from AsyncStorage
+      const userData = await AsyncStorage.getItem('userData');
+      const user = userData ? JSON.parse(userData) : null;
+      if (!user) throw new Error('User data not found');
+      
+      // The backend is expecting userId and jobId in the body, but the endpoint is a DELETE
+      // You should adjust either the frontend or backend to be consistent
+      const response = await api.delete(`/bookmarks/${jobId}`, {
+        data: { userId: user._id }  // Send data in the body of DELETE request
+      });
       
       return response.data;
     } catch (error) {

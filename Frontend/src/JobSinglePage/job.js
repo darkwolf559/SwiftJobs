@@ -6,6 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { jobService, reviewService } from '../services/api';
 import { bookmarkService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApplySuccessPopup from '../Screens/ApplySuccess/ApplySuccessPopup';
 
 const JobSingle = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('Description');
@@ -18,6 +19,7 @@ const JobSingle = ({ route, navigation }) => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState(null);
   const { jobId } = route.params || { jobId: null };
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const isMounted = useRef(true);
@@ -144,12 +146,14 @@ const JobSingle = ({ route, navigation }) => {
       }
       
       if (isBookmarked) {
+        // Remove bookmark - now the API expects jobId as a URL parameter
         await bookmarkService.removeBookmark(jobId);
         if (isMounted.current) {
           setIsBookmarked(false);
           ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
         }
       } else {
+        // Add bookmark - the API expects jobId in the request body
         await bookmarkService.addBookmark(jobId);
         if (isMounted.current) {
           setIsBookmarked(true);
@@ -159,7 +163,16 @@ const JobSingle = ({ route, navigation }) => {
     } catch (error) {
       console.error('Error toggling bookmark:', error);
       if (isMounted.current) {
-        ToastAndroid.show("Failed to update bookmark", ToastAndroid.SHORT);
+        let errorMessage = "Failed to update bookmark";
+        
+        // Extract a meaningful error message if possible
+        if (error?.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        ToastAndroid.show(errorMessage, ToastAndroid.LONG);
       }
     } finally {
       if (isMounted.current) {
@@ -562,19 +575,20 @@ const JobSingle = ({ route, navigation }) => {
       )}
       </TouchableOpacity>
         
-        <TouchableOpacity 
-          style={styles.applyButton}
-          onPress={() => {
-            Alert.alert(
-              'Apply for Job',
-              `To apply for this position, please contact: ${jobData?.employerEmail || jobData?.employerPhone}`
-            );
-          }}
-        >
-          <Text style={styles.applyButtonText}>APPLY</Text>
-        </TouchableOpacity>
+      <TouchableOpacity 
+        style={styles.applyButton}
+        onPress={() => {
+         setShowSuccessPopup(true);
+  }}
+>
+       <Text style={styles.applyButtonText}>APPLY</Text>
+      </TouchableOpacity>
       </View>
     </ScrollView>
+    <ApplySuccessPopup 
+      visible={showSuccessPopup} 
+      onClose={() => setShowSuccessPopup(false)} 
+    />
     </>
   );
 };

@@ -12,10 +12,12 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { bookmarkService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApplySuccessPopup from '../Screens/ApplySuccess/ApplySuccessPopup';
 
 const JobCard = ({ job, onPress, navigation }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const isMounted = useRef(true);
   
   useEffect(() => {
@@ -55,31 +57,44 @@ const JobCard = ({ job, onPress, navigation }) => {
       setBookmarkLoading(true);
       
       if (isBookmarked) {
-        await bookmarkService.removeBookmark(job.id);
+        // Call the API to remove bookmark
+        const result = await bookmarkService.removeBookmark(job.id);
         if (isMounted.current) {
           setIsBookmarked(false);
-          // Use ToastAndroid instead of Alert for Android
           ToastAndroid.show("Job removed from bookmarks", ToastAndroid.SHORT);
         }
       } else {
-        await bookmarkService.addBookmark(job.id);
+        // Call the API to add bookmark
+        const result = await bookmarkService.addBookmark(job.id);
         if (isMounted.current) {
           setIsBookmarked(true);
-          // Use ToastAndroid instead of Alert for Android
           ToastAndroid.show("Job added to bookmarks", ToastAndroid.SHORT);
         }
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error);
       if (isMounted.current) {
-        // Use ToastAndroid instead of Alert for Android
-        ToastAndroid.show("Failed to update bookmark", ToastAndroid.SHORT);
+        let errorMessage = "Failed to update bookmark";
+        
+        // Extract a meaningful error message if possible
+        if (error?.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
       }
     } finally {
       if (isMounted.current) {
         setBookmarkLoading(false);
       }
     }
+  };
+
+  const handleApply = (e) => {
+    e.stopPropagation(); // Prevent triggering the card's onPress
+    setShowSuccessPopup(true); // Show success animation
   };
   
   return (
@@ -127,6 +142,10 @@ const JobCard = ({ job, onPress, navigation }) => {
           <Text style={styles.applyButtonText}>APPLY</Text>
         </TouchableOpacity>
       </View>
+      <ApplySuccessPopup 
+        visible={showSuccessPopup}
+        onClose={() => setShowSuccessPopup(false)}
+      />
     </TouchableOpacity>
   );
 };

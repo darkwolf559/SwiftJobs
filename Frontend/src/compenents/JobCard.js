@@ -93,25 +93,49 @@ const JobCard = ({ job, onPress, navigation }) => {
   const handleApply = async (e) => {
     e.stopPropagation(); 
     try {
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (!authToken) {
+        Alert.alert('Login Required', 'You need to login to apply for this job');
+        navigation.navigate('Login');
+        return;
+      }
+  
       setShowSuccessPopup(true);
       
-      const userInfo = await AsyncStorage.getItem('userInfo');
-      let parsedUserInfo = {};
+      const userData = await AsyncStorage.getItem('userData');
+      let parsedUserData = {};
       
-      if (userInfo) {
-        parsedUserInfo = JSON.parse(userInfo);
+      if (userData) {
+        parsedUserData = JSON.parse(userData);
       }
-      
-      const authToken = await AsyncStorage.getItem('authToken');
-      if (!authToken) return;
+
+      function formatEducation(userData) {
+        const parts = [];
+        if (userData.college) parts.push(`College: ${userData.college}`);
+        if (userData.highSchool) parts.push(`High School: ${userData.highSchool}`);
+        if (userData.higherSecondaryEducation) parts.push(`Higher Secondary: ${userData.higherSecondaryEducation}`);
+        return parts.join('\n');
+      }
    
+      if (!job.id) {
+        console.error('Job ID is missing');
+        ToastAndroid.show("Cannot apply - missing job information", ToastAndroid.SHORT);
+        return;
+      }
+  
+      console.log('Applying for job with ID:', job.id);
+  
       const response = await axios.post(
         `${API_URL}/jobs/${job.id}/apply`,
         {
-          jobId: job.id,  
-          userName: parsedUserInfo.fullName || 'User',
-          userEmail: parsedUserInfo.email || '',
-          userPhone: parsedUserInfo.phone || '',
+          jobId: job.id,
+          userName: parsedUserData.fullName || parsedUserData.username || 'User',
+          userEmail: parsedUserData.email || '',
+          userPhone: parsedUserData.phoneNumber || parsedUserData.mobileNumber || '',
+          userGender: parsedUserData.gender || '',
+          userAddress: parsedUserData.homeAddress || '',
+          userEducation: formatEducation(parsedUserData),
+          userSkills: parsedUserData.skills ? parsedUserData.skills.join(', ') : ''
         },
         {
           headers: {
@@ -121,8 +145,11 @@ const JobCard = ({ job, onPress, navigation }) => {
       );
       
       console.log('Job application sent:', response.data);
+      ToastAndroid.show("Application submitted successfully!", ToastAndroid.SHORT);
     } catch (error) {
       console.error('Error applying for job:', error);
+      setShowSuccessPopup(false);
+      ToastAndroid.show("Failed to submit application. Please try again.", ToastAndroid.LONG);
     }
   };
   

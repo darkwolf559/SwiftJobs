@@ -30,9 +30,12 @@ const NotificationsScreen = () => {
     if (!notification.read) {
       markAsRead(notification._id);
     }
-    handleNotificationNavigation(notification, navigation);
-    // Navigate based on notification type
-    if (notification.type === 'JOB_POSTED' && notification.relatedJob) {
+
+    if (notification.type === 'JOB_APPLICATION') {
+      navigation.navigate('JobApplicationDetails', { 
+        notificationId: notification._id
+      });
+    } else if (notification.type === 'JOB_POSTED' && notification.relatedJob) {
       navigation.navigate('JobSingle', { 
         jobId: notification.relatedJob._id,
         companyInfo: {
@@ -40,6 +43,8 @@ const NotificationsScreen = () => {
           location: notification.relatedJob.location || 'Unknown Location',
         }
       });
+    } else {
+      handleNotificationNavigation(notification, navigation);
     }
   };
 

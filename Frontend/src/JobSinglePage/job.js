@@ -247,28 +247,45 @@ const JobSingle = ({ route, navigation }) => {
     }
   };
 
+
   const handleApply = async (e) => {
-    if (e) e.stopPropagation(); 
+    e.stopPropagation(); 
     try {
       setShowSuccessPopup(true);
       
-      const userInfo = await AsyncStorage.getItem('userInfo');
-      let parsedUserInfo = {};
+      const userData = await AsyncStorage.getItem('userData');
+      let parsedUserData = {};
       
-      if (userInfo) {
-        parsedUserInfo = JSON.parse(userInfo);
+      if (userData) {
+        parsedUserData = JSON.parse(userData);
       }
       
       const authToken = await AsyncStorage.getItem('authToken');
-      if (!authToken) return;
+      if (!authToken) {
+        Alert.alert('Login Required', 'You need to login to apply for this job');
+        navigation.navigate('Login');
+        return;
+      }
+
+      function formatEducation(userData) {
+        const parts = [];
+        if (userData.college) parts.push(`College: ${userData.college}`);
+        if (userData.highSchool) parts.push(`High School: ${userData.highSchool}`);
+        if (userData.higherSecondaryEducation) parts.push(`Higher Secondary: ${userData.higherSecondaryEducation}`);
+        return parts.join('\n');
+      }
    
       const response = await axios.post(
         `${API_URL}/jobs/${jobId}/apply`,
         {
           jobId: jobId,
-          userName: parsedUserInfo.fullName || 'User',
-          userEmail: parsedUserInfo.email || '',
-          userPhone: parsedUserInfo.phone || '',
+          userName: parsedUserData.fullName || parsedUserData.username || 'User',
+          userEmail: parsedUserData.email || '',
+          userPhone: parsedUserData.phoneNumber || parsedUserData.mobileNumber || '',
+          userGender: parsedUserData.gender || '',
+          userAddress: parsedUserData.homeAddress || '',
+          userEducation: formatEducation(parsedUserData),
+          userSkills: parsedUserData.skills ? parsedUserData.skills.join(', ') : ''
         },
         {
           headers: {
@@ -280,6 +297,7 @@ const JobSingle = ({ route, navigation }) => {
       console.log('Job application sent:', response.data);
     } catch (error) {
       console.error('Error applying for job:', error);
+      ToastAndroid.show("Failed to submit application. Please try again.", ToastAndroid.LONG);
     }
   };
 

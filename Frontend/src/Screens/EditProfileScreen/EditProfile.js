@@ -217,21 +217,32 @@ const EditProfile = ({ navigation, route }) => {
       
       setUpdateProgress(30);
       
-      if (resumeBase64 && resumeFile) {
+
+      if (resumeBase64) {
         console.log('Updating resume');
-        const resumeData = {
-          resumeBase64: resumeBase64,
-          resumeType: resumeFile.type,
-          resumeName: resumeFile.name
-        };
-        
-        await axios.put(`${API_URL}/profile/resume`, resumeData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: 20000
-        });
+        if (resumeBase64 === 'DELETE_RESUME') {
+          await axios.delete(`${API_URL}/profile/resume`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            timeout: 20000
+          });
+          console.log('Resume deleted');
+        } else {
+          const resumeData = {
+            resumeBase64: resumeBase64,
+            resumeType: resumeFile.type,
+            resumeName: resumeFile.name
+          };
+          
+          await axios.put(`${API_URL}/profile/resume`, resumeData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 20000
+          });
+        }
       }
       
       setUpdateProgress(50);
@@ -569,28 +580,63 @@ const EditProfile = ({ navigation, route }) => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>MY RESUME</Text>
-          <TouchableOpacity 
-            style={styles.resumeUploadContainer}
-            onPress={handleResumePick}
-          >
-            <Icon name="add" size={24} color="#666" />
-            <View style={styles.resumeTextContainer}>
-              <Text style={styles.resumeUploadText}>Attach File From Phone</Text>
-              <Text style={styles.resumeFormats}>.pdf .doc .txt .cdr .rtf accepted</Text>
-            </View>
-          </TouchableOpacity>
-          {resumeFile && (
-            <Text style={styles.selectedFile}>
-              Selected: {resumeFile.name}
-            </Text>
-          )}
-          {userData.resumeName && !resumeFile && (
-            <Text style={styles.selectedFile}>
-              Current Resume: {userData.resumeName}
-            </Text>
-          )}
-        </View>
+  <Text style={styles.sectionTitle}>MY RESUME</Text>
+  <TouchableOpacity 
+    style={styles.resumeUploadContainer}
+    onPress={handleResumePick}
+  >
+    <Icon name="add" size={24} color="#666" />
+    <View style={styles.resumeTextContainer}>
+      <Text style={styles.resumeUploadText}>Attach File From Phone</Text>
+      <Text style={styles.resumeFormats}>.pdf .doc .txt .cdr .rtf accepted</Text>
+    </View>
+  </TouchableOpacity>
+  {resumeFile && (
+    <View style={styles.resumeActions}>
+      <Text style={styles.selectedFile}>
+        Selected: {resumeFile.name}
+      </Text>
+      <TouchableOpacity 
+        style={styles.deleteResumeButton}
+        onPress={() => {
+          setResumeFile(null);
+          setResumeBase64(null);
+        }}
+      >
+        <Icon name="trash-outline" size={20} color="#F44336" />
+      </TouchableOpacity>
+    </View>
+  )}
+  {userData.resumeName && !resumeFile && (
+    <View style={styles.resumeActions}>
+      <Text style={styles.selectedFile}>
+        Current Resume: {userData.resumeName}
+      </Text>
+      <TouchableOpacity 
+        style={styles.deleteResumeButton}
+        onPress={() => {
+          Alert.alert(
+            'Delete Resume',
+            'Are you sure you want to delete your resume?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { 
+                text: 'Delete', 
+                style: 'destructive',
+                onPress: () => {
+                  setResumeBase64('DELETE_RESUME');
+                  Alert.alert('Resume will be deleted when you save your profile');
+                }
+              }
+            ]
+          );
+        }}
+      >
+        <Icon name="trash-outline" size={20} color="#F44336" />
+      </TouchableOpacity>
+    </View>
+  )}
+</View>
 
         <TouchableOpacity 
            style={styles.saveButton}
@@ -667,7 +713,11 @@ const styles = StyleSheet.create({
   addSkillButton: { backgroundColor: '#623AA2', width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', position: 'absolute', right: 10, top: 5 },
   loadingContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   progressBarContainer: { height: 4, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 2, marginTop: 8, width: '100%' },
-  progressBar: { height: '100%', backgroundColor: '#fff', borderRadius: 2 }
+  progressBar: { height: '100%', backgroundColor: '#fff', borderRadius: 2 },
+  deleteResumeButton: {padding: 8,
+  },
+  resumeActions: {flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',marginTop: 10,
+  },
 });
 
 export default EditProfile;

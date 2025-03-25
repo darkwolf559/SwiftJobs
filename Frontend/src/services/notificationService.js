@@ -83,6 +83,15 @@ class NotificationService {
     });
 
     await notifee.createChannel({
+      id: 'job_applications',
+      name: 'Job Applications',
+      description: 'Notifications for new job applications',
+      importance: 5, 
+      vibration: true,
+      sound: 'default',
+    });
+
+    await notifee.createChannel({
       id: 'general',
       name: 'General',
       description: 'General app notifications',
@@ -93,7 +102,18 @@ class NotificationService {
   }
 
   async displayLocalNotification(title, body, data = {}) {
-    const channelId = data.type === 'JOB_POSTED' ? 'job_alerts' : 'general';
+    let channelId = 'general';
+    
+    switch (data.type) {
+      case 'JOB_POSTED':
+        channelId = 'job_alerts';
+        break;
+      case 'JOB_APPLICATION':
+        channelId = 'job_applications';
+        break;
+      default:
+        channelId = 'general';
+    }
 
     await notifee.displayNotification({
       title,
@@ -133,29 +153,6 @@ class NotificationService {
     }
   }
 
-  async registerTokenWithServerWithRetry(fcmToken, maxRetries = 3) {
-    let retries = 0;
-    
-    const attemptRegistration = async () => {
-      try {
-        const result = await this.registerTokenWithServer(fcmToken);
-        return result;
-      } catch (error) {
-        if (retries < maxRetries) {
-          retries++;
-          console.log(`Retrying token registration (${retries}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 2000 * Math.pow(2, retries - 1)));
-          return attemptRegistration();
-        } else {
-          console.error('Max retries reached for token registration');
-          return false;
-        }
-      }
-    };
-    
-    return attemptRegistration();
-  }
-
   setupPeriodicTokenRefresh() {
     setInterval(async () => {
       try {
@@ -190,21 +187,32 @@ class NotificationService {
           },
         },
       ];
+    } else if (data.type === 'JOB_APPLICATION') {
+      return [
+        {
+          title: 'View Applicant',
+          pressAction: {
+            id: 'view_applicant',
+          },
+        },
+        {
+          title: 'Contact',
+          pressAction: {
+            id: 'contact_applicant',
+          },
+        },
+      ];
     }
     return [];
   }
 
   setupMessageHandlers(onNotificationReceived) {
-
     this.setupAndroidChannel();
-    
-
     this.setupPeriodicTokenRefresh();
     
-
     this.getToken().then(token => {
       if (token) {
-        this.registerTokenWithServerWithRetry(token);
+        this.registerTokenWithServer(token);
       }
     });
 
@@ -221,11 +229,25 @@ class NotificationService {
         if (onNotificationReceived) {
           onNotificationReceived(remoteMessage);
         }
+
+        if (remoteMessage.data && remoteMessage.data.notificationId) {
+          await AsyncStorage.setItem(
+            `notification_${remoteMessage.data.notificationId}`, 
+            JSON.stringify(remoteMessage.data)
+          );
+        }
       }
     });
 
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       console.log('Background notification:', remoteMessage);
+      if (remoteMessage.data && remoteMessage.data.notificationId) {
+        await AsyncStorage.setItem(
+          `notification_${remoteMessage.data.notificationId}`, 
+          JSON.stringify(remoteMessage.data)
+        );
+      }
+      
       return Promise.resolve();
     });
 
@@ -239,23 +261,23 @@ class NotificationService {
       }
     });
 
-
     notifee.onBackgroundEvent(async ({ type, detail }) => {
       if (type === notifee.BackgroundEventType.PRESS) {
         console.log('User pressed notification from background', detail.notification);
       } else if (type === notifee.BackgroundEventType.ACTION_PRESS) {
         const { pressAction } = detail;
         
-
         if (pressAction.id === 'view_job' && detail.notification) {
           console.log('View job action pressed', detail.notification.data);
         } else if (pressAction.id === 'save_job' && detail.notification) {
-
           console.log('Save job action pressed', detail.notification.data);
+        } else if (pressAction.id === 'view_applicant' && detail.notification) {
+          console.log('View applicant action pressed', detail.notification.data);
+        } else if (pressAction.id === 'contact_applicant' && detail.notification) {
+          console.log('Contact applicant action pressed', detail.notification.data);
         }
       }
     });
-
 
     notifee.onForegroundEvent(({ type, detail }) => {
       if (type === notifee.ForegroundEventType.PRESS) {
@@ -267,6 +289,10 @@ class NotificationService {
           console.log('View job action pressed', detail.notification.data);
         } else if (pressAction.id === 'save_job' && detail.notification) {
           console.log('Save job action pressed', detail.notification.data);
+        } else if (pressAction.id === 'view_applicant' && detail.notification) {
+          console.log('View applicant action pressed', detail.notification.data);
+        } else if (pressAction.id === 'contact_applicant' && detail.notification) {
+          console.log('Contact applicant action pressed', detail.notification.data);
         }
       }
     });
@@ -290,8 +316,9 @@ class NotificationService {
         }
         break;
       case 'JOB_APPLICATION':
-        navigation.navigate('ApplicationsReceived', { 
-          jobId: notification.relatedJob && notification.relatedJob._id 
+        navigation.navigate('JobApplicationDetails', { 
+          notificationId: notification._id,
+          applicantData: notification.data 
         });
         break;
       case 'APPLICATION_STATUS':

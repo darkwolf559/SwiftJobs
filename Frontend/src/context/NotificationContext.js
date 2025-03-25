@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_URL } from '../config/constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import notificationService from '../services/notificationService';
+import NetworkService from '../services/NetworkService';
 
 const NotificationContext = createContext();
 
@@ -15,8 +16,39 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState(null);
+
+  useEffect(() => {
+  
+    NetworkService.checkConnection().then(connected => {
+      setIsConnected(connected);
+    });
+    
+    const unsubscribe = NetworkService.addListener((connected) => {
+      setIsConnected(connected);
+      
+      if (connected && lastFetchTime) {
+        const timeSinceLastFetch = Date.now() - lastFetchTime;
+
+        if (timeSinceLastFetch > 60000) {
+          fetchNotifications(false);
+        }
+      }
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [lastFetchTime]);
 
   const fetchNotifications = useCallback(async (showLoading = true) => {
+    if (!isConnected) {
+      console.log('Skipping notification fetch - device is offline');
+      setRefreshing(false);
+      return;
+    }
+    
     try {
       if (showLoading) setLoading(true);
       const authToken = await AsyncStorage.getItem('authToken');
@@ -31,28 +63,37 @@ export const NotificationProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
-        timeout: 10000, 
+        timeout: 15000, 
       });
       
-      setNotifications(response.data);
-      const unread = response.data.filter(notif => !notif.read).length;
-      setUnreadCount(unread);
+      setLastFetchTime(Date.now());
+      
+      if (response && response.data) {
+        setNotifications(response.data);
+        const unread = response.data.filter(notif => !notif.read).length;
+        setUnreadCount(unread);
+      }
     } catch (error) {
       console.error('Error fetching notifications:', error);
-
+      
+      if (showLoading && !refreshing) {
+        if (error.message && error.message.includes('Network Error')) {
+          console.log('Network error when fetching notifications');
+        } else if (error.response && error.response.status === 401) {
+          console.log('Authentication token may be expired');
+        }
+      }
     } finally {
       if (showLoading) setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isConnected]);
 
-  // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
       const authToken = await AsyncStorage.getItem('authToken');
       if (!authToken) return;
       
-
       setNotifications(prevNotifications => {
         return prevNotifications.map(notif => {
           if (notif._id === notificationId && !notif.read) {
@@ -63,7 +104,6 @@ export const NotificationProvider = ({ children }) => {
         });
       });
       
-
       await axios.put(
         `${API_URL}/notifications/${notificationId}/read`,
         {},
@@ -75,24 +115,20 @@ export const NotificationProvider = ({ children }) => {
       );
     } catch (error) {
       console.error('Error marking notification as read:', error);
-
       fetchNotifications(false);
     }
   };
-
 
   const markAllAsRead = async () => {
     try {
       const authToken = await AsyncStorage.getItem('authToken');
       if (!authToken) return;
       
-
       setNotifications(prevNotifications => {
         return prevNotifications.map(notif => ({ ...notif, read: true }));
       });
       setUnreadCount(0);
       
-
       await axios.put(
         `${API_URL}/notifications/read-all`,
         {},
@@ -104,7 +140,6 @@ export const NotificationProvider = ({ children }) => {
       );
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-  
       fetchNotifications(false);
     }
   };
@@ -112,6 +147,38 @@ export const NotificationProvider = ({ children }) => {
   const handleRefresh = () => {
     setRefreshing(true);
     fetchNotifications(false);
+  };
+
+  const handleNotificationNavigation = (notification, navigation) => {
+    if (!notification) return;
+    
+    switch(notification.type) {
+      case 'JOB_POSTED':
+        if (notification.relatedJob && notification.relatedJob._id) {
+          navigation.navigate('JobSingle', { 
+            jobId: notification.relatedJob._id,
+            companyInfo: {
+              name: notification.relatedJob.employerName || 'Company',
+              location: notification.relatedJob.location || 'Unknown Location',
+            }
+          });
+        }
+        break;
+      case 'JOB_APPLICATION':
+        navigation.navigate('JobApplicationDetails', { 
+          notificationId: notification._id,
+          applicantData: notification.data 
+        });
+        break;
+      case 'APPLICATION_STATUS':
+        navigation.navigate('UserProfile', { tab: 'applications' });
+        break;
+      case 'NEW_MESSAGE':
+        navigation.navigate('Messages');
+        break;
+      default:
+        break;
+    }
   };
 
   useEffect(() => {
@@ -130,16 +197,13 @@ export const NotificationProvider = ({ children }) => {
           await notificationService.registerTokenWithServer(token);
         }
         
-
         const unsubscribe = notificationService.setupMessageHandlers(() => {  
           fetchNotifications(false);
         });
         
-       
         fetchNotifications();
         
         setIsInitialized(true);
-        
         
         return () => {
           if (unsubscribe) unsubscribe();
@@ -151,7 +215,6 @@ export const NotificationProvider = ({ children }) => {
     
     initializeNotifications();
   }, [fetchNotifications, isInitialized]);
-
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -174,7 +237,8 @@ export const NotificationProvider = ({ children }) => {
         markAsRead,
         markAllAsRead,
         handleRefresh,
-        handleNotificationNavigation: notificationService.handleNotificationNavigation,
+        handleNotificationNavigation,
+        isConnected,
       }}
     >
       {children}

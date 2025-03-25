@@ -10,6 +10,8 @@ import {
   Alert,
   Linking
 } from 'react-native';
+import RNFS from 'react-native-fs';
+import FileViewer from 'react-native-file-viewer';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -22,7 +24,7 @@ const UserProfile = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [resumeLoading, setResumeLoading] = useState(false);
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
@@ -77,23 +79,28 @@ const UserProfile = ({ navigation }) => {
   const handleOpenResume = async () => {
     if (userData && userData.resumeUrl) {
       try {
+        
+        setResumeLoading(true);
+        
+        const base64Data = userData.resumeUrl.split(',')[1];
+        const resumeFileName = userData.resumeName || 'resume.pdf';
+        
+        const filePath = `${RNFS.CachesDirectoryPath}/${resumeFileName}`;
+        
+        await RNFS.writeFile(filePath, base64Data, 'base64');
 
-        Alert.alert('Resume Available', 
-          `Resume "${userData.resumeName}" is available in your profile.`,
-          [
-            { text: 'OK' }
-          ]
-        );
+        await FileViewer.open(filePath);
       } catch (error) {
         console.error('Error opening resume:', error);
-        Alert.alert('Error', 'Could not open resume file');
+        Alert.alert('Error', 'Could not open resume file. The format might not be supported.');
+      } finally {
+        setResumeLoading(false);
       }
     } else {
-      Alert.alert('No Resume', 'No resume has been uploaded yet');
+      Alert.alert('Resume Not Available', 'No resume has been uploaded yet');
     }
   };
 
-  // Load user profile on component mount
   useEffect(() => {
     fetchUserProfile();
     
@@ -348,28 +355,66 @@ const UserProfile = ({ navigation }) => {
           </View>
         )}
 
-        {/* Resume Section */}
+
         {userData.resumeName && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>MY RESUME</Text>
-            <View style={styles.sectionContent}>
-              <View style={styles.resumeContainer}>
-                <View style={styles.resumeIconContainer}>
-                  <Icon name="document-text" size={32} color="#623AA2" />
-                </View>
-                <View style={styles.resumeInfo}>
-                  <Text style={styles.resumeName}>{userData.resumeName}</Text>
-                  <TouchableOpacity 
-                    onPress={handleOpenResume}
-                    style={styles.viewResumeButton}
-                  >
-                    <Text style={styles.viewResumeText}>View Resume</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>MY RESUME</Text>
+    <View style={styles.sectionContent}>
+      <View style={styles.resumeContainer}>
+        <View style={styles.resumeIconContainer}>
+          <Icon name="document-text" size={32} color="#623AA2" />
+        </View>
+        <View style={styles.resumeInfo}>
+          <Text style={styles.resumeName}>{userData.resumeName}</Text>
+          <View style={styles.resumeActions}>
+            <TouchableOpacity 
+              onPress={handleOpenResume}
+              style={styles.viewResumeButton}
+            >
+              <Text style={styles.viewResumeText}>View Resume</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => {
+                Alert.alert(
+                  'Delete Resume',
+                  'Are you sure you want to delete your resume?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: 'Delete', 
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          const token = await AsyncStorage.getItem('authToken');
+                          await axios.delete(`${API_URL}/profile/resume`, {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            }
+                          });
+                          const updatedUserData = {...userData};
+                          delete updatedUserData.resumeName;
+                          delete updatedUserData.resumeUrl;
+                          setUserData(updatedUserData);
+                          Alert.alert('Success', 'Resume deleted successfully');
+                        } catch (error) {
+                          console.error('Error deleting resume:', error);
+                          Alert.alert('Error', 'Failed to delete resume');
+                        }
+                      }
+                    }
+                  ]
+                );
+              }}
+              style={styles.deleteResumeButton}
+            >
+              <Icon name="trash-outline" size={20} color="#F44336" />
+            </TouchableOpacity>
           </View>
-        )}
+        </View>
+      </View>
+    </View>
+  </View>
+)}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>ACCOUNT INFORMATION</Text>
@@ -444,7 +489,14 @@ const styles = StyleSheet.create({
   viewResumeText: { color: '#623AA2', fontSize: 14 },
   editButtonContainer: { paddingHorizontal: 20, paddingVertical: 20, marginBottom: 20 },
   editButton: { borderRadius: 8, padding: 12, alignItems: 'center' },
-  editButtonText: { color: '#fff', fontSize: 14, fontWeight: 'bold' }
+  editButtonText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
+resumeActions: {
+  flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',marginTop: 5,
+},
+deleteResumeButton: {
+  padding: 5,marginLeft: 10,
+},
+
 });
 
 export default UserProfile;

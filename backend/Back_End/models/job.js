@@ -19,7 +19,15 @@ const jobSchema = new mongoose.Schema({
     employerWebsite: { type: String, required: false },
     applicationDeadline: { type: String, required: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    employer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true });
 
+jobSchema.pre('save', function(next) {
+    if (!this.employer && this.createdBy) {
+      this.employer = this.createdBy;
+    }
+    next();
+  });
+  
 const Job = mongoose.model("Job", jobSchema);
 export default Job;

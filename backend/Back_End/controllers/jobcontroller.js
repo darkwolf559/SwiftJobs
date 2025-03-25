@@ -24,6 +24,7 @@ export const createJob = async (req, res) => {
             employerWebsite, 
             applicationDeadline,
             createdBy: req.user.id,
+            employer: req.user.id
         });
 
         const savedJob = await job.save();

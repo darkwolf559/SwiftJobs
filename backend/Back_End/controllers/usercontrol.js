@@ -371,3 +371,26 @@ export const updateFcmToken = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+  export const deleteResume = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.resume = null;
+        user.resumeType = '';
+        user.resumeName = '';
+        
+        await user.save();
+        
+        res.json({
+            message: "Resume deleted successfully"
+        });
+    } catch (error) {
+        console.error("Delete resume error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+

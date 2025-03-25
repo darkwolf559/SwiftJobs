@@ -9,7 +9,8 @@ import {
   uploadCoverPhoto, 
   uploadResume, 
   uploadBothPhotos,
-  updateFcmToken
+  updateFcmToken,
+  deleteResume
 } from "../controllers/usercontrol.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -29,4 +30,5 @@ router.put("/upload/cover-photo", authMiddleware, uploadCoverPhoto, updateUserPr
 router.put("/upload/resume", authMiddleware, uploadResume, updateUserProfile);
 router.put("/upload/photos", authMiddleware, uploadBothPhotos, updateUserProfile);
 router.post("/fcm-token", authMiddleware, updateFcmToken);
+router.delete("/resume", authMiddleware, deleteResume);
 export default router;

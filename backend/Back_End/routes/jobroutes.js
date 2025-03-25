@@ -10,4 +10,6 @@ router.get("/", getJobs);
 router.get("/category/:categoryId", getJobsByCategory);
 router.get("/:id", getJobById);
 router.post("/:jobId/apply", authMiddleware, sendJobApplicationNotification);
+
+
 export default router;

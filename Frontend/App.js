@@ -34,6 +34,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AllReviewsScreen from './src/Screens/AllReviews/AllReviews.js';
+import JobApplicationDetailsScreen from './src/Screens/ApplySuccess/JobApplicationDetails.js';
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log('Background notification received:', remoteMessage);
@@ -145,6 +146,7 @@ export default App = () => {
         <Stack.Screen name="BookmarksScreen" component={BookmarksScreen} />
         <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
         <Stack.Screen name="AllReviewsScreen" component={AllReviewsScreen} />
+        <Stack.Screen name="JobApplicationDetails" component={JobApplicationDetailsScreen} />
      
        
       </Stack.Navigator>

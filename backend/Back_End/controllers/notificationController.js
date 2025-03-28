@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import admin from "firebase-admin";
 import serviceAccount from "../config/firebaseServiceKey.json" with { type: "json" };
 import Job from "../models/job.js";
+import Application from "../models/application.js";
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -182,9 +183,33 @@ export const sendJobApplicationNotification = async (req, res) => {
     const { jobId } = req.params;
     const userId = req.user.id;
     
+    // First, check if user has already applied
+    const existingApplication = await Application.findOne({
+      job: jobId,
+      applicant: userId
+    });
+
+    if (existingApplication) {
+      return res.status(400).json({
+        message: "You have already applied for this job"
+      });
+    }
+    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+    
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // Get the employer before using it
+    const employer = await User.findById(job.employer);
+    if (!employer) {
+      console.log("Employer not found for job ID:", jobId);
+      return res.status(404).json({ message: "Employer not found" });
     }
     
     const { 
@@ -197,17 +222,22 @@ export const sendJobApplicationNotification = async (req, res) => {
       userSkills 
     } = req.body;
     
-    const job = await Job.findById(jobId);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
+    // Create a new application record
+    const application = new Application({
+      job: jobId,
+      applicant: userId,
+      applicantName: userName,
+      applicantEmail: userEmail,
+      applicantPhone: userPhone,
+      applicantGender: userGender,
+      applicantAddress: userAddress,
+      applicantEducation: userEducation || formatEducation(user),
+      applicantSkills: userSkills || (user.skills ? user.skills.join(', ') : '')
+    });
+    
+    await application.save();
 
-    const employer = await User.findById(job.employer);
-    if (!employer) {
-      console.log("Employer not found for job ID:", jobId);
-      return res.status(404).json({ message: "Employer not found" });
-    }
-
+    // Define notificationData before using it
     const notificationData = {
       jobId: jobId.toString(),
       jobTitle: job.jobTitle,
@@ -221,16 +251,9 @@ export const sendJobApplicationNotification = async (req, res) => {
       applicantSkills: userSkills || (user.skills ? user.skills.join(', ') : '')
     };
 
-    console.log("Creating job application notification with data:", {
-      applicantId: notificationData.applicantId,
-      jobId: notificationData.jobId,
-      dataComplete: !!notificationData.applicantAddress && 
-                  !!notificationData.applicantEducation && 
-                  !!notificationData.applicantSkills
-    });
-
+    let notification;
     try {
-      await createNotification(
+      notification = await createNotification(
         "New Job Application",
         `${userName} has applied for your job: ${job.jobTitle}`,
         "JOB_APPLICATION",
@@ -238,25 +261,34 @@ export const sendJobApplicationNotification = async (req, res) => {
         jobId,
         notificationData
       );
+      
+      // Update application with notification reference
+      application.relatedNotification = notification._id;
+      await application.save();
+      
       console.log("Job application notification created in database");
     } catch (notificationError) {
       console.error("Failed to create notification in database:", notificationError);
     }
     
-    if (employer.fcmToken) {
+    if (employer.fcmToken && notification) {
       try {
         await sendPushNotification(
           employer.fcmToken,
           "New Job Application",
           `${userName} has applied for your job: ${job.jobTitle}`,
-          notificationData
+          {
+            ...notificationData,
+            type: "JOB_APPLICATION",
+            notificationId: notification._id.toString()
+          }
         );
         console.log("Push notification sent to employer");
       } catch (pushError) {
         console.error("Failed to send push notification:", pushError);
       }
     } else {
-      console.log("Employer doesn't have FCM token - push notification not sent");
+      console.log("Employer doesn't have FCM token or notification wasn't created - push notification not sent");
     }
 
     res.status(200).json({ 

@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  ToastAndroid
+  ToastAndroid,
+  Alert
 } from 'react-native';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -100,15 +101,13 @@ const JobCard = ({ job, onPress, navigation }) => {
         return;
       }
   
-      setShowSuccessPopup(true);
-      
       const userData = await AsyncStorage.getItem('userData');
       let parsedUserData = {};
       
       if (userData) {
         parsedUserData = JSON.parse(userData);
       }
-
+  
       function formatEducation(userData) {
         const parts = [];
         if (userData.college) parts.push(`College: ${userData.college}`);
@@ -124,7 +123,7 @@ const JobCard = ({ job, onPress, navigation }) => {
       }
   
       console.log('Applying for job with ID:', job.id);
-  
+      
       const response = await axios.post(
         `${API_URL}/jobs/${job.id}/apply`,
         {
@@ -144,12 +143,46 @@ const JobCard = ({ job, onPress, navigation }) => {
         }
       );
       
+
+      setShowSuccessPopup(true);
       console.log('Job application sent:', response.data);
       ToastAndroid.show("Application submitted successfully!", ToastAndroid.SHORT);
     } catch (error) {
-      console.error('Error applying for job:', error);
-      setShowSuccessPopup(false);
-      ToastAndroid.show("Failed to submit application. Please try again.", ToastAndroid.LONG);
+      // console.error('Error applying for job:', error);
+
+      let errorMessage = "Failed to submit application. Please try again.";
+      
+      if (error.response) {
+        if (error.response.status === 400 && error.response.data && 
+            error.response.data.message && 
+            error.response.data.message.includes("already applied")) {
+          
+          Alert.alert(
+            "Already Applied",
+            "You have already applied for this job.",
+            [{ text: "OK" }]
+          );
+          return;
+        }
+
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = `Server error: ${error.response.status}`;
+        }
+      } else if (error.request) {
+        errorMessage = "No response from server. Please check your connection.";
+      } else {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(
+        "Application Error",
+        errorMessage,
+        [{ text: "OK" }]
+      );
+      
+      ToastAndroid.show(errorMessage, ToastAndroid.LONG);
     }
   };
   

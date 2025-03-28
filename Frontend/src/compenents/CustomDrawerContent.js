@@ -12,7 +12,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import UserProfile from './UserProfile/UserProfile';
 
-
+import { useRoute } from '@react-navigation/native';
 const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
   if (!isVisible) return null;
@@ -21,10 +21,11 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
     { id: 1, title: 'View Profile', icon: 'person-outline', type: 'Ionicons' },
     { id: 2, title: 'Categories', icon: 'sitemap', type: 'FontAwesome' },
     { id: 3, title: 'Notification', icon: 'notifications-outline', type: 'Ionicons' },
-    { id: 5, title: 'Bookmark', icon: 'bookmark-outline', type: 'Ionicons' },
-    { id: 6, title: 'View Jobs', icon: 'briefcase-outline', type: 'Ionicons' },
-    { id: 10, title: 'Post a Job', icon: 'briefcase-outline', type: 'Ionicons' },
-    { id: 8, title: 'Invite Friend', icon: 'person-add-outline', type: 'Ionicons' },
+    { id: 4, title: 'Bookmark', icon: 'bookmark-outline', type: 'Ionicons' },
+    { id: 5, title: 'View Jobs', icon: 'briefcase-outline', type: 'Ionicons' },
+    { id: 6, title: 'Applied Jobs', icon: 'bag-check', type: 'Ionicons' },
+    { id: 7, title: 'Job Applications', icon: 'document', type: 'Ionicons' },
+    { id: 8, title: 'Post a Job', icon: 'bag-add', type: 'Ionicons' },
     { id: 9, title: 'Log Out', icon: 'log-out-outline', type: 'Ionicons' }
   ];
 
@@ -49,6 +50,14 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
               case 'View Jobs':
                 navigation?.navigate('AllJobsScreen');
                 break; 
+
+                case 'Applied Jobs':
+                  navigation?.navigate('AppliedJobsScreen');
+                  break;
+
+                  case 'Job Applications':
+                    navigation?.navigate('ApplicationsScreen');
+                    break;
                 
                 case 'Bookmark':
                   navigation?.navigate('BookmarksScreen');

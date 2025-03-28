@@ -249,9 +249,14 @@ const JobSingle = ({ route, navigation }) => {
 
 
   const handleApply = async (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     try {
-      setShowSuccessPopup(true);
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (!authToken) {
+        Alert.alert('Login Required', 'You need to login to apply for this job');
+        navigation.navigate('Login');
+        return;
+      }
       
       const userData = await AsyncStorage.getItem('userData');
       let parsedUserData = {};
@@ -260,13 +265,6 @@ const JobSingle = ({ route, navigation }) => {
         parsedUserData = JSON.parse(userData);
       }
       
-      const authToken = await AsyncStorage.getItem('authToken');
-      if (!authToken) {
-        Alert.alert('Login Required', 'You need to login to apply for this job');
-        navigation.navigate('Login');
-        return;
-      }
-
       function formatEducation(userData) {
         const parts = [];
         if (userData.college) parts.push(`College: ${userData.college}`);
@@ -274,7 +272,7 @@ const JobSingle = ({ route, navigation }) => {
         if (userData.higherSecondaryEducation) parts.push(`Higher Secondary: ${userData.higherSecondaryEducation}`);
         return parts.join('\n');
       }
-   
+
       const response = await axios.post(
         `${API_URL}/jobs/${jobId}/apply`,
         {
@@ -293,11 +291,45 @@ const JobSingle = ({ route, navigation }) => {
           }
         }
       );
-      
+
+      setShowSuccessPopup(true);
       console.log('Job application sent:', response.data);
+      ToastAndroid.show("Application submitted successfully!", ToastAndroid.SHORT);
     } catch (error) {
-      console.error('Error applying for job:', error);
-      ToastAndroid.show("Failed to submit application. Please try again.", ToastAndroid.LONG);
+
+      let errorMessage = "Failed to submit application. Please try again.";
+      
+      if (error.response) {
+        if (error.response.status === 400 && error.response.data && 
+            error.response.data.message && 
+            error.response.data.message.includes("already applied")) {
+          
+          Alert.alert(
+            "Already Applied",
+            "You have already applied for this job.",
+            [{ text: "OK" }]
+          );
+          return;
+        }
+
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = `Server error: ${error.response.status}`;
+        }
+      } else if (error.request) {
+        errorMessage = "No response from server. Please check your connection.";
+      } else {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(
+        "Application Error",
+        errorMessage,
+        [{ text: "OK" }]
+      );
+      
+      ToastAndroid.show(errorMessage, ToastAndroid.LONG);
     }
   };
 

@@ -166,8 +166,8 @@ export const NotificationProvider = ({ children }) => {
         break;
       case 'JOB_APPLICATION':
         navigation.navigate('JobApplicationDetails', { 
-          notificationId: notification._id,
-          applicantData: notification.data 
+          notificationId: notification._id
+          // Remove the applicantData parameter to force the screen to load from the API
         });
         break;
       case 'APPLICATION_STATUS':

@@ -54,7 +54,7 @@ const LoginScreen = () => {
         Alert.alert('Error', 'Invalid response from server');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      // console.error('Login error:', error);
       
       
       if (error.response) {

@@ -26,27 +26,28 @@ const NotificationsScreen = () => {
     handleNotificationNavigation
   } = useNotifications();
 
-  const handleNotificationPress = (notification) => {
-    if (!notification.read) {
-      markAsRead(notification._id);
-    }
+const handleNotificationPress = (notification) => {
+  if (!notification.read) {
+    markAsRead(notification._id);
+  }
 
-    if (notification.type === 'JOB_APPLICATION') {
-      navigation.navigate('JobApplicationDetails', { 
-        notificationId: notification._id
-      });
-    } else if (notification.type === 'JOB_POSTED' && notification.relatedJob) {
-      navigation.navigate('JobSingle', { 
-        jobId: notification.relatedJob._id,
-        companyInfo: {
-          name: notification.relatedJob.employerName || 'Company',
-          location: notification.relatedJob.location || 'Unknown Location',
-        }
-      });
-    } else {
-      handleNotificationNavigation(notification, navigation);
-    }
-  };
+  if (notification.type === 'JOB_APPLICATION') {
+    navigation.navigate('ApplicationsScreen', { 
+      notificationId: notification._id,
+      // We'll remove applicantData and let the JobApplicationDetails screen load it
+    });
+  } else if (notification.type === 'JOB_POSTED' && notification.relatedJob) {
+    navigation.navigate('JobSingle', { 
+      jobId: notification.relatedJob._id,
+      companyInfo: {
+        name: notification.relatedJob.employerName || 'Company',
+        location: notification.relatedJob.location || 'Unknown Location',
+      }
+    });
+  } else {
+    handleNotificationNavigation(notification, navigation);
+  }
+};
 
   const renderNotificationItem = ({ item }) => (
     <TouchableOpacity

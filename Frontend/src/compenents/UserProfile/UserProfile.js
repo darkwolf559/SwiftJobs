@@ -339,7 +339,6 @@ const UserProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Skills Section */}
         {userData.skills && userData.skills.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>SKILLS</Text>

@@ -1,6 +1,6 @@
 import express from "express";
 import { createJob, getJobs, getJobsByCategory, getJobById,  } from "../controllers/jobcontroller.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import authMiddleware from "../middleware/authmiddleware.js";
 import { sendJobApplicationNotification } from "../controllers/notificationController.js";
 
 const router = express.Router();

@@ -9,6 +9,7 @@ import jobRoutes from "./routes/jobroutes.js";
 import bookmarkRoutes from "./routes/bookmarkRoutes.js"; 
 import notificationRoutes from "./routes/notificationRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import applicationRoutes from "./routes/applicationRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,6 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/bookmarks", bookmarkRoutes); 
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
-
+app.use("/api/applications", applicationRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

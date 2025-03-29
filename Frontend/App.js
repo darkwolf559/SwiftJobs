@@ -38,6 +38,8 @@ import ApplicationDetailsScreen from './src/Applications/applicationdetails.js';
 import AppliedJobsScreen from './src/Applications/appliedJobs.js';
 import ApplicationsScreen from './src/Applications/ApplicationScreen.js';
 import JobApplicationDetailsScreen from './src/Screens/ApplySuccess/JobApplicationDetails.js';
+import ChatsListScreen from './src/Chat/chatList.js';
+import ChatScreen from './src/Chat/chatScreen.js';
 
 
 
@@ -156,6 +158,8 @@ export default App = () => {
         <Stack.Screen name="AppliedJobsScreen" component={AppliedJobsScreen} />
         <Stack.Screen name="ApplicationsScreen" component={ApplicationsScreen} />
         <Stack.Screen name="JobApplicationDetails" component={JobApplicationDetailsScreen} />
+        <Stack.Screen name="ChatsListScreen" component={ChatsListScreen} />
+        <Stack.Screen name="ChatScreen" component={ChatScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </NotificationProvider>

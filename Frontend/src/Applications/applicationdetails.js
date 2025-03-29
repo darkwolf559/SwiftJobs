@@ -233,26 +233,44 @@ const ApplicationDetailsScreen = () => {
         </View>
         
         {application.status === 'Accepted' && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>NEXT STEPS</Text>
-            <View style={styles.card}>
-              <Text style={styles.instructionsText}>
-                Congratulations! Your application has been accepted. Please check your email or contact
-                the employer directly for further instructions.
-              </Text>
-              
-              {application.job?.employerEmail && (
-                <TouchableOpacity 
-                  style={styles.contactButton}
-                  onPress={() => navigation.navigate('Messages')} 
-                >
-                  <Icon name="email" size={20} color="white" />
-                  <Text style={styles.contactButtonText}>Contact Employer</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
+  <View style={styles.sectionContainer}>
+    <Text style={styles.sectionTitle}>NEXT STEPS</Text>
+    <View style={styles.card}>
+      <Text style={styles.instructionsText}>
+        Congratulations! Your application has been accepted. You can now chat with the employer
+        to discuss further details.
+      </Text>
+      
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity 
+          style={styles.chatButton}
+          onPress={() => navigation.navigate('ChatScreen', {
+            applicationId: applicationId,
+            otherUser: {
+              _id: application.job.employer,
+              fullName: application.job.employerName,
+              profilePhotoUrl: null
+            },
+            jobTitle: application.job.jobTitle
+          })}
+        >
+          <Icon name="chat" size={20} color="white" />
+          <Text style={styles.buttonText}>Chat with Employer</Text>
+        </TouchableOpacity>
+        
+        {application.job?.employerEmail && (
+          <TouchableOpacity 
+            style={styles.emailButton}
+            onPress={() => Linking.openURL(`mailto:${application.job.employerEmail}`)}
+          >
+            <Icon name="email" size={20} color="white" />
+            <Text style={styles.buttonText}>Email Employer</Text>
+          </TouchableOpacity>
         )}
+      </View>
+    </View>
+  </View>
+)}
         
         {application.status === 'Rejected' && (
           <View style={styles.sectionContainer}>

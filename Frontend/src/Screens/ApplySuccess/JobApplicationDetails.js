@@ -122,8 +122,7 @@ const JobApplicationDetailsScreen = ({ route, navigation }) => {
           status: initialData.status || 'Pending',
           applicationDate: initialData.applicationDate || new Date().toLocaleDateString()
         });
-        
-        // Try to fetch job details if jobId is available
+
         if (initialData.jobId) {
           try {
             const jobResponse = await axios.get(`${API_URL}/jobs/${initialData.jobId}`, {
@@ -453,7 +452,6 @@ const JobApplicationDetailsScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Resume Section - Only show if resume exists */}
         {applicantData.resumeUrl && (
           <>
             <View style={styles.sectionTitle}>
@@ -482,7 +480,26 @@ const JobApplicationDetailsScreen = ({ route, navigation }) => {
           </>
         )}
 
-        {/* Action Buttons - Only show for pending applications */}
+{applicantData.status === 'Accepted' && (
+  <View style={styles.chatButtonContainer}>
+    <TouchableOpacity
+      style={styles.chatButton}
+      onPress={() => navigation.navigate('ChatScreen', {
+        applicationId: applicationId,
+        otherUser: {
+          _id: applicantData.id,
+          fullName: applicantData.name,
+          profilePhotoUrl: applicantData.profilePhotoUrl
+        },
+        jobTitle: jobData?.title || 'Job Discussion'
+      })}
+    >
+      <Icon name="chat" size={20} color="#fff" />
+      <Text style={styles.chatButtonText}>Chat with Applicant</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
         {applicantData.status !== 'Accepted' && applicantData.status !== 'Rejected' && (
           <View style={styles.actionContainer}>
             <Text style={styles.feedbackLabel}>Feedback (Optional):</Text>
@@ -539,8 +556,7 @@ const JobApplicationDetailsScreen = ({ route, navigation }) => {
             </View>
           </View>
         )}
-        
-        {/* Feedback Display - Only show for accepted/rejected with feedback */}
+
         {(applicantData.status === 'Accepted' || applicantData.status === 'Rejected') && applicantData.feedback && (
           <View style={styles.feedbackContainer}>
             <Text style={styles.feedbackTitle}>Feedback:</Text>
@@ -574,13 +590,13 @@ const DetailItem = ({ icon, label, value, multiline }) => {
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
     case 'pending':
-      return '#FFB700'; // Yellow
+      return '#FFB700'; 
     case 'accepted':
-      return '#4CAF50'; // Green
+      return '#4CAF50'; 
     case 'rejected':
-      return '#F44336'; // Red
+      return '#F44336'; 
     default:
-      return '#999'; // Gray
+      return '#999'; 
   }
 };
 
@@ -648,8 +664,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 50,
   },
-  
-  // Job Card styles
+
   jobCard: {
     backgroundColor: 'white',
     borderRadius: 12,
@@ -724,8 +739,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  
-  // Section title
   sectionTitle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -740,8 +753,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  
-  // Applicant Card
+
   applicantCard: {
     backgroundColor: 'white',
     borderRadius: 12,
@@ -795,8 +807,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
   },
-  
-  // Details
+
   detailsContainer: {
     marginTop: 16,
   },
@@ -858,8 +869,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#623AA2',
   },
-  
-  // Action container
+
   actionContainer: {
     backgroundColor: 'white',
     borderRadius: 12,
@@ -932,6 +942,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     lineHeight: 22,
+  },
+  chatButtonContainer: {
+    marginTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 15,
+  },
+  chatButton: {
+    backgroundColor: '#623AA2',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+  },
+  chatButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 
 });

@@ -327,6 +327,9 @@ class NotificationService {
       case 'NEW_MESSAGE':
         navigation.navigate('Messages');
         break;
+        case 'CHAT_MESSAGE':
+          navigation.navigate('ChatsListScreen');
+          break;  
       default:
         break;
     }

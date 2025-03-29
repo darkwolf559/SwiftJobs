@@ -214,11 +214,22 @@ const HomeScreen = () => {
         </View>
 
         <View style={styles.headerRight}>
-          <NotificationIcon /> 
-          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('FilterScreen')}>
-            <FontAwesome name="sliders" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+  <NotificationIcon />
+  
+  <TouchableOpacity 
+    style={styles.iconButton} 
+    onPress={() => navigation.navigate('ChatsListScreen')}
+  >
+    <Icon name="chatbubbles-outline" size={24} color="white" />
+  </TouchableOpacity>
+  
+  <TouchableOpacity 
+    style={styles.iconButton} 
+    onPress={() => navigation.navigate('FilterScreen')}
+  >
+    <FontAwesome name="sliders" size={24} color="white" />
+  </TouchableOpacity>
+</View>
       </LinearGradient>
 
       <ScrollView>

@@ -167,7 +167,6 @@ export const NotificationProvider = ({ children }) => {
       case 'JOB_APPLICATION':
         navigation.navigate('JobApplicationDetails', { 
           notificationId: notification._id
-          // Remove the applicantData parameter to force the screen to load from the API
         });
         break;
       case 'APPLICATION_STATUS':
@@ -176,6 +175,9 @@ export const NotificationProvider = ({ children }) => {
       case 'NEW_MESSAGE':
         navigation.navigate('Messages');
         break;
+        case 'CHAT_MESSAGE':
+          navigation.navigate('ChatsListScreen');
+          break;  
       default:
         break;
     }

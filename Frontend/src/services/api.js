@@ -292,10 +292,83 @@ export const reviewService = {
   }
 };
 
+
+export const chatService = {
+  // Get or create a chat for an application
+  getOrCreateChat: async (applicationId) => {
+    try {
+      const response = await api.get(`/chats/application/${applicationId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Get all chats for the current user
+  getUserChats: async () => {
+    try {
+      const response = await api.get('/chats');
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Get all messages in a chat
+  getChatMessages: async (chatId) => {
+    try {
+      const response = await api.get(`/chats/${chatId}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Send a new message
+  sendMessage: async (chatId, content) => {
+    try {
+      const response = await api.post(`/chats/${chatId}/messages`, { content });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  // Mark messages as read
+  markMessagesAsRead: async (chatId) => {
+    try {
+      const response = await api.put(`/chats/${chatId}/read`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  }
+}
 export default {
   authService,
   userService,
   jobService,
   bookmarkService,
-  reviewService
+  reviewService,
+  chatService
 };

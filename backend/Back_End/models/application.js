@@ -30,7 +30,6 @@ const applicationSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Create a compound index to ensure a user can only apply once to each job
 applicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
 
 const Application = mongoose.model("Application", applicationSchema);

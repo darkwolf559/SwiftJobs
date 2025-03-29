@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema({
     type: { 
       type: String, 
       required: true,
-      enum: ['JOB_APPLICATION', 'JOB_POSTED', 'APPLICATION_STATUS', 'NEW_MESSAGE', 'GENERAL']
+      enum: ['JOB_APPLICATION', 'JOB_POSTED', 'APPLICATION_STATUS', 'NEW_MESSAGE', 'GENERAL','CHAT_MESSAGE']
     },
     read: { type: Boolean, default: false },
     recipient: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

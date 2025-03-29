@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import Slider from "@react-native-community/slider";
-import { Button, Avatar } from "react-native-elements";
+import { Button } from "react-native-elements";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from "@react-navigation/native";
 import CityAutocomplete from "../compenents/CityAutoComplete";
 
 const FilterScreen = () => {
-  const [salaryRange, setSalaryRange] = useState({ min: 200000, max: 800000 });
+  const [displayMinSalary, setDisplayMinSalary] = useState(0);
+  const [displayMaxSalary, setDisplayMaxSalary] = useState(25000);
+  const [isMinSliding, setIsMinSliding] = useState(false);
+  const [isMaxSliding, setIsMaxSliding] = useState(false);
+  const actualMinRef = useRef(0);
+  const actualMaxRef = useRef(25000);
   const navigation = useNavigation();
   
-
   const initialCategories = {
     technology: false,
     healthcare: false,
@@ -27,7 +31,6 @@ const FilterScreen = () => {
   const [categories, setCategories] = useState(initialCategories);
   const [location, setLocation] = useState('');
 
- 
   const toggleCategory = (category) => {
     setCategories((prevCategories) => ({
       ...prevCategories,
@@ -35,31 +38,40 @@ const FilterScreen = () => {
     }));
   };
 
-  
   const clearFilters = () => {
-    setSalaryRange({ min: 200000, max: 800000 });
+    actualMinRef.current = 0;
+    actualMaxRef.current = 25000;
+    setDisplayMinSalary(0);
+    setDisplayMaxSalary(25000);
     setCategories(initialCategories);
     setLocation('');
   };
 
-  // Handle search with applied filters
   const handleSearch = () => {
+    // Get selected categories
+    const selectedCategories = Object.keys(categories).filter(cat => categories[cat]);
+    
+    // Create a filter object with explicit number values, not refs
     const filters = {
       salaryRange: {
-        min: salaryRange.min,
-        max: salaryRange.max
+        min: Number(actualMinRef.current),
+        max: Number(actualMaxRef.current)
       },
-      categories: Object.keys(categories).filter(cat => categories[cat]),
+      categories: selectedCategories,
       location,
     };
-
     
+    // Log the filters for debugging
+    console.log("Applying filters:", JSON.stringify(filters));
+    
+    // Navigate with the filters
     navigation.navigate('AllJobsScreen', { 
-      filters: filters 
+      filters: filters,
+      // Adding a timestamp helps ensure the screen updates even if filters are the same
+      timestamp: new Date().getTime()
     });
   };
 
- 
   const categoryLabels = {
     technology: "TECHNOLOGY",
     healthcare: "HEALTHCARE",
@@ -93,32 +105,44 @@ const FilterScreen = () => {
         showsVerticalScrollIndicator={true}
       >
         <Text style={styles.label}>Salary Range</Text>
-        <Text style={styles.salaryText}>Min: LKR {salaryRange.min.toLocaleString()}</Text>
+        <Text style={styles.salaryText}>Min: LKR {displayMinSalary.toLocaleString()}</Text>
         <Slider
           style={styles.slider}
-          minimumValue={1000}
-          maximumValue={1000000}
-          step={10000}
-          value={salaryRange.min}
+          minimumValue={0}
+          maximumValue={25000}
+          step={500}
+          value={displayMinSalary}
+          onSlidingStart={() => setIsMinSliding(true)}
+          onSlidingComplete={(value) => {
+            actualMinRef.current = Math.floor(value);
+            setDisplayMinSalary(Math.floor(value));
+            setIsMinSliding(false);
+          }}
           onValueChange={(value) => {
-            if (value <= salaryRange.max) {
-              setSalaryRange({ ...salaryRange, min: value });
+            if (value <= actualMaxRef.current) {
+              actualMinRef.current = Math.floor(value);
             }
           }}
           minimumTrackTintColor="#6a11cb"
           maximumTrackTintColor="#ddd"
           thumbTintColor="#6a11cb"
         />
-        <Text style={styles.salaryText}>Max: LKR{salaryRange.max.toLocaleString()}</Text>
+        <Text style={styles.salaryText}>Max: LKR {displayMaxSalary.toLocaleString()}</Text>
         <Slider
           style={styles.slider}
-          minimumValue={1000}
-          maximumValue={1000000}
-          step={10000}
-          value={salaryRange.max}
+          minimumValue={25000}
+          maximumValue={500000}
+          step={5000}
+          value={displayMaxSalary}
+          onSlidingStart={() => setIsMaxSliding(true)}
+          onSlidingComplete={(value) => {
+            actualMaxRef.current = Math.floor(value);
+            setDisplayMaxSalary(Math.floor(value));
+            setIsMaxSliding(false);
+          }}
           onValueChange={(value) => {
-            if (value >= salaryRange.min) {
-              setSalaryRange({ ...salaryRange, max: value });
+            if (value >= actualMinRef.current) {
+              actualMaxRef.current = Math.floor(value);
             }
           }}
           minimumTrackTintColor="#6a11cb"
@@ -174,8 +198,6 @@ const FilterScreen = () => {
           />
         </View>
       </ScrollView>
-
-
     </View>
   );
 };
@@ -218,7 +240,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", 
     marginTop: 20 
   },
-  avatar: { position: "absolute", bottom: 20, right: 20 },
   header: {
     height: 60,
     flexDirection: 'row',

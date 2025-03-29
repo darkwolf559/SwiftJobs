@@ -1,4 +1,4 @@
-import Bookmark from '../models/Bookmark.js';
+import Bookmark from '../models/bookmark.js';
 import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
 

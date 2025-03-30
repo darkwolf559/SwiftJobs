@@ -2,6 +2,8 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import multer from "multer";
+import crypto from "crypto";
+import nodemailer from 'nodemailer';
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -16,8 +18,8 @@ export const uploadBothPhotos = upload.fields([
   { name: 'profilePhoto', maxCount: 1 },
   { name: 'coverPhoto', maxCount: 1 }
 ]);
+const verificationCodes = {};
 
-// User Registration Function
 export const registerUser = async (req, res) => {
     try {
         const { username, email, mobileNumber, password, fullName } = req.body;
@@ -92,14 +94,11 @@ export const registerUser = async (req, res) => {
     }
 };
 
-// User Login Function
 export const loginUser = async (req, res) => {
     try {
         console.log("Login attempt with:", { email: req.body.email });
         
         const { email, password } = req.body;
-        
-        // Check if the email exists in database
         const user = await User.findOne({ email });
         
         if (!user) {
@@ -108,8 +107,7 @@ export const loginUser = async (req, res) => {
         }
         
         console.log("User found:", { id: user._id, email: user.email });
-        
-        // Verify password
+
         const isMatch = await bcrypt.compare(password, user.password);
         console.log("Password match result:", isMatch);
         
@@ -117,7 +115,6 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
 
-        // Create JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         const userData = user.toObject();
@@ -149,7 +146,6 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// Get user profile
 export const getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password");
@@ -179,7 +175,6 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-// Update user profile
 export const updateUserProfile = async (req, res) => {
     try {
         const { 
@@ -199,8 +194,7 @@ export const updateUserProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        
-        // Update user properties
+
         Object.keys(updates).forEach(key => {
             if (updates[key] !== undefined) {
                 user[key] = updates[key];
@@ -393,4 +387,158 @@ export const updateFcmToken = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+// Fix the nodemailer configuration in usercontrol.js
+export const requestPasswordReset = async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist" });
+        }
 
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        verificationCodes[email] = {
+            code: verificationCode,
+            expiresAt: Date.now() + 3 * 60 * 1000
+        };
+
+        // Make sure these environment variables are set correctly in your .env file
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',  
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        });
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: ' Swift Jobs - Password Reset Verification Code',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #623AA2; text-align: center;">Password Reset Request SWIFT JOBS</h2>
+                    <p>We received a request to reset your password in Swift Jobs application. Please use the following verification code to continue resetting</p>
+                    <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+                        <h3 style="margin: 0; color: #333; letter-spacing: 5px; font-size: 24px;">${verificationCode}</h3>
+                    </div>
+                    <p>This code will expire in 3 minutes.</p>
+                    <p>If you did not request a password reset, please ignore this email.</p>
+                    <p style="margin-top: 30px; font-size: 12px; color: #777; text-align: center;">This is an automated email. Please do not reply.</p>
+                </div>
+            `
+        };
+        
+        await transporter.sendMail(mailOptions);
+        
+        res.json({ 
+            message: "Verification code sent successfully to your email",
+            email: email 
+        });
+        
+    } catch (error) {
+        console.error("Password reset request error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, verificationCode, newPassword } = req.body;
+        
+        if (!email || !verificationCode || !newPassword) {
+            return res.status(400).json({ 
+                message: "Email, verification code, and new password are required" 
+            });
+        }
+
+        const storedVerification = verificationCodes[email];
+        
+        if (!storedVerification) {
+            return res.status(400).json({ 
+                message: "Verification code has expired or does not exist. Please request a new code." 
+            });
+        }
+        
+        if (storedVerification.expiresAt < Date.now()) {
+            delete verificationCodes[email];
+            return res.status(400).json({ 
+                message: "Verification code has expired. Please request a new code." 
+            });
+        }
+        
+        if (storedVerification.code !== verificationCode) {
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({ 
+                message: "Password must be at least 6 characters long" 
+            });
+        }
+        
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        
+        user.password = hashedPassword;
+        await user.save();
+
+        delete verificationCodes[email];
+        
+        res.json({ message: "Password has been reset successfully" });
+        
+    } catch (error) {
+        console.error("Password reset error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+export const verifyResetCode = async (req, res) => {
+    try {
+        const { email, verificationCode } = req.body;
+        
+        if (!email || !verificationCode) {
+            return res.status(400).json({ 
+                message: "Email and verification code are required" 
+            });
+        }
+
+        const storedVerification = verificationCodes[email];
+        
+        if (!storedVerification) {
+            return res.status(400).json({ 
+                message: "Verification code has expired or does not exist. Please request a new code." 
+            });
+        }
+        
+        if (storedVerification.expiresAt < Date.now()) {
+            delete verificationCodes[email];
+            return res.status(400).json({ 
+                message: "Verification code has expired. Please request a new code." 
+            });
+        }
+        
+        if (storedVerification.code !== verificationCode) {
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+        
+        res.json({ message: "Verification code is valid" });
+        
+    } catch (error) {
+        console.error("Verify code error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};

@@ -2,7 +2,6 @@ import Bookmark from '../models/bookmark.js';
 import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
 
-// Add a bookmark
 export const addBookmark = async (req, res) => {
   try {
     const userId = req.user.id; 
@@ -16,7 +15,6 @@ export const addBookmark = async (req, res) => {
       });
     }
 
-    // Check if bookmark already exists
     const existingBookmark = await Bookmark.findOne({ 
       user: userId, 
       job: jobId 
@@ -29,7 +27,6 @@ export const addBookmark = async (req, res) => {
       });
     }
 
-    // Create new bookmark
     const newBookmark = new Bookmark({
       user: userId,
       job: jobId
@@ -91,7 +88,7 @@ export const removeBookmark = async (req, res) => {
   }
 };
 
-// Get all bookmarks for a user
+
 export const getUserBookmarks = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -122,7 +119,6 @@ export const getUserBookmarks = async (req, res) => {
   }
 };
 
-// Check if a job is bookmarked by a user
 export const checkBookmarkStatus = async (req, res) => {
   try {
     const userId = req.user.id; 

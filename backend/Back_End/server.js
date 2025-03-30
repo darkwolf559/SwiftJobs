@@ -11,6 +11,8 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import chatRoutes from "./routes/chatRoute.js";
+import resetPasswordRoutes from "./routes/resetPassword.js";
+
 dotenv.config();
 connectDB();
 
@@ -29,5 +31,6 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/chats", chatRoutes);
+app.use("/api/reset-password", resetPasswordRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

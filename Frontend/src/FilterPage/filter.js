@@ -109,7 +109,7 @@ const FilterScreen = () => {
         <Slider
           style={styles.slider}
           minimumValue={0}
-          maximumValue={25000}
+          maximumValue={475000}
           step={500}
           value={displayMinSalary}
           onSlidingStart={() => setIsMinSliding(true)}

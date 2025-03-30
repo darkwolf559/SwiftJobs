@@ -28,7 +28,6 @@ export default Paginator = ({data ,scrollX}) => {
   )
 };
 
-// Add the styles definition
 const styles = StyleSheet.create({
   dot: {
     height: 10,

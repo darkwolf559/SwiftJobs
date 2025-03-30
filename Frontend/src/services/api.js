@@ -46,7 +46,6 @@ api.interceptors.response.use(
 );
 
 export const authService = {
-  // Register new user
   register: async (userData) => {
     try {
       console.log('Registering user:', userData);
@@ -65,7 +64,6 @@ export const authService = {
     }
   },
 
-  // Login user
   login: async (credentials) => {
     try {
       console.log('Logging in user:', credentials.email);
@@ -104,10 +102,40 @@ export const authService = {
     } catch (error) {
       return false;
     }
+  },
+  requestPasswordReset: async (email) => {
+    try {
+      const response = await api.post('/reset-password/request', { email });
+      return response.data;
+    } catch (error) {
+      console.error('Request password reset error:', error);
+      if (error.response) {
+        throw error.response.data;
+      } else if (error.request) {
+        throw { message: 'No response from server. Check your connection.' };
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
+  },
+
+  resetPassword: async (data) => {
+    try {
+      const response = await api.post('/reset-password/reset', data);
+      return response.data;
+    } catch (error) {
+      console.error('Reset password error:', error);
+      if (error.response) {
+        throw error.response.data;
+      } else if (error.request) {
+        throw { message: 'No response from server. Check your connection.' };
+      } else {
+        throw { message: 'Network error occurred' };
+      }
+    }
   }
 };
 
-// User Profile Services
 export const userService = {
   getProfile: async () => {
     try {
@@ -122,7 +150,6 @@ export const userService = {
     }
   },
 
-  // Update user profile
   updateProfile: async (profileData) => {
     try {
       const response = await api.put('/profile', profileData);
@@ -152,7 +179,6 @@ export const jobService = {
     }
   },
 
-  // Get all jobs
   getAllJobs: async () => {
     try {
       const response = await api.get('/jobs');
@@ -166,7 +192,6 @@ export const jobService = {
     }
   },
 
-  // Get jobs by category
   getJobsByCategory: async (categoryId) => {
     try {
       const response = await api.get(`/jobs/category/${categoryId}`);
@@ -180,7 +205,6 @@ export const jobService = {
     }
   },
 
-  // Get job by ID
   getJobById: async (jobId) => {
     try {
       const response = await api.get(`/jobs/${jobId}`);
@@ -196,7 +220,7 @@ export const jobService = {
 };
 
 export const bookmarkService = {
-  // Add a bookmark
+
   addBookmark: async (jobId) => {
     try {
       const response = await api.post('/bookmarks', { jobId });
@@ -206,8 +230,7 @@ export const bookmarkService = {
       throw error;
     }
   },
-  
-  // Remove a bookmark
+
   removeBookmark: async (jobId) => {
     try {
       const response = await api.delete(`/bookmarks/${jobId}`);
@@ -294,7 +317,6 @@ export const reviewService = {
 
 
 export const chatService = {
-  // Get or create a chat for an application
   getOrCreateChat: async (applicationId) => {
     try {
       const response = await api.get(`/chats/application/${applicationId}`);
@@ -308,7 +330,6 @@ export const chatService = {
     }
   },
 
-  // Get all chats for the current user
   getUserChats: async () => {
     try {
       const response = await api.get('/chats');
@@ -322,7 +343,6 @@ export const chatService = {
     }
   },
 
-  // Get all messages in a chat
   getChatMessages: async (chatId) => {
     try {
       const response = await api.get(`/chats/${chatId}`);
@@ -336,7 +356,6 @@ export const chatService = {
     }
   },
 
-  // Send a new message
   sendMessage: async (chatId, content) => {
     try {
       const response = await api.post(`/chats/${chatId}/messages`, { content });
@@ -350,7 +369,6 @@ export const chatService = {
     }
   },
 
-  // Mark messages as read
   markMessagesAsRead: async (chatId) => {
     try {
       const response = await api.put(`/chats/${chatId}/read`);

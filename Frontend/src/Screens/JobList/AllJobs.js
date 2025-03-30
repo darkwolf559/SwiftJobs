@@ -36,35 +36,42 @@ const AllJobsScreen = ({ route, navigation }) => {
     'others': ['others', 'other', '9']
   };
 
-  // Parse the salary string to extract min and max values
+  // Improved salary parsing function
   const parseSalary = (salaryString) => {
-    // If salary is not specified, return 0 for both min and max
+    // If salary is not specified or invalid, return default values
     if (!salaryString || typeof salaryString !== 'string' || 
         salaryString.toLowerCase().includes('not specified') ||
         salaryString.toLowerCase().includes('negotiable')) {
       return { min: 0, max: 0 };
     }
     
-    // Extract all numbers from the string
-    const numbers = salaryString.match(/\d[\d,]*(\.\d+)?/g);
+    // Clean the string and extract all numbers
+    const cleanSalary = salaryString.replace(/[^\d,.]/g, ' ');
+    const numbers = cleanSalary.match(/\d[\d,]*(\.\d+)?/g);
     
     if (!numbers || numbers.length === 0) {
       return { min: 0, max: 0 };
     }
     
+    // Parse the numbers by removing commas
+    const parsedNumbers = numbers.map(num => parseFloat(num.replace(/,/g, '')));
+    
+    // Sort the numbers to ensure min is the smallest and max is the largest
+    parsedNumbers.sort((a, b) => a - b);
+    
     // If there's only one number, use it for both min and max
-    if (numbers.length === 1) {
-      const value = parseFloat(numbers[0].replace(/,/g, ''));
-      return { min: value, max: value };
+    if (parsedNumbers.length === 1) {
+      return { min: parsedNumbers[0], max: parsedNumbers[0] };
     }
     
-    // If there are multiple numbers, use the first and last
-    const min = parseFloat(numbers[0].replace(/,/g, ''));
-    const max = parseFloat(numbers[numbers.length - 1].replace(/,/g, ''));
+    // Get the min and max from the array
+    const min = parsedNumbers[0];
+    const max = parsedNumbers[parsedNumbers.length - 1];
+    
     return { min, max };
   };
 
-  // Simple and focused filtering function
+  // Improved filtering function
   const filterJobs = (jobs, filters) => {
     if (!filters || !jobs || jobs.length === 0) {
       return jobs;
@@ -73,22 +80,32 @@ const AllJobsScreen = ({ route, navigation }) => {
     return jobs.filter(job => {
       // 1. Salary filtering
       let salaryMatches = true;
-      if (filters.salaryRange) {
+      if (filters.salaryRange && (filters.salaryRange.min > 0 || filters.salaryRange.max < 500000)) {
         const parsedSalary = parseSalary(job.salary);
         
-        // For unspecified salaries
+        // For debugging
+        console.log(`Job: ${job.title}, Salary: ${job.salary}`);
+        console.log(`Parsed: min=${parsedSalary.min}, max=${parsedSalary.max}`);
+        console.log(`Filter: min=${filters.salaryRange.min}, max=${filters.salaryRange.max}`);
+        
+        // Logic for salary matching:
+        
+        // Case 1: Job has unspecified salary (min=0, max=0)
         if (parsedSalary.min === 0 && parsedSalary.max === 0) {
-          // Only include unspecified salaries for low wage filters
-          salaryMatches = filters.salaryRange.max <= 25000;
+          // Consider unspecified salaries as matching only if filter min is 0
+          salaryMatches = filters.salaryRange.min === 0;
+        } 
+        // Case 2: Check if ranges overlap
+        else {
+          // Check if the ranges overlap
+          // (filter min <= job max) AND (filter max >= job min)
+          salaryMatches = (
+            filters.salaryRange.min <= parsedSalary.max && 
+            filters.salaryRange.max >= parsedSalary.min
+          );
         }
-        // If job max salary is below filter min
-        else if (parsedSalary.max < filters.salaryRange.min) {
-          salaryMatches = false;
-        }
-        // If job min salary is above filter max
-        else if (parsedSalary.min > filters.salaryRange.max) {
-          salaryMatches = false;
-        }
+        
+        console.log(`Salary matches: ${salaryMatches}`);
       }
       
       // 2. Location filtering

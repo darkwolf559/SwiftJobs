@@ -40,6 +40,10 @@ import ApplicationsScreen from './src/Applications/ApplicationScreen.js';
 import JobApplicationDetailsScreen from './src/Screens/ApplySuccess/JobApplicationDetails.js';
 import ChatsListScreen from './src/Chat/chatList.js';
 import ChatScreen from './src/Chat/chatScreen.js';
+import ForgotPasswordScreen from './src/Screens/LoginSignup/ForgotPasswordScreen.js';
+import ResetPasswordScreen from './src/Screens/LoginSignup/ResetPasswordScreen.js';
+import VerifyCodeScreen from './src/Screens/LoginSignup/VerifyCodeScreen.js';
+
 
 
 
@@ -160,6 +164,9 @@ export default App = () => {
         <Stack.Screen name="JobApplicationDetails" component={JobApplicationDetailsScreen} />
         <Stack.Screen name="ChatsListScreen" component={ChatsListScreen} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+        <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </NotificationProvider>

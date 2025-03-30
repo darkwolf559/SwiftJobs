@@ -114,13 +114,21 @@ const FilterScreen = () => {
           value={displayMinSalary}
           onSlidingStart={() => setIsMinSliding(true)}
           onSlidingComplete={(value) => {
-            actualMinRef.current = Math.floor(value);
-            setDisplayMinSalary(Math.floor(value));
+            const floorValue = Math.floor(value);
+            if (floorValue <= actualMaxRef.current) {
+              actualMinRef.current = floorValue;
+              setDisplayMinSalary(floorValue);
+            } else {
+              // If min > max, set min to max
+              actualMinRef.current = actualMaxRef.current;
+              setDisplayMinSalary(actualMaxRef.current);
+            }
             setIsMinSliding(false);
           }}
           onValueChange={(value) => {
-            if (value <= actualMaxRef.current) {
-              actualMinRef.current = Math.floor(value);
+            const floorValue = Math.floor(value);
+            if (floorValue <= actualMaxRef.current) {
+              actualMinRef.current = floorValue;
             }
           }}
           minimumTrackTintColor="#6a11cb"
@@ -136,13 +144,21 @@ const FilterScreen = () => {
           value={displayMaxSalary}
           onSlidingStart={() => setIsMaxSliding(true)}
           onSlidingComplete={(value) => {
-            actualMaxRef.current = Math.floor(value);
-            setDisplayMaxSalary(Math.floor(value));
+            const floorValue = Math.floor(value);
+            if (floorValue >= actualMinRef.current) {
+              actualMaxRef.current = floorValue;
+              setDisplayMaxSalary(floorValue);
+            } else {
+              // If max < min, set max to min
+              actualMaxRef.current = actualMinRef.current;
+              setDisplayMaxSalary(actualMinRef.current);
+            }
             setIsMaxSliding(false);
           }}
           onValueChange={(value) => {
-            if (value >= actualMinRef.current) {
-              actualMaxRef.current = Math.floor(value);
+            const floorValue = Math.floor(value);
+            if (floorValue >= actualMinRef.current) {
+              actualMaxRef.current = floorValue;
             }
           }}
           minimumTrackTintColor="#6a11cb"

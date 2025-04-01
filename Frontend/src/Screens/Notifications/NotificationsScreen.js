@@ -34,7 +34,6 @@ const handleNotificationPress = (notification) => {
   if (notification.type === 'JOB_APPLICATION') {
     navigation.navigate('ApplicationsScreen', { 
       notificationId: notification._id,
-      // We'll remove applicantData and let the JobApplicationDetails screen load it
     });
   } else if (notification.type === 'JOB_POSTED' && notification.relatedJob) {
     navigation.navigate('JobSingle', { 

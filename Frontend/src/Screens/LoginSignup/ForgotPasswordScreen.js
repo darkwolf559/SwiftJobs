@@ -19,7 +19,6 @@ const ForgotPasswordScreen = () => {
     return emailRegex.test(email);
   };
 
-// Fix the ForgotPasswordScreen.js
 const handleRequestReset = async () => {
   if (!email) {
     Alert.alert('Error', 'Please enter your email address');
@@ -52,7 +51,6 @@ const handleRequestReset = async () => {
   } catch (error) {
     setLoading(false);
     
-    // Safe error logging
     console.log('Request reset error:', error.message);
     
     let errorMessage = 'Failed to send verification code. Please try again.';

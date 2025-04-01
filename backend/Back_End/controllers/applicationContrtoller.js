@@ -130,7 +130,7 @@ export const getJobApplications = async (req, res) => {
     }
     
     const applications = await Application.find({ job: jobId })
-      .populate('applicant', 'fullName email phoneNumber gender homeAddress profilePhotoUrl')
+      .populate('applicant', 'fullName email phoneNumber gender homeAddress profilePhotoUrl resume resumeType resumeName')
       .populate('job', 'jobTitle')
       .sort({ createdAt: -1 });
     
@@ -153,7 +153,7 @@ export const getEmployerApplications = async (req, res) => {
     }
 
     const applications = await Application.find({ job: { $in: jobIds } })
-      .populate('applicant', 'fullName email phoneNumber gender homeAddress profilePhotoUrl')
+      .populate('applicant', 'fullName email phoneNumber gender homeAddress profilePhotoUrl resume resumeType resumeName')
       .populate('job', 'jobTitle employerName location')
       .sort({ createdAt: -1 });
     
@@ -185,7 +185,7 @@ export const getApplicationById = async (req, res) => {
     const userId = req.user.id;
     
     const application = await Application.findById(applicationId)
-      .populate('applicant', 'fullName email phoneNumber gender homeAddress profilePhotoUrl')
+      .populate('applicant')  // Fully populate to get access to all fields
       .populate('job', 'jobTitle employerName location jobCategory payment');
     
     if (!application) {
@@ -200,7 +200,23 @@ export const getApplicationById = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized to view this application" });
     }
     
-    res.json(application);
+    // Format profile photo and resume
+    const formattedApplication = {...application.toObject()};
+    
+    // Format profile photo
+    if (application.applicant.profilePhoto && application.applicant.profilePhoto.length > 0) {
+      formattedApplication.applicant.profilePhotoUrl = 
+        `data:${application.applicant.profilePhotoType || 'image/jpeg'};base64,${application.applicant.profilePhoto.toString('base64')}`;
+    }
+    
+    // Format resume
+    if (application.applicant.resume && application.applicant.resume.length > 0) {
+      formattedApplication.applicant.resumeUrl = 
+        `data:${application.applicant.resumeType || 'application/pdf'};base64,${application.applicant.resume.toString('base64')}`;
+      formattedApplication.applicant.resumeName = application.applicant.resumeName || 'resume.pdf';
+    }
+    
+    res.json(formattedApplication);
   } catch (error) {
     console.error("Error fetching application:", error);
     res.status(500).json({ message: "Server error", error: error.message });

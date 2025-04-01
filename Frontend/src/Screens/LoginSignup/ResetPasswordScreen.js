@@ -19,7 +19,6 @@ const ResetPasswordScreen = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-// Fix the ResetPasswordScreen.js
 const handleResetPassword = async () => {
   if (!newPassword || !confirmPassword) {
     Alert.alert('Error', 'Please enter and confirm your new password');
@@ -60,7 +59,6 @@ const handleResetPassword = async () => {
     
   } catch (error) {
     setLoading(false);
-    // Safe error logging
     console.log('Reset password error:', error.message);
     
     let errorMessage = 'Failed to reset password. Please try again.';

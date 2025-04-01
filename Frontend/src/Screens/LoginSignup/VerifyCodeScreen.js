@@ -26,7 +26,6 @@ const VerifyCodeScreen = () => {
   ];
 
   useEffect(() => {
-    // Start countdown timer
     const timerInterval = setInterval(() => {
       setTimeRemaining(prevTime => {
         if (prevTime <= 1) {
@@ -37,12 +36,10 @@ const VerifyCodeScreen = () => {
         return prevTime - 1;
       });
     }, 1000);
-
-    // Clean up interval on component unmount
     return () => {
       clearInterval(timerInterval);
     };
-  }, []); // Empty dependency array means this runs once on mount
+  }, []); 
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -68,7 +65,6 @@ const VerifyCodeScreen = () => {
     }
   };
 
-// Fix the VerifyCodeScreen.js
 const handleVerifyCode = async () => {
   const verificationCode = code.join('');
   
@@ -80,15 +76,13 @@ const handleVerifyCode = async () => {
   setLoading(true);
   
   try {
-    // Verify that the code is valid by making a request to check
     const response = await axios.post(`${API_URL}/reset-password/verify-code`, {
       email,
       verificationCode
     });
     
     setLoading(false);
-    
-    // If code is valid, navigate to reset password screen
+
     navigation.navigate('ResetPassword', { 
       email, 
       verificationCode 
@@ -96,8 +90,7 @@ const handleVerifyCode = async () => {
     
   } catch (error) {
     setLoading(false);
-    
-    // Safe error logging
+
     console.log('Verify code error:', error.message);
     
     let errorMessage = 'Invalid verification code. Please try again.';
@@ -112,8 +105,7 @@ const handleVerifyCode = async () => {
 
   const handleResendCode = async () => {
     setLoading(true);
-    
-    // For testing: use mock response instead of actual API call
+
     setTimeout(() => {
       setLoading(false);
       setTimeRemaining(900);
@@ -140,7 +132,6 @@ const handleVerifyCode = async () => {
       
     } catch (error) {
       setLoading(false);
-      // Safe error logging
       console.log('Resend code error:', error.message);
       
       let errorMessage = 'Failed to resend verification code. Please try again.';
@@ -179,7 +170,6 @@ const handleVerifyCode = async () => {
       </View>
       
       <View style={styles.timerContainer}>
-        {/* Use inline styling for dynamic color based on timeRemaining */}
         <Text style={[
           styles.timerText, 
           { color: timeRemaining < 60 ? '#f97794' : '#666' }

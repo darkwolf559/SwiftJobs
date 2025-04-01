@@ -387,7 +387,6 @@ export const updateFcmToken = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-// Fix the nodemailer configuration in usercontrol.js
 export const requestPasswordReset = async (req, res) => {
     try {
         const { email } = req.body;
@@ -408,7 +407,6 @@ export const requestPasswordReset = async (req, res) => {
             expiresAt: Date.now() + 3 * 60 * 1000
         };
 
-        // Make sure these environment variables are set correctly in your .env file
         const transporter = nodemailer.createTransport({
             service: 'gmail',  
             auth: {

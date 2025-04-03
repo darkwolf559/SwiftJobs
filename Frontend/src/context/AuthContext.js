@@ -25,17 +25,15 @@ export const AuthProvider = ({ children }) => {
         const storedUser = await AsyncStorage.getItem('userData');
         
         if (token && storedUser) {
+          setAuthToken(token);
+          setCurrentUser(JSON.parse(storedUser));
+          
           try {
-
-            await userService.getProfile();
- 
-            setAuthToken(token);
-            setCurrentUser(JSON.parse(storedUser));
+            const response = await userService.getProfile();
+            setCurrentUser(response);
+            await AsyncStorage.setItem('userData', JSON.stringify(response));
           } catch (error) {
-            console.log('Stored token is invalid, logging out');
-            await AsyncStorage.removeItem('authToken');
-            await AsyncStorage.removeItem('userData');
-            await AsyncStorage.removeItem('refreshToken');
+            console.log('Could not refresh profile, using stored data');
           }
         }
       } catch (error) {

@@ -1,5 +1,5 @@
-import React, { useEffect,useState } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { StatusBar } from 'react-native' ;
 import Onboarding from './src/Screens/onboardingScreen.js';
 import { NavigationContainer } from '@react-navigation/native';
@@ -43,8 +43,9 @@ import ChatScreen from './src/Chat/chatScreen.js';
 import ForgotPasswordScreen from './src/Screens/LoginSignup/ForgotPasswordScreen.js';
 import ResetPasswordScreen from './src/Screens/LoginSignup/ResetPasswordScreen.js';
 import VerifyCodeScreen from './src/Screens/LoginSignup/VerifyCodeScreen.js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import SplashScreen from './src/Screens/SplashScreen/SplashScreen.js';
+
+
+
 
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -122,33 +123,10 @@ function MainTabs() {
 
 export default App = () => {
 
-  const [initialRoute, setInitialRoute] = useState('Onboarding');
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (token) {
-          setInitialRoute('MainTabs');
-        }
-      } catch (error) {
-        console.log('Error checking token:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkToken();
     requestUserPermission();
     notificationListener();
   }, []);
-
-  if (isLoading) {
-    return (
-   <SplashScreen/>
-    );
-  }
   
   return (
     <AuthProvider>
@@ -157,7 +135,7 @@ export default App = () => {
       <StatusBar style="auto" />
 
       <Stack.Navigator 
-        initialRouteName={initialRoute}
+        initialRouteName="Onboarding"
         screenOptions={{headerShown: false}}
       >
         <Stack.Screen name="MainTabs" component={MainTabs} />

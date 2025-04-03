@@ -18,44 +18,37 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API_URL} from '../../config/constants';
-import { useAuth } from '../../context/AuthContext';
+
 
 const UserProfile = ({ navigation }) => {
-  const { currentUser, authToken, logout } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [resumeLoading, setResumeLoading] = useState(false);
-
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      if (currentUser) {
-        setUserData(currentUser);
-      }
-      if (authToken) {
-        const response = await axios.get(`${API_URL}/profile`, {
-          headers: {
-            Authorization: `Bearer ${authToken}`
-          }
-        });
-        
-        setUserData(response.data);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data));
-      } else {
+      
+      const token = await AsyncStorage.getItem('authToken');
+      
+      if (!token) {
         navigation.navigate('Login');
         return;
       }
+      
+      const response = await axios.get(`${API_URL}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setUserData(response.data);
+      
+      await AsyncStorage.setItem('userData', JSON.stringify(response.data));
     } catch (error) {
       console.error('Error fetching profile:', error);
-
-      if (!userData && currentUser) {
-        setUserData(currentUser);
-      } else {
-        setError('Failed to load profile data');
-      }
+      setError('Failed to load profile data');
       
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         Alert.alert(
@@ -69,6 +62,7 @@ const UserProfile = ({ navigation }) => {
     }
   };
 
+  // Handle user logout
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('authToken');

@@ -1,6 +1,8 @@
+
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API_URL} from '../config/constants';
+
 
 const api = axios.create({
   baseURL: API_URL,
@@ -26,49 +28,19 @@ api.interceptors.response.use(
   (response) => {
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
-    
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          await AsyncStorage.removeItem('authToken');
-          await AsyncStorage.removeItem('userData');
-
-          throw new Error('Authentication expired. Please login again.');
-        }
-
-        const response = await axios.post(`${API_URL}/refresh-token`, { refreshToken });
-        const { token } = response.data;
-
-        await AsyncStorage.setItem('authToken', token);
-
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        originalRequest.headers['Authorization'] = `Bearer ${token}`;
-        
-        return api(originalRequest);
-      } catch (refreshError) {
-        await AsyncStorage.removeItem('authToken');
-        await AsyncStorage.removeItem('userData');
-        await AsyncStorage.removeItem('refreshToken');
-        
-        return Promise.reject(refreshError);
-      }
-    }
-
+  (error) => {
     console.error('API Error:', error);
     if (error.response) {
+    
       console.error('Response data:', error.response.data);
       console.error('Response status:', error.response.status);
     } else if (error.request) {
+      
       console.error('No response received:', error.request);
     } else {
+      
       console.error('Request setup error:', error.message);
     }
-    
     return Promise.reject(error);
   }
 );
@@ -98,14 +70,7 @@ export const authService = {
       const response = await api.post('/login', credentials);
       if (response.data.token) {
         await AsyncStorage.setItem('authToken', response.data.token);
-
-        if (response.data.refreshToken) {
-          await AsyncStorage.setItem('refreshToken', response.data.refreshToken);
-        }
-        
-        if (response.data.user) {
-          await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-        }
+        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
       }
       return response.data;
     } catch (error) {
@@ -121,10 +86,9 @@ export const authService = {
   },
 
   logout: async () => {
-    try {     
+    try {
       await AsyncStorage.removeItem('authToken');
       await AsyncStorage.removeItem('userData');
-      await AsyncStorage.removeItem('refreshToken');
       return { success: true };
     } catch (error) {
       throw { message: 'Error logging out' };
@@ -139,7 +103,6 @@ export const authService = {
       return false;
     }
   },
-  
   requestPasswordReset: async (email) => {
     try {
       const response = await api.post('/reset-password/request', { email });
@@ -201,6 +164,7 @@ export const userService = {
   }
 };
 
+
 export const jobService = {
   createJob: async (jobData) => {
     try {
@@ -256,6 +220,7 @@ export const jobService = {
 };
 
 export const bookmarkService = {
+
   addBookmark: async (jobId) => {
     try {
       const response = await api.post('/bookmarks', { jobId });
@@ -276,6 +241,7 @@ export const bookmarkService = {
     }
   },
   
+
   getUserBookmarks: async () => {
     try {
       const response = await api.get('/bookmarks');
@@ -296,8 +262,8 @@ export const bookmarkService = {
     }
   }
 };
-
 export const reviewService = {
+  
   addReview: async (jobId, rating, comment) => {
     try {
       const response = await api.post('/reviews', {
@@ -348,6 +314,7 @@ export const reviewService = {
     }
   }
 };
+
 
 export const chatService = {
   getOrCreateChat: async (applicationId) => {
@@ -414,8 +381,7 @@ export const chatService = {
       }
     }
   }
-};
-
+}
 export default {
   authService,
   userService,

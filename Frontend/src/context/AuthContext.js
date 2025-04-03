@@ -27,14 +27,6 @@ export const AuthProvider = ({ children }) => {
         if (token && storedUser) {
           setAuthToken(token);
           setCurrentUser(JSON.parse(storedUser));
-          
-          try {
-            const response = await userService.getProfile();
-            setCurrentUser(response);
-            await AsyncStorage.setItem('userData', JSON.stringify(response));
-          } catch (error) {
-            console.log('Could not refresh profile, using stored data');
-          }
         }
       } catch (error) {
         console.error('Error loading authentication data:', error);
@@ -46,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     loadStoredData();
   }, []);
 
+  // Login function
   const login = async (credentials) => {
     try {
       const response = await authService.login(credentials);
@@ -60,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
+  // Register function
   const register = async (userData) => {
     try {
       const response = await authService.register(userData);
@@ -70,6 +63,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Logout function
   const logout = async () => {
     try {
       await authService.logout();

@@ -62,19 +62,20 @@ const UserProfile = ({ navigation }) => {
     }
   };
 
-  // Handle user logout
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('authToken');
-      await AsyncStorage.removeItem('userData');
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
+
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('userData');
+    
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  } catch (error) {
+    console.error('Error logging out:', error);
+  }
+};
 
   const handleOpenResume = async () => {
     if (userData && userData.resumeUrl) {

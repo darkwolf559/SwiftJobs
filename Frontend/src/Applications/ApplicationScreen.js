@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   StatusBar,
   Image
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,8 +24,11 @@ const ApplicationsScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  const fetchApplications = async (showLoading = true) => {
+  const fetchApplications = useCallback(async (showLoading = true) => {
+    if (refreshing) showLoading = false;
+    
     try {
       if (showLoading) setLoading(true);
       setError(null);
@@ -37,32 +40,50 @@ const ApplicationsScreen = () => {
         return;
       }
       
+      console.log('Fetching applications from API...');
       const response = await axios.get(`${API_URL}/applications/employer`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      setApplications(response.data);
+      console.log('Applications data received:', 
+        response.data ? `${response.data.length} applications` : 'no data');
+
+      if (response.data && Array.isArray(response.data)) {
+        setApplications(response.data);
+      } else {
+        setApplications([]);
+        console.warn('Received invalid applications data format');
+      }
     } catch (error) {
       console.error('Error fetching applications:', error);
       setError('Failed to load applications');
+      setApplications([]); 
     } finally {
       if (showLoading) setLoading(false);
       setRefreshing(false);
+      setIsFirstLoad(false);
     }
-  };
+  }, [refreshing]);
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstLoad) {
+        fetchApplications();
+      }
+      
+      return () => {
+      };
+    }, [fetchApplications, isFirstLoad])
+  );
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setRefreshing(true);
     fetchApplications(false);
-  };
+  }, [fetchApplications]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = useCallback((status) => {
     switch (status?.toLowerCase()) {
       case 'pending':
         return '#FFB700';
@@ -73,18 +94,23 @@ const ApplicationsScreen = () => {
       default:
         return '#999'; 
     }
-  };
+  }, []);
 
-  const filteredApplications = () => {
+  const filteredApplications = useCallback(() => {
+    if (!applications || applications.length === 0) {
+      return [];
+    }
+    
     if (activeFilter === 'All') {
       return applications;
     }
+    
     return applications.filter(app => 
-      app.status.toLowerCase() === activeFilter.toLowerCase()
+      app?.status?.toLowerCase() === activeFilter.toLowerCase()
     );
-  };
+  }, [applications, activeFilter]);
 
-  const renderFilterButton = (filterName) => (
+  const renderFilterButton = useCallback((filterName) => (
     <TouchableOpacity
       style={[
         styles.filterButton,
@@ -101,26 +127,27 @@ const ApplicationsScreen = () => {
         {filterName}
       </Text>
     </TouchableOpacity>
-  );
+  ), [activeFilter]);
 
-  const   renderApplicationItem = ({ item }) => (
+  const renderApplicationItem = useCallback(({ item, index }) => (
     <TouchableOpacity
+      key={`application-${index}`}
       style={styles.applicationItem}
       onPress={() => navigation.navigate('JobApplicationDetails', { 
-        applicationId: item._id,
-        notificationId: item.relatedNotification,
+        applicationId: item?._id,
+        notificationId: item?.relatedNotification,
         applicantData: {
-          _id: item.applicant?._id,
-          name: item.applicant?.fullName || item.applicantName || 'Applicant',
-          email: item.applicant?.email || item.applicantEmail || '',
-          phone: item.applicant?.phoneNumber || item.applicantPhone || '',
-          gender: item.applicant?.gender || item.applicantGender || '',
-          address: item.applicant?.homeAddress || item.applicantAddress || '',
-          education: item.applicantEducation || '',
-          skills: item.applicantSkills || '',
-          profilePhotoUrl: item.applicant?.profilePhotoUrl || null,
-          resumeUrl: item.applicant?.resumeUrl || null,
-          jobTitle: item.job?.jobTitle || 'Job Position'
+          _id: item?.applicant?._id,
+          name: item?.applicant?.fullName || item?.applicantName || 'Applicant',
+          email: item?.applicant?.email || item?.applicantEmail || '',
+          phone: item?.applicant?.phoneNumber || item?.applicantPhone || '',
+          gender: item?.applicant?.gender || item?.applicantGender || '',
+          address: item?.applicant?.homeAddress || item?.applicantAddress || '',
+          education: item?.applicantEducation || '',
+          skills: item?.applicantSkills || '',
+          profilePhotoUrl: item?.applicant?.profilePhotoUrl || null,
+          resumeUrl: item?.applicant?.resumeUrl || null,
+          jobTitle: item?.job?.jobTitle || 'Job Position'
         }
       })}
     >
@@ -151,7 +178,7 @@ const ApplicationsScreen = () => {
         </View>
       </View>
     </TouchableOpacity>
-  );
+  ), [navigation, getStatusColor]);
 
   if (loading) {
     return (
@@ -215,7 +242,10 @@ const ApplicationsScreen = () => {
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => fetchApplications()}
+            onPress={() => {
+              setIsFirstLoad(true);
+              fetchApplications();
+            }}
           >
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
@@ -224,7 +254,7 @@ const ApplicationsScreen = () => {
         <FlatList
           data={filteredApplications()}
           renderItem={renderApplicationItem}
-          keyExtractor={item => item._id}
+          keyExtractor={(item, index) => item?._id || `application-${index}`}
           contentContainerStyle={styles.listContainer}
           refreshControl={
             <RefreshControl

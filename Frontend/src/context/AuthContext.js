@@ -25,8 +25,18 @@ export const AuthProvider = ({ children }) => {
         const storedUser = await AsyncStorage.getItem('userData');
         
         if (token && storedUser) {
-          setAuthToken(token);
-          setCurrentUser(JSON.parse(storedUser));
+          try {
+
+            await userService.getProfile();
+ 
+            setAuthToken(token);
+            setCurrentUser(JSON.parse(storedUser));
+          } catch (error) {
+            console.log('Stored token is invalid, logging out');
+            await AsyncStorage.removeItem('authToken');
+            await AsyncStorage.removeItem('userData');
+            await AsyncStorage.removeItem('refreshToken');
+          }
         }
       } catch (error) {
         console.error('Error loading authentication data:', error);
@@ -38,7 +48,6 @@ export const AuthProvider = ({ children }) => {
     loadStoredData();
   }, []);
 
-  // Login function
   const login = async (credentials) => {
     try {
       const response = await authService.login(credentials);
@@ -53,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register function
+
   const register = async (userData) => {
     try {
       const response = await authService.register(userData);
@@ -63,7 +72,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
       await authService.logout();

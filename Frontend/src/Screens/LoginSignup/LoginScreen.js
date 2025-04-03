@@ -31,6 +31,7 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
+
       const response = await axios.post(`${API_URL}/login`, {
         email,
         password
@@ -39,10 +40,12 @@ const LoginScreen = () => {
       if (response.data && response.data.token) {
         await AsyncStorage.setItem('authToken', response.data.token);
         
+
         if (response.data.user) {
           await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
         }
         
+
         navigation.reset({
           index: 0,
           routes: [{ name: 'MainTabs' }],
@@ -51,6 +54,16 @@ const LoginScreen = () => {
         Alert.alert('Error', 'Invalid response from server');
       }
     } catch (error) {
+      // console.error('Login error:', error);
+      
+      
+      if (error.response) {
+        Alert.alert('Login Failed', error.response.data.message || 'Invalid credentials');
+      } else if (error.request) {
+        Alert.alert('Network Error', 'Could not connect to the server. Please check your internet connection.');
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }

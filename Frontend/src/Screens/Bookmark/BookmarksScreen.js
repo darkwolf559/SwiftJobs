@@ -1,3 +1,6 @@
+//This is my part 
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,

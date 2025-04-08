@@ -1,3 +1,6 @@
+// This is my part also
+
+
 import { View, Text, StyleSheet, Image, TextInput, ImageBackground, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import Fontisto from 'react-native-vector-icons/Fontisto';

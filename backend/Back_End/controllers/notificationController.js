@@ -1,9 +1,10 @@
 import Notification from "../models/notification.js";
 import User from "../models/user.js";
 import admin from "firebase-admin";
-import serviceAccount from "../config/firebaseServiceKey.json" with { type: "json" };
 import Job from "../models/job.js";
 import Application from "../models/application.js";
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 if (!admin.apps.length) {
   admin.initializeApp({
